@@ -1,0 +1,57 @@
+{
+    "name": "kafkiansky/prototype",
+    "description": "A modern strictly typed full-featured library for protobuf serialization without an inheritance.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "protobuf",
+        "reflection"
+    ],
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "kafkiansky/binary": "^0.4.4",
+        "psr/simple-cache": "^3.0@dev",
+        "typhoon/reflection": "^0.4.x-dev",
+        "typhoon/typed-map": "0.4.x-dev"
+    },
+    "require-dev": {
+        "ergebnis/composer-normalize": "^2.43",
+        "friendsofphp/php-cs-fixer": "^3.59",
+        "jetbrains/phpstorm-stubs": "^2024.1",
+        "phpunit/phpunit": "^10.5",
+        "psalm/plugin-phpunit": "^0.19.0",
+        "symfony/var-dumper": "^6.4",
+        "vimeo/psalm": "^5.25"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "Kafkiansky\\Prototype\\": "src/"
+        },
+        "files": [
+            "src/Internal/Wire/functions.php",
+            "src/Internal/Reflection/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kafkiansky\\Prototype\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "ergebnis/composer-normalize": true
+        }
+    },
+    "scripts": {
+        "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.php -v --verbose --diff",
+        "psalm": "./vendor/bin/psalm --show-info --no-diff --no-cache",
+        "test": "./vendor/bin/phpunit --testdox --do-not-cache"
+    }
+}
