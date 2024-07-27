@@ -20,14 +20,6 @@
         "typhoon/reflection": "^0.4.x-dev",
         "typhoon/typed-map": "0.4.x-dev"
     },
-    "require-dev": {
-        "ergebnis/composer-normalize": "^2.43",
-        "friendsofphp/php-cs-fixer": "^3.59",
-        "phpunit/phpunit": "^10.5",
-        "psalm/plugin-phpunit": "^0.19.0",
-        "symfony/var-dumper": "^6.4",
-        "vimeo/psalm": "^5.25"
-    },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": {
@@ -40,9 +32,7 @@
         ]
     },
     "config": {
-        "allow-plugins": {
-            "ergebnis/composer-normalize": true
-        },
-        "lock": false
+        "lock": false,
+        "sort-packages": true
     }
 }

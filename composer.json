@@ -47,6 +47,12 @@
         "sort-packages": true
     },
     "scripts": {
+        "all": [
+            "@composer normalize-all",
+            "@composer phpstan",
+            "@composer test",
+            "@composer cs-fix"
+        ],
         "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.php -v --verbose --diff",
         "normalize-all": [
             "@composer normalize --diff",

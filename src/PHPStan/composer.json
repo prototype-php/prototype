@@ -1,6 +1,6 @@
 {
     "name": "prototype/phpstan-extension",
-    "description": "PHPStan extension to resolve custom types like int32, int64, etc.",
+    "description": "PHPStan extension to resolve protobuf types.",
     "license": "MIT",
     "type": "phpstan-extension",
     "authors": [
@@ -21,6 +21,7 @@
         }
     },
     "config": {
-        "lock": false
+        "lock": false,
+        "sort-packages": true
     }
 }
