@@ -1,0 +1,27 @@
+{
+    "name": "prototype/psalm-plugin",
+    "description": "Psalm plugin to resolve protobuf types.",
+    "license": "MIT",
+    "type": "psalm-plugin",
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "vimeo/psalm": "^5.25"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Prototype\\Psalm\\": ""
+        }
+    },
+    "config": {
+        "lock": false,
+        "sort-packages": true
+    }
+}
