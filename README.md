@@ -5,3 +5,4 @@ A modern strictly typed full-featured library for protobuf serialization and asy
 ## Components
 
 - [Serializer](docs/serializer.md)
+- [PHPStan Extension](docs/phpstan.md)
