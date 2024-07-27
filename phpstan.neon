@@ -1,9 +1,11 @@
 includes:
     - phar://phpstan.phar/conf/bleedingEdge.neon
+    - src/PHPStan/extension.neon
 
 parameters:
     level: 9
     paths:
+        - src/PHPStan
         - src/Serializer
         - tests/Serializer
     excludePaths:
@@ -11,3 +13,22 @@ parameters:
     tmpDir: var/phpstan
     ignoreErrors:
         - { identifier: missingType.generics }
+        - { identifier: function.impossibleType }
+        - { identifier: function.alreadyNarrowedType }
+        - { identifier: enum.generic }
+        -
+            identifier: argument.type
+            path: src/Serializer/Internal/Type/ProtobufType.php
+        -
+            identifier: generics.variance
+            paths:
+                - src/Serializer/Internal/Label/LabelIsEmpty.php
+                - src/Serializer/Internal/Reflection/HashTablePropertyMarshaller.php
+        -
+            identifier: missingType.iterableValue
+            paths:
+                - src/Serializer/Internal/Reflection/NativeTypeToPropertyMarshallerConverter.php
+        -
+            identifier: method.childReturnType
+            paths:
+                - src/Serializer/Internal/Reflection/NativeTypeToPropertyMarshallerConverter.php

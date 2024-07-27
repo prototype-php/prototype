@@ -25,32 +25,37 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Tests\PHPStan;
 
-/**
- * @template T of object
- * @param class-string<T>|string $class
- * @param class-string<T> ...$of
- * @psalm-assert-if-true class-string<T> $class
- */
-function isClassOf(string $class, string ...$of): bool
+use PHPStan\Testing\TypeInferenceTestCase;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Prototype\PHPStan\ProtobufTypeExtension;
+
+#[CoversClass(ProtobufTypeExtension::class)]
+final class ProtobufTypeExtensionTest extends TypeInferenceTestCase
 {
-    if (class_exists($class) || interface_exists($class)) {
-        foreach ($of as $it) {
-            if (is_a($class, $it, allow_string: true)) {
-                return true;
-            }
-        }
+    /**
+     * @return iterable<mixed>
+     */
+    public static function dataFileAsserts(): iterable
+    {
+        yield from self::gatherAssertTypes(__DIR__ . '/data/scalar.php');
+        yield from self::gatherAssertTypes(__DIR__ . '/data/list.php');
+        yield from self::gatherAssertTypes(__DIR__ . '/data/shape.php');
     }
 
-    return false;
-}
+    #[DataProvider('dataFileAsserts')]
+    public function testFileAsserts(
+        string $assertType,
+        string $file,
+        mixed ...$args,
+    ): void {
+        $this->assertFileAsserts($assertType, $file, ...$args);
+    }
 
-/**
- * @param string|class-string $class
- * @psalm-assert-if-true class-string<\DateTimeImmutable|\DateTime|\DateTimeInterface> $class
- */
-function instanceOfDateTime(string $class): bool
-{
-    return isClassOf($class, \DateTimeInterface::class, \DateTimeImmutable::class, \DateTime::class);
+    public static function getAdditionalConfigFiles(): array
+    {
+        return [__DIR__ . '/../../src/PHPStan/extension.neon'];
+    }
 }

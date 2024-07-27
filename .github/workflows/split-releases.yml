@@ -17,6 +17,7 @@ jobs:
       matrix:
         package:
           - { namespace: Serializer, repo: serializer }
+          - { namespace: PHPStan, repo: phpstan-extension }
     steps:
       - uses: actions/checkout@v4
         with:

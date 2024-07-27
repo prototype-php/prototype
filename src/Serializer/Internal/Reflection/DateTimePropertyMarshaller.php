@@ -72,8 +72,14 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
+        /** @var int64 $seconds */
+        $seconds = $value->getTimestamp();
+
+        /** @var int32 $nanos */
+        $nanos = (int) $value->format('u') * 1000;
+
         /** @psalm-suppress ArgumentTypeCoercion */
-        $serializer->serialize(new TimestampType($value->getTimestamp(), (int) $value->format('u') * 1000), $objectBuffer = $buffer->clone());
+        $serializer->serialize(new TimestampType($seconds, $nanos), $objectBuffer = $buffer->clone());
 
         if (!$objectBuffer->isEmpty()) {
             $buffer

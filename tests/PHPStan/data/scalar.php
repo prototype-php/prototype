@@ -25,32 +25,61 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace PrototypePHPStanExtensionTest;
 
-/**
- * @template T of object
- * @param class-string<T>|string $class
- * @param class-string<T> ...$of
- * @psalm-assert-if-true class-string<T> $class
- */
-function isClassOf(string $class, string ...$of): bool
-{
-    if (class_exists($class) || interface_exists($class)) {
-        foreach ($of as $it) {
-            if (is_a($class, $it, allow_string: true)) {
-                return true;
-            }
-        }
-    }
+use function PHPStan\Testing\assertType;
 
-    return false;
-}
+/** @var int32 $int32 */
+$int32 = null;
 
-/**
- * @param string|class-string $class
- * @psalm-assert-if-true class-string<\DateTimeImmutable|\DateTime|\DateTimeInterface> $class
- */
-function instanceOfDateTime(string $class): bool
-{
-    return isClassOf($class, \DateTimeInterface::class, \DateTimeImmutable::class, \DateTime::class);
-}
+assertType('int<0, 4294967295>', $int32);
+
+/** @var uint32 $uint32 */
+$uint32 = null;
+
+assertType('int<0, 4294967295>', $uint32);
+
+/** @var fixed32 $fixed32 */
+$fixed32 = null;
+
+assertType('int<0, 4294967295>', $fixed32);
+
+/** @var sint32 $sint32 */
+$sint32 = null;
+
+assertType('int<-2147483648, 2147483647>', $sint32);
+
+/** @var sfixed32 $sfixed32 */
+$sfixed32 = null;
+
+assertType('int<-2147483648, 2147483647>', $sfixed32);
+
+/** @var int64 $int64 */
+$int64 = null;
+
+assertType('int<0, max>', $int64);
+
+/** @var uint64 $uint64 */
+$uint64 = null;
+
+assertType('int<0, max>', $uint64);
+
+/** @var fixed64 $fixed64 */
+$fixed64 = null;
+
+assertType('int<0, max>', $fixed64);
+
+/** @var sint64 $sint64 */
+$sint64 = null;
+
+assertType('int', $sint64);
+
+/** @var sfixed64 $sfixed64 */
+$sfixed64 = null;
+
+assertType('int', $sfixed64);
+
+/** @var bytes $bytes */
+$bytes = null;
+
+assertType('string', $bytes);

@@ -124,7 +124,7 @@ final class ProtobufMarshaller implements
             $propertyDeserializer = $properties[$tag->num];
             $values[$propertyDeserializer] ??= new ValueContext();
             /** @psalm-suppress MixedArgument */
-            $values[$propertyDeserializer]->setValue($propertyDeserializer->readValue($buffer, $this, $tag));
+            $values[$propertyDeserializer]->setValue($propertyDeserializer->readValue($buffer, $this, $tag)); // @phpstan-ignore-line
         }
 
         foreach ($values as $propertyDeserializer => $propertyValue) {

@@ -25,32 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace PrototypePHPStanExtensionTest;
 
-/**
- * @template T of object
- * @param class-string<T>|string $class
- * @param class-string<T> ...$of
- * @psalm-assert-if-true class-string<T> $class
- */
-function isClassOf(string $class, string ...$of): bool
-{
-    if (class_exists($class) || interface_exists($class)) {
-        foreach ($of as $it) {
-            if (is_a($class, $it, allow_string: true)) {
-                return true;
-            }
-        }
-    }
+use function PHPStan\Testing\assertType;
 
-    return false;
-}
+/** @var list<int32> $listInt32 */
+$listInt32 = [];
 
-/**
- * @param string|class-string $class
- * @psalm-assert-if-true class-string<\DateTimeImmutable|\DateTime|\DateTimeInterface> $class
- */
-function instanceOfDateTime(string $class): bool
-{
-    return isClassOf($class, \DateTimeInterface::class, \DateTimeImmutable::class, \DateTime::class);
-}
+assertType('array<int, int<0, 4294967295>>', $listInt32);
+
+/** @var list<bytes> $listBytes */
+$listBytes = [];
+
+assertType('array<int, string>', $listBytes);
+
+/** @var list<sint64> $listInt64 */
+$listInt64 = [];
+
+assertType('array<int, int>', $listInt64);

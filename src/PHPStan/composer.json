@@ -1,0 +1,26 @@
+{
+    "name": "prototype/phpstan-extension",
+    "description": "PHPStan extension to resolve custom types like int32, int64, etc.",
+    "license": "MIT",
+    "type": "phpstan-extension",
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "phpstan/phpstan": "^1.11"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Prototype\\PHPStan\\": ""
+        }
+    },
+    "config": {
+        "lock": false
+    }
+}

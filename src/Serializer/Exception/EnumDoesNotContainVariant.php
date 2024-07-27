@@ -35,8 +35,7 @@ use Prototype\Serializer\PrototypeException;
 final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
 {
     /**
-     * @template T of \BackedEnum
-     * @psalm-param enum-string<T> $enumName
+     * @psalm-param enum-string<\BackedEnum> $enumName
      */
     public function __construct(
         public readonly string $enumName,
