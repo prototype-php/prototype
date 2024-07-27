@@ -60,14 +60,21 @@ final class DateIntervalPropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
+        /** @var int64 $seconds */
+        $seconds = $value->days * 24 * 60 * 60 +
+            $value->h * 60 * 60 +
+            $value->i * 60 +
+            $value->s
+        ;
+
+        /** @var int32 $nanos */
+        $nanos = (int) ($value->f * 1_000_000_000);
+
         /** @psalm-suppress ArgumentTypeCoercion */
         $serializer->serialize(
             new DurationType(
-                $value->days * 24 * 60 * 60 +
-                $value->h * 60 * 60 +
-                $value->i * 60 +
-                $value->s,
-                (int) ($value->f * 1_000_000_000),
+                $seconds,
+                $nanos,
             ),
             $objectBuffer = $buffer->clone(),
         );

@@ -30,7 +30,7 @@ namespace Prototype\Serializer\Internal\Wire;
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @psalm-type ValueType = scalar|object|array|null
+ * @psalm-type ValueType = scalar|object|array<array-key, mixed>|null
  */
 final class ValueContext
 {

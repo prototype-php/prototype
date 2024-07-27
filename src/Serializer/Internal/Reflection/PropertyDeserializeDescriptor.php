@@ -48,11 +48,12 @@ final class PropertyDeserializeDescriptor
     ) {}
 
     /**
-     * @return ?T
+     * @return T
      * @throws PrototypeException
      */
     public function default(): mixed
     {
+        /** @var T */
         return $this->marshaller->labels()[Labels::default];
     }
 

@@ -25,32 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace PrototypePHPStanExtensionTest;
 
-/**
- * @template T of object
- * @param class-string<T>|string $class
- * @param class-string<T> ...$of
- * @psalm-assert-if-true class-string<T> $class
- */
-function isClassOf(string $class, string ...$of): bool
-{
-    if (class_exists($class) || interface_exists($class)) {
-        foreach ($of as $it) {
-            if (is_a($class, $it, allow_string: true)) {
-                return true;
-            }
-        }
-    }
+use function PHPStan\Testing\assertType;
 
-    return false;
-}
+/** @var array{i32: int32, u32: uint32, f32: fixed32, si32: sint32, sif32: sfixed32, i64: int64, u64: uint64, f64: fixed64, si64: sint64, sf64: sfixed64, uuid: bytes} $shape */
+$shape = [];
 
-/**
- * @param string|class-string $class
- * @psalm-assert-if-true class-string<\DateTimeImmutable|\DateTime|\DateTimeInterface> $class
- */
-function instanceOfDateTime(string $class): bool
-{
-    return isClassOf($class, \DateTimeInterface::class, \DateTimeImmutable::class, \DateTime::class);
-}
+assertType('array{i32: int<0, 4294967295>, u32: int<0, 4294967295>, f32: int<0, 4294967295>, si32: int<-2147483648, 2147483647>, sif32: int<-2147483648, 2147483647>, i64: int<0, max>, u64: int<0, max>, f64: int<0, max>, si64: int, sf64: int, uuid: string}', $shape);
+
+/** @var array{i32: list<int32>} $shape */
+$shape = [];
+
+assertType('array{i32: array<int, int<0, 4294967295>>}', $shape);
+
+/** @var array{nested: array{i32: list<bytes>}} $shape */
+$shape = [];
+
+assertType('array{nested: array{i32: array<int, string>}}', $shape);

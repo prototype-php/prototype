@@ -70,7 +70,7 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
         }
 
         if (null !== $key) {
-            yield $key => $value;
+            yield $key => $value; // @phpstan-ignore-line
         }
     }
 

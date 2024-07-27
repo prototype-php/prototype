@@ -46,6 +46,6 @@ enum LabelDefault implements OptionalKey
      */
     public function default(TypedMap $map): mixed
     {
-        return null;
+        return null; // @phpstan-ignore-line
     }
 }

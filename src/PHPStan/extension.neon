@@ -1,0 +1,5 @@
+services:
+    -
+        class: Prototype\PHPStan\ProtobufTypeExtension
+        tags:
+            - phpstan.phpDoc.typeNodeResolverExtension

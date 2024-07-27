@@ -66,7 +66,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
         /** @psalm-suppress MixedArgumentTypeCoercion */
         return match (true) {
             \count($elements) > 0 => new ArrayShapePropertyMarshaller(
-                array_merge(
+                array_merge( // @phpstan-ignore-line
                     ...array_map(
                         fn (int|string $name, ShapeElement $element): array => /** @var array<non-empty-string, PropertyMarshaller<mixed>> */ [
                             (string) $name => $element->type->accept($this),

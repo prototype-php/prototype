@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Typhoon\DeclarationId\Id;
+use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Reflection\Annotated\CustomTypeResolver;
 use Typhoon\Reflection\Annotated\TypeContext;
 use Typhoon\Type\Type;
@@ -101,18 +101,18 @@ enum ProtobufType: string implements Type, CustomTypeResolver
             self::int32,
             self::int64,
             self::uint32,
-            self::uint64   => $visitor->namedObject($this, Id::class(VaruintType::class), []),
+            self::uint64   => $visitor->namedObject($this, NamedClassId::class(VaruintType::class), []),
             self::sint32,
-            self::sint64   => $visitor->namedObject($this, Id::class(VarintType::class), []),
-            self::fixed32  => $visitor->namedObject($this, Id::class(FixedUint32Type::class), []),
-            self::fixed64  => $visitor->namedObject($this, Id::class(FixedUint64Type::class), []),
-            self::sfixed32 => $visitor->namedObject($this, Id::class(FixedInt32Type::class), []),
-            self::sfixed64 => $visitor->namedObject($this, Id::class(FixedInt64Type::class), []),
+            self::sint64   => $visitor->namedObject($this, NamedClassId::class(VarintType::class), []),
+            self::fixed32  => $visitor->namedObject($this, NamedClassId::class(FixedUint32Type::class), []),
+            self::fixed64  => $visitor->namedObject($this, NamedClassId::class(FixedUint64Type::class), []),
+            self::sfixed32 => $visitor->namedObject($this, NamedClassId::class(FixedInt32Type::class), []),
+            self::sfixed64 => $visitor->namedObject($this, NamedClassId::class(FixedInt64Type::class), []),
             self::string,
-            self::bytes    => $visitor->namedObject($this, Id::class(StringType::class), []),
-            self::float    => $visitor->namedObject($this, Id::class(FloatType::class), []),
-            self::double   => $visitor->namedObject($this, Id::class(DoubleType::class), []),
-            self::bool     => $visitor->namedObject($this, Id::class(BoolType::class), []),
+            self::bytes    => $visitor->namedObject($this, NamedClassId::class(StringType::class), []),
+            self::float    => $visitor->namedObject($this, NamedClassId::class(FloatType::class), []),
+            self::double   => $visitor->namedObject($this, NamedClassId::class(DoubleType::class), []),
+            self::bool     => $visitor->namedObject($this, NamedClassId::class(BoolType::class), []),
         };
     }
 

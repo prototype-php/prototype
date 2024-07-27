@@ -50,10 +50,11 @@
         "cs-fix": "php-cs-fixer fix --config=.php-cs-fixer.php -v --verbose --diff",
         "normalize-all": [
             "@composer normalize --diff",
+            "@composer normalize --diff src/PHPStan/composer.json",
             "@composer normalize --diff src/Serializer/composer.json"
         ],
-        "psalm": "./vendor/bin/psalm --show-info --no-diff --no-cache",
         "phpstan": "phpstan -v",
+        "psalm": "./vendor/bin/psalm --show-info --no-diff --no-cache",
         "test": "./vendor/bin/phpunit --testdox --do-not-cache"
     }
 }
