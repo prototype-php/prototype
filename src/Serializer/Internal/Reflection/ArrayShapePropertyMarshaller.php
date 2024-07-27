@@ -54,8 +54,11 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
     public function __construct(array $marshallers)
     {
         $this->marshallers = $marshallers;
-        $this->deserializerNums = self::deserializersToNums($marshallers);
-        $this->serializersNums = self::serializersToNums($marshallers);
+
+        $fields = iterator_to_array(self::enumerate($marshallers));
+
+        $this->deserializerNums = array_flip($fields);
+        $this->serializersNums = $fields;
     }
 
     /**
@@ -85,8 +88,6 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $tag->encode($buffer);
-
         $shapeBuffer = $buffer->clone();
 
         /** @psalm-suppress MixedAssignment */
@@ -98,6 +99,8 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
         }
 
         if (!$shapeBuffer->isEmpty()) {
+            $tag->encode($buffer);
+
             $buffer
                 ->writeVarUint($shapeBuffer->count())
                 ->write($shapeBuffer->reset())
@@ -125,32 +128,15 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
     }
 
     /**
-     * @param array<non-empty-string, PropertyMarshaller<mixed>> $deserializers
-     * @return array<positive-int, non-empty-string>
+     * @param array<non-empty-string, PropertyMarshaller<mixed>> $marshallers
+     * @return \Generator<non-empty-string, positive-int>
      */
-    private static function deserializersToNums(array $deserializers): array
+    private static function enumerate(array $marshallers): \Generator
     {
-        [$nums, $num] = [[], 0];
+        $num = 0;
 
-        foreach ($deserializers as $fieldName => $_) {
-            $nums[++$num] = $fieldName;
+        foreach ($marshallers as $fieldName => $_) {
+            yield $fieldName => ++$num;
         }
-
-        return $nums;
-    }
-
-    /**
-     * @param array<non-empty-string, PropertyMarshaller<mixed>> $serializers
-     * @return array<non-empty-string, positive-int>
-     */
-    private static function serializersToNums(array $serializers): array
-    {
-        [$nums, $num] = [[], 0];
-
-        foreach ($serializers as $fieldName => $_) {
-            $nums[$fieldName] = ++$num;
-        }
-
-        return $nums;
     }
 }

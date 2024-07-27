@@ -84,18 +84,24 @@ final class ValueType implements TypeSerializer
     {
         [$this->readers, $this->writers] = [
             [
-                self::NULL_TYPE   => $this->readNull(...),
-                self::NUMBER_TYPE => $this->readNumber(...),
-                self::STRING_TYPE => $this->readString(...),
-                self::BOOL_TYPE   => $this->readBool(...),
+                self::NULL_TYPE   => static function (Binary\Buffer $buffer): mixed {
+                    (new VaruintType())->readFrom($buffer);
+
+                    return null;
+                },
+                self::NUMBER_TYPE => (new DoubleType())->readFrom(...),
+                self::STRING_TYPE => (new StringType())->readFrom(...),
+                self::BOOL_TYPE   => (new BoolType())->readFrom(...),
                 self::STRUCT_TYPE => $this->readStruct(...),
                 self::LIST_TYPE   => $this->readList(...),
             ],
             [
-                self::NULL_TYPE   => $this->writeNull(...),
-                self::NUMBER_TYPE => $this->writeNumber(...),
-                self::STRING_TYPE => $this->writeString(...),
-                self::BOOL_TYPE   => $this->writeBool(...),
+                self::NULL_TYPE   => static function (Binary\Buffer $buffer): void {
+                    (new VaruintType())->writeTo($buffer, 0);
+                },
+                self::NUMBER_TYPE => (new DoubleType())->writeTo(...),
+                self::STRING_TYPE => (new StringType())->writeTo(...),
+                self::BOOL_TYPE   => (new BoolType())->writeTo(...),
                 self::STRUCT_TYPE => $this->writeStruct(...),
                 self::LIST_TYPE   => $this->writeList(...),
             ],
@@ -161,84 +167,6 @@ final class ValueType implements TypeSerializer
     }
 
     /**
-     * @return null
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function readNull(Binary\Buffer $buffer): mixed
-    {
-        // Null values always zero.
-        (new VaruintType())->readFrom($buffer);
-
-        return null;
-    }
-
-    /**
-     * @psalm-param null $_
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function writeNull(Binary\Buffer $buffer, mixed $_): void
-    {
-        (new VaruintType())->writeTo($buffer, 0);
-    }
-
-    /**
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function readNumber(Binary\Buffer $buffer): float
-    {
-        return (new DoubleType())->readFrom($buffer);
-    }
-
-    /**
-     * @param double $value
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function writeNumber(Binary\Buffer $buffer, mixed $value): void
-    {
-        (new DoubleType())->writeTo($buffer, $value);
-    }
-
-    /**
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function readString(Binary\Buffer $buffer): string
-    {
-        return (new StringType())->readFrom($buffer);
-    }
-
-    /**
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function writeString(Binary\Buffer $buffer, string $value): void
-    {
-        (new StringType())->writeTo($buffer, $value);
-    }
-
-    /**
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function readBool(Binary\Buffer $buffer): bool
-    {
-        return (new BoolType())->readFrom($buffer);
-    }
-
-    /**
-     * @throws Binary\BinaryException
-     * @throws PrototypeException
-     */
-    private function writeBool(Binary\Buffer $buffer, bool $value): void
-    {
-        (new BoolType())->writeTo($buffer, $value);
-    }
-
-    /**
      * @return JSONValue[]
      * @throws Binary\BinaryException
      * @throws PrototypeException
@@ -292,10 +220,13 @@ final class ValueType implements TypeSerializer
      */
     private function writeStruct(Binary\Buffer $buffer, array $value): void
     {
-        $this->writeTo($struct = $buffer->clone(), $value);
+        $this->writeTo($structBuffer = $buffer->clone(), $value);
 
-        if (!$struct->isEmpty()) {
-            $buffer->writeVarUint($struct->count())->write($struct->reset());
+        if (!$structBuffer->isEmpty()) {
+            $buffer
+                ->writeVarUint($structBuffer->count())
+                ->write($structBuffer->reset())
+            ;
         }
     }
 
@@ -357,6 +288,9 @@ final class ValueType implements TypeSerializer
         /** @psalm-suppress InvalidArgument It is false positive here. */
         $this->writers[$num]($valueBuffer, $value);
 
-        $buffer->writeVarUint($valueBuffer->count())->write($valueBuffer->reset());
+        $buffer
+            ->writeVarUint($valueBuffer->count())
+            ->write($valueBuffer->reset())
+        ;
     }
 }

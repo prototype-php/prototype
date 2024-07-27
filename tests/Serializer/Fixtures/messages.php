@@ -523,12 +523,12 @@ final class Interview
 final class NestedMessage
 {
     /**
-     * @param int32 $nested_id
+     * @param int32 $nestedId
      * @param list<int32> $values
      */
     public function __construct(
-        public readonly int $nested_id,
-        public readonly string $nested_name,
+        public readonly int $nestedId,
+        public readonly string $nestedName,
         public readonly array $values,
     ) {}
 }
@@ -536,13 +536,13 @@ final class NestedMessage
 final class AnotherNestedMessage
 {
     /**
-     * @param array<string, mixed> $additional_data
-     * @param array<string, string> $additional_map
+     * @param array<string, mixed> $additionalData
+     * @param array<string, string> $additionalMap
      */
     public function __construct(
         public readonly \DateTimeInterface $timestamp,
-        public readonly array $additional_data,
-        public readonly array $additional_map,
+        public readonly array $additionalData,
+        public readonly array $additionalMap,
     ) {}
 }
 
@@ -558,48 +558,48 @@ final class ComplexMessage
 {
     /**
      * @param int32 $id
-     * @param int64 $big_id
-     * @param uint32 $unsigned_id
-     * @param uint64 $unsigned_big_id
-     * @param sint32 $signed_id
-     * @param sint64 $signed_big_id
-     * @param fixed32 $fixed_id
-     * @param fixed64 $fixed_big_id
-     * @param sfixed32 $signed_fixed_id
-     * @param sfixed64 $signed_fixed_big_id
-     * @param double $double_value
+     * @param int64 $bigId
+     * @param uint32 $unsignedId
+     * @param uint64 $unsignedBigId
+     * @param sint32 $signedId
+     * @param sint64 $signedBigId
+     * @param fixed32 $fixedId
+     * @param fixed64 $fixedBigId
+     * @param sfixed32 $signedFixedId
+     * @param sfixed64 $signedFixedBigId
+     * @param double $doubleValue
      * @param bytes $data
      * @param list<string> $tags
      * @param array<string, int32> $metadata
      * @param array<string, mixed> $properties
-     * @param string|int32|NestedMessage|\DateTimeInterface $special_field
-     * @param list<AnotherNestedMessage> $another_nested_messages
+     * @param string|int32|NestedMessage|\DateTimeInterface $specialField
+     * @param list<AnotherNestedMessage> $anotherNestedMessages
      */
     public function __construct(
         public readonly int $id,
-        public readonly int $big_id,
-        public readonly int $unsigned_id,
-        public readonly int $unsigned_big_id,
-        public readonly int $signed_id,
-        public readonly int $signed_big_id,
-        public readonly int $fixed_id,
-        public readonly int $fixed_big_id,
-        public readonly int $signed_fixed_id,
-        public readonly int $signed_fixed_big_id,
-        public readonly float $float_value,
-        public readonly float $double_value,
-        public readonly bool $is_active,
+        public readonly int $bigId,
+        public readonly int $unsignedId,
+        public readonly int $unsignedBigId,
+        public readonly int $signedId,
+        public readonly int $signedBigId,
+        public readonly int $fixedId,
+        public readonly int $fixedBigId,
+        public readonly int $signedFixedId,
+        public readonly int $signedFixedBigId,
+        public readonly float $floatValue,
+        public readonly float $doubleValue,
+        public readonly bool $isActive,
         public readonly string $name,
         public readonly string $data,
         public readonly array $tags,
         public readonly array $metadata,
         public readonly array $properties,
-        public readonly ?\DateTimeInterface $created_at = null,
-        public readonly ?\DateInterval $valid_for = null,
-        public readonly ?NestedMessage $nested_message = null,
-        public readonly null|string|int|NestedMessage|\DateTimeInterface $special_field = null,
-        public readonly array $another_nested_messages = [],
-        public readonly ?DurationMessage $duration_message = null,
+        public readonly ?\DateTimeInterface $createdAt = null,
+        public readonly ?\DateInterval $validFor = null,
+        public readonly ?NestedMessage $nestedMessage = null,
+        public readonly null|string|int|NestedMessage|\DateTimeInterface $specialField = null,
+        public readonly array $anotherNestedMessages = [],
+        public readonly ?DurationMessage $durationMessage = null,
     ) {}
 
     public static function withNestedMessageString(): self

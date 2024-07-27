@@ -1,0 +1,13 @@
+includes:
+    - phar://phpstan.phar/conf/bleedingEdge.neon
+
+parameters:
+    level: 9
+    paths:
+        - src/Serializer
+        - tests/Serializer
+    excludePaths:
+    	- src/*/vendor/*
+    tmpDir: var/phpstan
+    ignoreErrors:
+        - { identifier: missingType.generics }
