@@ -27,26 +27,21 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Label;
 
-use Prototype\Serializer\Internal\Wire\Type;
+use Typhoon\TypedMap\OptionalKey;
 use Typhoon\TypedMap\TypedMap;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
+ * @psalm-immutable
+ * @template-implements OptionalKey<bool>
  */
-enum Labels
+enum LabelSerializeTag implements OptionalKey
 {
-    public const default = LabelDefault::key;
-    public const wireType = LabelWireType::key;
-    public const schemaType = LabelSchemaType::key;
-    public const packed = LabelPacked::key;
-    public const isEmpty = LabelIsEmpty::key;
-    public const serializeTag = LabelSerializeTag::key;
+    case key;
 
-    public static function new(Type $type): TypedMap
+    public function default(TypedMap $map): bool
     {
-        return (new TypedMap())
-            ->with(self::wireType, $type)
-            ;
+        return true;
     }
 }

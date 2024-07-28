@@ -79,7 +79,7 @@ final class ProtobufMarshaller implements
                 if (!$propertyBuffer->isEmpty()) {
                     $serialized[$propertySerializer->property] = true;
 
-                    if (!is_iterable($propertyValue)) {
+                    if ($propertySerializer->shouldSerializeTag()) {
                         $tag->encode($buffer);
                     }
 

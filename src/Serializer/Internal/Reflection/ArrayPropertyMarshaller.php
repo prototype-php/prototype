@@ -116,6 +116,7 @@ final class ArrayPropertyMarshaller implements PropertyMarshaller
         return $labels
             ->with(Labels::default, [])
             ->with(Labels::isEmpty, static fn (array $values): bool => [] === $values)
+            ->with(Labels::serializeTag, false)
             ;
     }
 }

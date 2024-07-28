@@ -81,6 +81,14 @@ final class PropertySerializeDescriptor
     }
 
     /**
+     * @throws PrototypeException
+     */
+    public function shouldSerializeTag(): bool
+    {
+        return $this->serializer->labels()[Labels::serializeTag];
+    }
+
+    /**
      * @param T $value
      * @throws PrototypeException
      * @throws \Kafkiansky\Binary\BinaryException

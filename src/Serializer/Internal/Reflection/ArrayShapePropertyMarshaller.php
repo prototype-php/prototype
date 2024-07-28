@@ -124,6 +124,7 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
         return Labels::new(Wire\Type::BYTES)
             ->with(Labels::default, [])
             ->with(Labels::isEmpty, static fn (array $values): bool => [] === $values)
+            ->with(Labels::serializeTag, false)
             ;
     }
 

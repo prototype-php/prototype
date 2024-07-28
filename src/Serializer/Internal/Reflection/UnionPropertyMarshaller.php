@@ -64,8 +64,16 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        if ($this->marshallers[$tag->num]->matchValue($value)) {
-            $this->marshallers[$tag->num]->serializeValue($buffer, $serializer, $value, $tag);
+        $marshaller = $this->marshallers[$tag->num] ?? null;
+
+        if (null !== $marshaller && $marshaller->matchValue($value)) {
+            $tag = new Wire\Tag($tag->num, $marshaller->labels()[Labels::wireType]);
+
+            $marshaller->serializeValue($unionBuffer = $buffer->clone(), $serializer, $value, $tag);
+            if (!$unionBuffer->isEmpty()) {
+                $tag->encode($buffer);
+                $buffer->write($unionBuffer->reset());
+            }
         }
     }
 
@@ -82,6 +90,10 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
      */
     public function labels(): TypedMap
     {
-        return Labels::new(Wire\Type::BYTES);
+        return Labels::new(Wire\Type::BYTES)
+            ->with(
+                Labels::serializeTag, false,
+            )
+            ;
     }
 }
