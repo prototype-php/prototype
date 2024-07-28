@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
+use Prototype\Serializer\Exception\PropertyValueIsInvalid;
+
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
@@ -37,8 +39,34 @@ final class TimestampType
      * @param int64 $seconds
      * @param int32 $nanos
      */
-    public function __construct(
+    private function __construct(
         public readonly int $seconds,
         public readonly int $nanos,
     ) {}
+
+    public static function fromDateTime(\DateTimeInterface $dateTime): self
+    {
+        /** @var int64 $seconds */
+        $seconds = $dateTime->getTimestamp();
+
+        /** @var int32 $nanos */
+        $nanos = (int) $dateTime->format('u') * 1000;
+
+        return new self($seconds, $nanos);
+    }
+
+    /**
+     * @template T of \DateTimeInterface
+     * @param ?class-string<T> $dateTimeClass
+     * @throws PropertyValueIsInvalid
+     */
+    public function toDateTime(?string $dateTimeClass = null): \DateTimeInterface
+    {
+        $dateTimeClass ??= \DateTimeImmutable::class;
+
+        /** @var class-string<\DateTimeImmutable|\DateTime> $instance */
+        $instance = interface_exists($dateTimeClass) ? \DateTimeImmutable::class : $dateTimeClass;
+
+        return $instance::createFromFormat('U.u', \sprintf('%d.%06d', $this->seconds, $this->nanos / 1000)) ?: throw new PropertyValueIsInvalid(self::class);
+    }
 }

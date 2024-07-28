@@ -28,7 +28,6 @@ declare(strict_types=1);
 namespace Prototype\Serializer\Internal\Reflection;
 
 use Kafkiansky\Binary;
-use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TimestampType;
 use Prototype\Serializer\Internal\Wire;
@@ -55,16 +54,7 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
     {
         $timestamp = $deserializer->deserialize(TimestampType::class, $buffer->split($buffer->consumeVarUint()));
 
-        /** @var class-string<\DateTimeImmutable|\DateTime> $instance */
-        $instance = interface_exists($this->dateTimeClass) ? \DateTimeImmutable::class : $this->dateTimeClass;
-
-        $time = $instance::createFromFormat('U.u', \sprintf('%d.%06d', $timestamp->seconds, $timestamp->nanos / 1000));
-
-        if (false === $time) {
-            throw new PropertyValueIsInvalid(TimestampType::class);
-        }
-
-        return $time;
+        return $timestamp->toDateTime($this->dateTimeClass);
     }
 
     /**
@@ -72,14 +62,7 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        /** @var int64 $seconds */
-        $seconds = $value->getTimestamp();
-
-        /** @var int32 $nanos */
-        $nanos = (int) $value->format('u') * 1000;
-
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $serializer->serialize(new TimestampType($seconds, $nanos), $objectBuffer = $buffer->clone());
+        $serializer->serialize(TimestampType::fromDateTime($value), $objectBuffer = $buffer->clone());
 
         if (!$objectBuffer->isEmpty()) {
             $buffer
