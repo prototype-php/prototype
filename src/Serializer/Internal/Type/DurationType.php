@@ -37,8 +37,31 @@ final class DurationType
      * @param int64 $seconds
      * @param int32 $nanos
      */
-    public function __construct(
+    private function __construct(
         public readonly int $seconds,
         public readonly int $nanos,
     ) {}
+
+    public static function fromDateInterval(\DateInterval $interval): self
+    {
+        /** @var int64 $seconds */
+        $seconds = $interval->days * 24 * 60 * 60 +
+            $interval->h * 60 * 60 +
+            $interval->i * 60 +
+            $interval->s
+        ;
+
+        /** @var int32 $nanos */
+        $nanos = (int) ($interval->f * 1_000_000_000);
+
+        return new self($seconds, $nanos);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function toDateInterval(): \DateInterval
+    {
+        return new \DateInterval(\sprintf('PT%dS', $this->seconds + $this->nanos / 1e9));
+    }
 }

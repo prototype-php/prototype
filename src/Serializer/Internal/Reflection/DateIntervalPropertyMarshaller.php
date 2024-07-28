@@ -49,7 +49,7 @@ final class DateIntervalPropertyMarshaller implements PropertyMarshaller
         $duration = $deserializer->deserialize(DurationType::class, $buffer->split($buffer->consumeVarUint()));
 
         try {
-            return new \DateInterval(\sprintf('PT%dS', $duration->seconds + $duration->nanos / 1e9));
+            return $duration->toDateInterval();
         } catch (\Throwable $e) {
             throw new PropertyValueIsInvalid(\DateInterval::class, $e);
         }
@@ -60,24 +60,7 @@ final class DateIntervalPropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        /** @var int64 $seconds */
-        $seconds = $value->days * 24 * 60 * 60 +
-            $value->h * 60 * 60 +
-            $value->i * 60 +
-            $value->s
-        ;
-
-        /** @var int32 $nanos */
-        $nanos = (int) ($value->f * 1_000_000_000);
-
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $serializer->serialize(
-            new DurationType(
-                $seconds,
-                $nanos,
-            ),
-            $objectBuffer = $buffer->clone(),
-        );
+        $serializer->serialize(DurationType::fromDateInterval($value), $objectBuffer = $buffer->clone());
 
         if (!$objectBuffer->isEmpty()) {
             $buffer
