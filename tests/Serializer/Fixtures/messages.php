@@ -576,7 +576,10 @@ final class DurationMessage
     ) {}
 }
 
-#[ProtobufMessage(path: 'resources/complex_message.bin', constructorFunction: 'withNestedMessageString')]
+#[ProtobufMessage(path: 'resources/complex_message.bin', constructorFunction: 'withSpecialFieldString')]
+#[ProtobufMessage(path: 'resources/complex_message_with_special_int.bin', constructorFunction: 'withSpecialFieldInt')]
+#[ProtobufMessage(path: 'resources/complex_message_with_special_nested_message.bin', constructorFunction: 'withSpecialFieldNestedMessage')]
+#[ProtobufMessage(path: 'resources/complex_message_with_special_datetime.bin', constructorFunction: 'withSpecialFieldDateTime')]
 final class ComplexMessage
 {
     /**
@@ -625,7 +628,7 @@ final class ComplexMessage
         public readonly ?DurationMessage $durationMessage = null,
     ) {}
 
-    public static function withNestedMessageString(): self
+    public static function withSpecialFieldString(): self
     {
         $time = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
         \assert($time instanceof \DateTimeImmutable);
@@ -657,6 +660,135 @@ final class ComplexMessage
                 [1, 2, 3],
             ),
             'lol',
+            [
+                new AnotherNestedMessage(
+                    $time,
+                    ['releaseDate' => null],
+                    ['x' => 'y'],
+                ),
+            ],
+            new DurationMessage(new \DateInterval('PT60S')),
+        );
+    }
+
+    public static function withSpecialFieldInt(): self
+    {
+        $time = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($time instanceof \DateTimeImmutable);
+
+        return new self(
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11.199999809265137,
+            12.4,
+            true,
+            'kafkiansky',
+            'raw bytes',
+            ['php', 'proto'],
+            ['x' => 200],
+            ['enabled' => true],
+            $time,
+            new \DateInterval('PT10S'),
+            new NestedMessage(
+                200,
+                'kek0',
+                [1, 2, 3],
+            ),
+            1024,
+            [
+                new AnotherNestedMessage(
+                    $time,
+                    ['releaseDate' => null],
+                    ['x' => 'y'],
+                ),
+            ],
+            new DurationMessage(new \DateInterval('PT60S')),
+        );
+    }
+
+    public static function withSpecialFieldNestedMessage(): self
+    {
+        $time = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($time instanceof \DateTimeImmutable);
+
+        return new self(
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11.199999809265137,
+            12.4,
+            true,
+            'kafkiansky',
+            'raw bytes',
+            ['php', 'proto'],
+            ['x' => 200],
+            ['enabled' => true],
+            $time,
+            new \DateInterval('PT10S'),
+            new NestedMessage(
+                200,
+                'kek0',
+                [1, 2, 3],
+            ),
+            new NestedMessage(13, 'message', [10, 20]),
+            [
+                new AnotherNestedMessage(
+                    $time,
+                    ['releaseDate' => null],
+                    ['x' => 'y'],
+                ),
+            ],
+            new DurationMessage(new \DateInterval('PT60S')),
+        );
+    }
+
+    public static function withSpecialFieldDateTime(): self
+    {
+        $time = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($time instanceof \DateTimeImmutable);
+
+        return new self(
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11.199999809265137,
+            12.4,
+            true,
+            'kafkiansky',
+            'raw bytes',
+            ['php', 'proto'],
+            ['x' => 200],
+            ['enabled' => true],
+            $time,
+            new \DateInterval('PT10S'),
+            new NestedMessage(
+                200,
+                'kek0',
+                [1, 2, 3],
+            ),
+            $time,
             [
                 new AnotherNestedMessage(
                     $time,
