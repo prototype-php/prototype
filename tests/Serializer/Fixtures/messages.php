@@ -1168,3 +1168,26 @@ final class RootMessage
         return new self();
     }
 }
+
+#[ProtobufMessage(path: 'resources/recursive.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class RecursiveMessage
+{
+    /**
+     * @param int32 $value
+     */
+    public function __construct(
+        public readonly int $value,
+        public readonly ?self $nested,
+    ) {}
+
+    public static function default(): self
+    {
+        return new self(1, new self(2, new self(3, null)));
+    }
+
+    public static function empty(): self
+    {
+        return new self(0, null);
+    }
+}
