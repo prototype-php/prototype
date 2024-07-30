@@ -1191,3 +1191,94 @@ final class RecursiveMessage
         return new self(0, null);
     }
 }
+
+enum Status: int
+{
+    case UNKNOWN = 0;
+    case ACTIVE = 1;
+    case INACTIVE = 2;
+}
+
+final class TooComplexInnerMessage
+{
+    /**
+     * @param int32 $id
+     * @param string $name
+     * @param list<string> $tags
+     * @param array<string, string> $attributes
+     */
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly array $tags,
+        public readonly array $attributes,
+        public readonly \DateTimeInterface $createdAt,
+        public readonly \DateInterval $duration,
+    ) {}
+}
+
+#[ProtobufMessage(path: 'resources/too_complex_message.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class TooComplexMessage
+{
+    /**
+     * @param array<string, TooComplexInnerMessage> $mapOfInnerMessages
+     * @param list<TooComplexInnerMessage> $repeatedInnerMessages
+     * @param RecursiveMessage $recursiveMessage
+     * @param list<int32> $repeatedInts
+     * @param array<string, int32> $mapOfInts
+     */
+    public function __construct(
+        public readonly Status $status = Status::UNKNOWN,
+        public readonly ?TooComplexInnerMessage $innerMessage = null,
+        public readonly array $mapOfInnerMessages = [],
+        public readonly array $repeatedInnerMessages = [],
+        public readonly ?RecursiveMessage $recursiveMessage = null,
+        public readonly array $repeatedInts = [],
+        public readonly array $mapOfInts = [],
+    ) {}
+
+    public static function default(): self
+    {
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $duration = new \DateInterval('PT10S');
+
+        $innerMessage1 = new TooComplexInnerMessage(
+            id: 1,
+            name: 'Inner Message 1',
+            tags: ['tag1', 'tag2'],
+            attributes: ['attr1' => 'value1', 'attr2' => 'value2'],
+            createdAt: $timestamp,
+            duration: $duration,
+        );
+
+        $innerMessage2 = new TooComplexInnerMessage(
+            id: 2,
+            name: 'Inner Message 2',
+            tags: ['tag3', 'tag4'],
+            attributes: ['attr3' => 'value3', 'attr4' => 'value4'],
+            createdAt: $timestamp,
+            duration: $duration,
+        );
+
+        return new self(
+            status: Status::ACTIVE,
+            innerMessage: $innerMessage1,
+            mapOfInnerMessages: [
+                'key1' => $innerMessage1,
+                'key2' => $innerMessage2,
+            ],
+            repeatedInnerMessages: [$innerMessage1, $innerMessage2],
+            recursiveMessage: new RecursiveMessage(1, new RecursiveMessage(2, new RecursiveMessage(3, null))),
+            repeatedInts: [1, 2, 3, 4, 5],
+            mapOfInts: ['one' => 1, 'two' => 2, 'three' => 3],
+        );
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+}
