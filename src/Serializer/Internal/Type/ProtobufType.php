@@ -91,6 +91,11 @@ enum ProtobufType: string implements Type, CustomTypeResolver
     // May contain any arbitrary sequence of bytes no longer than 2^32.
     case bytes = 'bytes';
 
+    public static function instance(): self
+    {
+        return self::bool;
+    }
+
     /**
      * {@inheritdoc}
      */
