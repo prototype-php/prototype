@@ -1282,3 +1282,141 @@ final class TooComplexMessage
         return new self();
     }
 }
+
+final class InnerForUnionMessage
+{
+    /**
+     * @param int64 $id
+     * @param list<string> $tags
+     * @param array<string, string> $attributes
+     */
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly array $tags,
+        public readonly array $attributes,
+        public readonly \DateTimeInterface $createdAt,
+        public readonly \DateInterval $duration,
+    ) {}
+}
+
+final class NestedUnionMessage
+{
+    public function __construct(
+        public readonly string $id,
+        public readonly UnionComplexMessage|Status $nestedPayload,
+    ) {}
+}
+
+#[ProtobufMessage(path: 'resources/complex_union_string.bin', constructorFunction: 'unionString')]
+#[ProtobufMessage(path: 'resources/complex_union_int.bin', constructorFunction: 'unionInt')]
+#[ProtobufMessage(path: 'resources/complex_union_nested.bin', constructorFunction: 'unionNested')]
+#[ProtobufMessage(path: 'resources/complex_union_of_unions.bin', constructorFunction: 'unionOfUnions')]
+final class UnionComplexMessage
+{
+    /**
+     * @param string|fixed32|float|bool|\DateTimeInterface|\DateInterval|InnerForUnionMessage $payload
+     */
+    public function __construct(
+        public readonly Status $status,
+        public readonly string|int|float|bool|\DateTimeInterface|\DateInterval|InnerForUnionMessage $payload,
+        public readonly \DateTimeInterface|string|NestedUnionMessage $additionalPayload,
+        public readonly NestedUnionMessage $outer,
+    ) {}
+
+    public static function unionString(): self
+    {
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $nested = new NestedUnionMessage('id', Status::ACTIVE);
+
+        return new self(
+            status: Status::ACTIVE,
+            payload: 'string payload',
+            additionalPayload: $timestamp,
+            outer: $nested,
+        );
+    }
+
+    public static function unionInt(): self
+    {
+        $nested = new NestedUnionMessage('id', Status::ACTIVE);
+
+        return new self(
+            status: Status::ACTIVE,
+            payload: 123,
+            additionalPayload: 'optional string',
+            outer: $nested,
+        );
+    }
+
+    public static function unionNested(): self
+    {
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $duration = new \DateInterval('PT10S');
+
+        $innerMessage = new InnerForUnionMessage(
+            id: 1,
+            name: 'Inner Message',
+            tags: ['tag1', 'tag2'],
+            attributes: ['attr1' => 'value1', 'attr2' => 'value2'],
+            createdAt: $timestamp,
+            duration: $duration,
+        );
+
+        $nested = new NestedUnionMessage('id', Status::ACTIVE);
+
+        return new self(
+            status: Status::ACTIVE,
+            payload: $innerMessage,
+            additionalPayload: 'optional string',
+            outer: $nested,
+        );
+    }
+
+    public static function unionOfUnions(): self
+    {
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $duration = new \DateInterval('PT10S');
+
+        $innerMessage = new InnerForUnionMessage(
+            id: 1,
+            name: 'Inner Message',
+            tags: ['tag1', 'tag2'],
+            attributes: ['attr1' => 'value1', 'attr2' => 'value2'],
+            createdAt: $timestamp,
+            duration: $duration,
+        );
+
+        $nested = new NestedUnionMessage('id', Status::ACTIVE);
+
+        $complexMessageString = new self(
+            status: Status::ACTIVE,
+            payload: 'string payload',
+            additionalPayload: $timestamp,
+            outer: $nested,
+        );
+
+        $nestedOneOfMessage = new NestedUnionMessage(
+            id: 'nested1',
+            nestedPayload: $complexMessageString,
+        );
+
+        $nestedOneOfMessageStatus = new NestedUnionMessage(
+            id: 'nested2',
+            nestedPayload: Status::INACTIVE,
+        );
+
+        return new self(
+            Status::INACTIVE,
+            $innerMessage,
+            $nestedOneOfMessage,
+            $nestedOneOfMessageStatus,
+        );
+    }
+}
