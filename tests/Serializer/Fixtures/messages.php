@@ -806,3 +806,261 @@ final class ComplexMessage
         return new self();
     }
 }
+
+#[ProtobufMessage(path: 'resources/primitive_maps.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class PrimitiveMaps
+{
+    /**
+     * @param array<string, int32> $mapStringInt32
+     * @param array<int32, string> $mapInt32String
+     * @param array<int32, bool> $mapInt32Bool
+     * @param array<int64, int32> $mapInt64Int32
+     * @param array<uint32, int32> $mapUint32Int32
+     * @param array<uint64, int32> $mapUint64Int32
+     * @param array<sint32, int32> $mapSint32Int32
+     * @param array<sint64, int32> $mapSint64Int32
+     * @param array<fixed32, int32> $mapFixed32Int32
+     * @param array<fixed64, int32> $mapFixed64Int32
+     * @param array<sfixed32, int32> $mapSfixed32Int32
+     * @param array<sfixed64, int32> $mapSfixed64Int32
+     * @param array<string, string> $mapStringString
+     * @param array<int32, int32> $mapInt32Int32
+     * @param array<int64, string> $mapInt64String
+     * @param array<uint32, string> $mapUint32String
+     * @param array<uint64, string> $mapUint64String
+     * @param array<sint32, string> $mapSint32String
+     * @param array<sint64, string> $mapSint64String
+     * @param array<fixed32, string> $mapFixed32String
+     * @param array<fixed64, string> $mapFixed64String
+     * @param array<sfixed32, string> $mapSfixed32String
+     * @param array<sfixed64, string> $mapSfixed64String
+     * @param array<string, bool> $mapStringBool
+     * @param array<string, float> $mapStringFloat
+     * @param array<string, double> $mapStringDouble
+     * @param array<string, int64> $mapStringInt64
+     * @param array<string, uint32> $mapStringUint32
+     * @param array<string, uint64> $mapStringUint64
+     * @param array<string, sint32> $mapStringSint32
+     * @param array<string, sint64> $mapStringSint64
+     * @param array<string, fixed32> $mapStringFixed32
+     * @param array<string, fixed64> $mapStringFixed64
+     * @param array<string, sfixed32> $mapStringSfixed32
+     * @param array<string, sfixed64> $mapStringSfixed64
+     */
+    public function __construct(
+        public readonly array $mapStringInt32 = [],
+        public readonly array $mapInt32String = [],
+        public readonly array $mapInt32Bool = [],
+        public readonly array $mapInt64Int32 = [],
+        public readonly array $mapUint32Int32 = [],
+        public readonly array $mapUint64Int32 = [],
+        public readonly array $mapSint32Int32 = [],
+        public readonly array $mapSint64Int32 = [],
+        public readonly array $mapFixed32Int32 = [],
+        public readonly array $mapFixed64Int32 = [],
+        public readonly array $mapSfixed32Int32 = [],
+        public readonly array $mapSfixed64Int32 = [],
+        public readonly array $mapStringString = [],
+        public readonly array $mapInt32Int32 = [],
+        public readonly array $mapInt64String = [],
+        public readonly array $mapUint32String = [],
+        public readonly array $mapUint64String = [],
+        public readonly array $mapSint32String = [],
+        public readonly array $mapSint64String = [],
+        public readonly array $mapFixed32String = [],
+        public readonly array $mapFixed64String = [],
+        public readonly array $mapSfixed32String = [],
+        public readonly array $mapSfixed64String = [],
+        public readonly array $mapStringBool = [],
+        public readonly array $mapStringFloat = [],
+        public readonly array $mapStringDouble = [],
+        public readonly array $mapStringInt64 = [],
+        public readonly array $mapStringUint32 = [],
+        public readonly array $mapStringUint64 = [],
+        public readonly array $mapStringSint32 = [],
+        public readonly array $mapStringSint64 = [],
+        public readonly array $mapStringFixed32 = [],
+        public readonly array $mapStringFixed64 = [],
+        public readonly array $mapStringSfixed32 = [],
+        public readonly array $mapStringSfixed64 = [],
+    ) {}
+
+    public static function default(): self
+    {
+        return new self(
+            mapStringInt32: ['key1' => 1, 'key2' => 2],
+            mapInt32String: [1 => 'value1', 2 => 'value2'],
+            mapInt32Bool: [1 => true, 2 => false],
+            mapInt64Int32: [1000000000000 => 1, 2000000000000 => 2],
+            mapUint32Int32: [1 => 1, 2 => 2],
+            mapUint64Int32: [1000000000000 => 1, 2000000000000 => 2],
+            mapSint32Int32: [1 => 1, 2 => 2],
+            mapSint64Int32: [1000000000000 => 1, 2000000000000 => 2],
+            mapFixed32Int32: [1 => 1, 2 => 2],
+            mapFixed64Int32: [1000000000000 => 1, 2000000000000 => 2],
+            mapSfixed32Int32: [1 => 1, 2 => 2],
+            mapSfixed64Int32: [1000000000000 => 1, 2000000000000 => 2],
+            mapStringString: ['key1' => 'value1', 'key2' => 'value2'],
+            mapInt32Int32: [1 => 1, 2 => 2],
+            mapInt64String: [1000000000000 => "value1", 2000000000000 => "value2"],
+            mapUint32String: [1 => 'value1', 2 => 'value2'],
+            mapUint64String: [1000000000000 => 'value1', 2000000000000 => 'value2'],
+            mapSint32String: [1 => 'value1', 2 => "value2"],
+            mapSint64String: [1000000000000 => 'value1', 2000000000000 => 'value2'],
+            mapFixed32String: [1 => 'value1', 2 => 'value2'],
+            mapFixed64String: [1000000000000 => 'value1', 2000000000000 => 'value2'],
+            mapSfixed32String: [1 => 'value1', 2 => 'value2'],
+            mapSfixed64String: [1000000000000 => 'value1', 2000000000000 => 'value2'],
+            mapStringBool: ['key1' => true, 'key2' => false],
+            mapStringFloat: ['key1' => 1.5, 'key2' => 2.5],
+            mapStringDouble: ['key1' => 1.2, 'key2' => 2.2],
+            mapStringInt64: ['key1' => 1000000000000, 'key2' => 2000000000000],
+            mapStringUint32: ['key1' => 1, 'key2' => 2],
+            mapStringUint64: ['key1' => 1000000000000, 'key2' => 2000000000000],
+            mapStringSint32: ['key1' => 1, 'key2' => 2],
+            mapStringSint64: ['key1' => 1000000000000, 'key2' => 2000000000000],
+            mapStringFixed32: ['key1' => 1, 'key2' => 2],
+            mapStringFixed64: ['key1' => 1000000000000, 'key2' => 2000000000000],
+            mapStringSfixed32: ['key1' => 1, 'key2' => 2],
+            mapStringSfixed64: ['key1' => 1000000000000, 'key2' => 2000000000000],
+        );
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+}
+
+#[ProtobufMessage(path: 'resources/primitive_lists.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class PrimitiveLists
+{
+    /**
+     * @param list<int32> $int32List
+     * @param list<int64> $int64List
+     * @param list<uint32> $uint32List
+     * @param list<uint64> $uint64List
+     * @param list<sint32> $sint32List
+     * @param list<sint64> $sint64List
+     * @param list<fixed32> $fixed32List
+     * @param list<fixed64> $fixed64List
+     * @param list<sfixed32> $sfixed32List
+     * @param list<sfixed64> $sfixed64List
+     * @param list<float> $floatList
+     * @param list<double> $doubleList
+     * @param list<bool> $boolList
+     * @param list<string> $stringList
+     * @param list<bytes> $bytesList
+     */
+    public function __construct(
+        public readonly array $int32List = [],
+        public readonly array $int64List = [],
+        public readonly array $uint32List = [],
+        public readonly array $uint64List = [],
+        public readonly array $sint32List = [],
+        public readonly array $sint64List = [],
+        public readonly array $fixed32List = [],
+        public readonly array $fixed64List = [],
+        public readonly array $sfixed32List = [],
+        public readonly array $sfixed64List = [],
+        public readonly array $floatList = [],
+        public readonly array $doubleList = [],
+        public readonly array $boolList = [],
+        public readonly array $stringList = [],
+        public readonly array $bytesList = [],
+    ) {}
+
+    public static function default(): self
+    {
+        return new self(
+            int32List: [1, 2, 3],
+            int64List: [1000000000000, 2000000000000],
+            uint32List: [1, 2, 3],
+            uint64List: [1000000000000, 2000000000000],
+            sint32List: [1, 2, 3],
+            sint64List: [1000000000000, 2000000000000],
+            fixed32List: [1, 2, 3],
+            fixed64List: [1000000000000, 2000000000000],
+            sfixed32List: [1, 2, 3],
+            sfixed64List: [1000000000000, 2000000000000],
+            floatList: [1.5, 2.5, 3.5],
+            doubleList: [1.1, 2.2, 3.3],
+            boolList: [true, false, true],
+            stringList: ['string1', 'string2', 'string3'],
+            bytesList: [base64_encode('bytes1'), base64_encode('bytes2')],
+        );
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+}
+
+#[ProtobufMessage(path: 'resources/scalars.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class Scalars
+{
+    /**
+     * @param int32 $int32Field
+     * @param int64 $int64Field
+     * @param uint32 $uint32Field
+     * @param uint64 $uint64Field
+     * @param sint32 $sint32Field
+     * @param sint64 $sint64Field
+     * @param fixed32 $fixed32Field
+     * @param fixed64 $fixed64Field
+     * @param sfixed32 $sfixed32Field
+     * @param sfixed64 $sfixed64Field
+     * @param float $floatField
+     * @param double $doubleField
+     * @param bool $boolField
+     * @param string $stringField
+     * @param bytes $bytesField
+     */
+    public function __construct(
+        public readonly int $int32Field = 0,
+        public readonly int $int64Field = 0,
+        public readonly int $uint32Field = 0,
+        public readonly int $uint64Field = 0,
+        public readonly int $sint32Field = 0,
+        public readonly int $sint64Field = 0,
+        public readonly int $fixed32Field = 0,
+        public readonly int $fixed64Field = 0,
+        public readonly int $sfixed32Field = 0,
+        public readonly int $sfixed64Field = 0,
+        public readonly float $floatField = 0.0,
+        public readonly float $doubleField = 0.0,
+        public readonly bool $boolField = false,
+        public readonly string $stringField = '',
+        public readonly string $bytesField = '',
+    ) {}
+
+    public static function default(): self
+    {
+        return new self(
+            int32Field: 123,
+            int64Field: 1234567890123456789,
+            uint32Field: 123,
+            uint64Field: 1234567890123456789,
+            sint32Field: -123,
+            sint64Field: -1234567890123456789,
+            fixed32Field: 123456,
+            fixed64Field: 1234567890123456789,
+            sfixed32Field: -123456,
+            sfixed64Field: -1234567890123456789,
+            floatField: 1.25,
+            doubleField: 1.23456789,
+            boolField: true,
+            stringField: 'Hello, World!',
+            bytesField: base64_encode('BinaryData'),
+        );
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+}
