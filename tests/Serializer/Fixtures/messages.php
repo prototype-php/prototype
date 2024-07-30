@@ -550,9 +550,9 @@ final class NestedMessage
      * @param list<int32> $values
      */
     public function __construct(
-        public readonly int $nestedId,
-        public readonly string $nestedName,
-        public readonly array $values,
+        public readonly int $nestedId = 0,
+        public readonly string $nestedName = '',
+        public readonly array $values = [],
     ) {}
 }
 
@@ -563,16 +563,16 @@ final class AnotherNestedMessage
      * @param array<string, string> $additionalMap
      */
     public function __construct(
-        public readonly \DateTimeInterface $timestamp,
-        public readonly array $additionalData,
-        public readonly array $additionalMap,
+        public readonly ?\DateTimeInterface $timestamp = null,
+        public readonly array $additionalData = [],
+        public readonly array $additionalMap = [],
     ) {}
 }
 
 final class DurationMessage
 {
     public function __construct(
-        public readonly \DateInterval $duration,
+        public readonly ?\DateInterval $duration = null,
     ) {}
 }
 
@@ -580,6 +580,7 @@ final class DurationMessage
 #[ProtobufMessage(path: 'resources/complex_message_with_special_int.bin', constructorFunction: 'withSpecialFieldInt')]
 #[ProtobufMessage(path: 'resources/complex_message_with_special_nested_message.bin', constructorFunction: 'withSpecialFieldNestedMessage')]
 #[ProtobufMessage(path: 'resources/complex_message_with_special_datetime.bin', constructorFunction: 'withSpecialFieldDateTime')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'emptyAtAll')]
 final class ComplexMessage
 {
     /**
@@ -602,24 +603,24 @@ final class ComplexMessage
      * @param list<AnotherNestedMessage> $anotherNestedMessages
      */
     public function __construct(
-        public readonly int $id,
-        public readonly int $bigId,
-        public readonly int $unsignedId,
-        public readonly int $unsignedBigId,
-        public readonly int $signedId,
-        public readonly int $signedBigId,
-        public readonly int $fixedId,
-        public readonly int $fixedBigId,
-        public readonly int $signedFixedId,
-        public readonly int $signedFixedBigId,
-        public readonly float $floatValue,
-        public readonly float $doubleValue,
-        public readonly bool $isActive,
-        public readonly string $name,
-        public readonly string $data,
-        public readonly array $tags,
-        public readonly array $metadata,
-        public readonly array $properties,
+        public readonly int $id = 0,
+        public readonly int $bigId = 0,
+        public readonly int $unsignedId = 0,
+        public readonly int $unsignedBigId = 0,
+        public readonly int $signedId = 0,
+        public readonly int $signedBigId = 0,
+        public readonly int $fixedId = 0,
+        public readonly int $fixedBigId = 0,
+        public readonly int $signedFixedId = 0,
+        public readonly int $signedFixedBigId = 0,
+        public readonly float $floatValue = 0.0,
+        public readonly float $doubleValue = 0.0,
+        public readonly bool $isActive = false,
+        public readonly string $name = '',
+        public readonly string $data = '',
+        public readonly array $tags = [],
+        public readonly array $metadata = [],
+        public readonly array $properties = [],
         public readonly ?\DateTimeInterface $createdAt = null,
         public readonly ?\DateInterval $validFor = null,
         public readonly ?NestedMessage $nestedMessage = null,
@@ -798,5 +799,10 @@ final class ComplexMessage
             ],
             new DurationMessage(new \DateInterval('PT60S')),
         );
+    }
+
+    public static function emptyAtAll(): self
+    {
+        return new self();
     }
 }

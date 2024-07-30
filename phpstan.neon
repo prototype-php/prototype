@@ -23,7 +23,6 @@ parameters:
             identifier: generics.variance
             paths:
                 - src/Serializer/Internal/Label/LabelIsEmpty.php
-                - src/Serializer/Internal/Reflection/HashTablePropertyMarshaller.php
         -
             identifier: missingType.iterableValue
             paths:

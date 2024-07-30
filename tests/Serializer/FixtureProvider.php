@@ -67,7 +67,7 @@ final class FixtureProvider
                 $classAttribute = $attribute->newInstance();
 
                 /** @psalm-suppress RedundantCast */
-                $messages[(string)$classAttribute->path] = [
+                $messages[$class.'::'.$classAttribute->constructorFunction.'/'.$classAttribute->path] = [
                     $classAttribute->path,
                     [$class, $classAttribute->constructorFunction](), // @phpstan-ignore-line
                 ];

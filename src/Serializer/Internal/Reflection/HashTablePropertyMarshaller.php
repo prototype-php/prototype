@@ -35,8 +35,8 @@ use Typhoon\TypedMap\TypedMap;
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-covariant TKey of array-key
- * @template-covariant TValue
+ * @template TKey of array-key
+ * @template TValue
  * @template-implements PropertyMarshaller<iterable<TKey, TValue>>
  */
 final class HashTablePropertyMarshaller implements PropertyMarshaller
@@ -80,8 +80,6 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
         foreach ($value as $key => $val) {
-            $tag->encode($buffer);
-
             $mapKeyValueBuffer = $buffer->clone();
 
             $keyTag = new Wire\Tag(1, $this->keyMarshaller->labels()[Labels::wireType]);
@@ -95,15 +93,20 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
             );
 
             $valueTag = new Wire\Tag(2, $this->valueMarshaller->labels()[Labels::wireType]);
-            $valueTag->encode($mapKeyValueBuffer);
 
             $this->valueMarshaller->serializeValue(
-                $mapKeyValueBuffer,
+                $valueBuffer = $mapKeyValueBuffer->clone(),
                 $serializer,
                 $val,
                 $valueTag,
             );
 
+            if (!$valueBuffer->isEmpty()) {
+                $valueTag->encode($mapKeyValueBuffer);
+                $mapKeyValueBuffer->write($valueBuffer->reset());
+            }
+
+            $tag->encode($buffer);
             $buffer
                 ->writeVarUint($mapKeyValueBuffer->count())
                 ->write($mapKeyValueBuffer->reset())
