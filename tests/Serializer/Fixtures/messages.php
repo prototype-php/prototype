@@ -1064,3 +1064,107 @@ final class Scalars
         return new self();
     }
 }
+
+enum ExampleEnum: int
+{
+    case UNKNOWN = 0;
+    case FIRST_OPTION = 1;
+    case SECOND_OPTION = 2;
+}
+
+final class InnerInnerMessage
+{
+    public function __construct(
+        public readonly string $deepInnerField,
+    ) {}
+}
+
+final class InnerMessage
+{
+    /**
+     * @param int32 $innerField
+     */
+    public function __construct(
+        public readonly int $innerField,
+        public readonly string $innerString,
+        public readonly InnerInnerMessage $deepInnerMessage,
+    ) {}
+}
+
+final class OuterMessage
+{
+    /**
+     * @param array<string, InnerMessage> $mapOfInnerMessages
+     * @param list<InnerMessage> $repeatedInnerMessages
+     */
+    public function __construct(
+        public readonly ExampleEnum $enumField,
+        public readonly InnerMessage $innerMessageField,
+        public readonly array $mapOfInnerMessages,
+        public readonly \DateTimeInterface $timestampField,
+        public readonly \DateInterval $durationField,
+        public readonly array $repeatedInnerMessages,
+    ) {}
+}
+
+#[ProtobufMessage(path: 'resources/root.bin', constructorFunction: 'default')]
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'empty')]
+final class RootMessage
+{
+    /**
+     * @param array<string, OuterMessage> $mapOfOuterMessages
+     * @param list<OuterMessage> $repeatedOuterMessages
+     */
+    public function __construct(
+        public readonly ?OuterMessage $outerMessageField = null,
+        public readonly array $mapOfOuterMessages = [],
+        public readonly array $repeatedOuterMessages = [],
+    ) {}
+
+    public static function default(): self
+    {
+        $deepInnerMessage = new InnerInnerMessage('Deep Inner Message');
+
+        $innerMessage = new InnerMessage(123, 'Inner Message', $deepInnerMessage);
+
+        $mapOfInnerMessages = [
+            'key1' => $innerMessage,
+            'key2' => new InnerMessage(456, 'Another Inner Message', $deepInnerMessage),
+        ];
+
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $duration = new \DateInterval('PT10S');
+
+        $outerMessage = new OuterMessage(
+            enumField: ExampleEnum::FIRST_OPTION,
+            innerMessageField: $innerMessage,
+            mapOfInnerMessages: $mapOfInnerMessages,
+            timestampField: $timestamp,
+            durationField: $duration,
+            repeatedInnerMessages: [$innerMessage],
+        );
+
+        return new self(
+            outerMessageField: $outerMessage,
+            mapOfOuterMessages: [
+                'outerKey1' => $outerMessage,
+                'outerKey2' => new OuterMessage(
+                    enumField: ExampleEnum::SECOND_OPTION,
+                    innerMessageField: $innerMessage,
+                    mapOfInnerMessages: $mapOfInnerMessages,
+                    timestampField: $timestamp,
+                    durationField: $duration,
+                    repeatedInnerMessages: [$innerMessage],
+                ),
+            ],
+            repeatedOuterMessages: [$outerMessage],
+        );
+    }
+
+    public static function empty(): self
+    {
+        return new self();
+    }
+}
