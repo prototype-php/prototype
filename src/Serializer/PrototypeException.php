@@ -27,4 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer;
 
+/**
+ * @api
+ */
 interface PrototypeException extends \Throwable {}

@@ -29,6 +29,9 @@ namespace Prototype\Serializer\Exception;
 
 use Prototype\Serializer\PrototypeException;
 
+/**
+ * @api
+ */
 final class PropertyValueIsInvalid extends \Exception implements PrototypeException
 {
     public function __construct(
