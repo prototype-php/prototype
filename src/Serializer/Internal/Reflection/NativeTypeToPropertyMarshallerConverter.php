@@ -60,7 +60,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
      */
     public function list(Type $type, Type $valueType, array $elements): ArrayPropertyMarshaller
     {
-        return new ArrayPropertyMarshaller($valueType->accept($this));
+        return new ArrayPropertyMarshaller(new FromIteratorPropertyMarshaller($valueType->accept($this)));
     }
 
     /**
@@ -94,7 +94,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
                 array_merge( // @phpstan-ignore-line
                     ...array_map(
                         fn (int|string $name, ShapeElement $element): array => /** @var array<non-empty-string, PropertyMarshaller<mixed>> */ [
-                            (string) $name => $element->type->accept($this),
+                            (string) $name => new FromIteratorPropertyMarshaller($element->type->accept($this)),
                         ],
                         array_keys($elements),
                         $elements,
@@ -104,7 +104,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
             $keyType->accept(new IsString()) && $valueType->accept(new IsMixed()) => new StructPropertyMarshaller(),
             default => new HashTablePropertyMarshaller(
                 new ScalarPropertyMarshaller($keyType->accept($this->nativeTypeToProtobufTypeConverter)),
-                $valueType->accept($this),
+                new FromIteratorPropertyMarshaller($valueType->accept($this)),
             ),
         };
     }

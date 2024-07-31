@@ -102,7 +102,10 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
             );
 
             if (!$valueBuffer->isEmpty()) {
-                $valueTag->encode($mapKeyValueBuffer);
+                if ($this->valueMarshaller->labels()[Labels::serializeTag]) {
+                    $valueTag->encode($mapKeyValueBuffer);
+                }
+
                 $mapKeyValueBuffer->write($valueBuffer->reset());
             }
 
