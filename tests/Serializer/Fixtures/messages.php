@@ -1420,3 +1420,12 @@ final class UnionComplexMessage
         );
     }
 }
+
+#[ProtobufMessage(path: 'resources/root.bin', constructorFunction: 'default')]
+final class EmptyMessageWillDiscardAllFields
+{
+    public static function default(): self
+    {
+        return new self();
+    }
+}
