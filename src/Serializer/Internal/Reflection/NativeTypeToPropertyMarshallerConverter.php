@@ -34,9 +34,11 @@ use Prototype\Serializer\PrototypeException;
 use Typhoon\DeclarationId\AliasId;
 use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Reflection\ClassConstantReflection;
 use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
+use Typhoon\Type\types;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 use function Typhoon\Type\stringify;
 
@@ -131,8 +133,14 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function union(Type $type, array $ofTypes): array
+    public function union(Type $type, array $ofTypes): mixed
     {
+        if ($type->accept(new IsConstantEnum())) {
+            return new ConstantEnumPropertyMarshaller(
+                array_map(static fn (Type $type): int => $type->accept(new ToTypeInt()), $ofTypes), // @phpstan-ignore-line
+            );
+        }
+
         $hasBool = false;
         $propertyMarshallers = [];
 
@@ -149,7 +157,59 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
             $propertyMarshallers[] = new ScalarPropertyMarshaller(new BoolType());
         }
 
-        return $propertyMarshallers;
+        return $propertyMarshallers; // @phpstan-ignore-line
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function classConstantMask(Type $type, Type $classType, string $namePrefix): mixed
+    {
+        $types = $this
+            ->reflector
+            ->reflect($classType->accept(new /** @extends DefaultTypeVisitor<NamedClassId> */ class extends DefaultTypeVisitor {
+                /**
+                 * {@inheritdoc}
+                 */
+                public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): mixed
+                {
+                    return $classId;
+                }
+
+                /**
+                 * {@inheritdoc}
+                 */
+                public function self(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
+                {
+                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
+                }
+
+                /**
+                 * {@inheritdoc}
+                 */
+                public function parent(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
+                {
+                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
+                }
+
+                /**
+                 * {@inheritdoc}
+                 */
+                public function static(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
+                {
+                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
+                }
+
+                protected function default(Type $type): mixed
+                {
+                    throw new TypeIsNotSupported(stringify($type));
+                }
+            }))
+            ->constants()
+            ->filter(static fn (ClassConstantReflection $reflection): bool => str_starts_with($reflection->id->name, $namePrefix))
+            ->map(static fn (ClassConstantReflection $reflection): Type => $reflection->type());
+
+        return types::union(...$types->toList())->accept($this);
     }
 
     /**

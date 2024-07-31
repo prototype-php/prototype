@@ -29,34 +29,28 @@ namespace Prototype\Serializer\Internal\Reflection;
 
 use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
+use Prototype\Serializer\Internal\Type\TypeSerializer;
+use Prototype\Serializer\Internal\Type\VaruintType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template T
- * @template-implements PropertyMarshaller<T>
+ * @template-implements PropertyMarshaller<int<0, max>>
  */
-final class UnionPropertyMarshaller implements PropertyMarshaller
+final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
 {
-    /**
-     * @param array<positive-int, PropertyMarshaller<T>> $marshallers
-     */
-    public function __construct(
-        private readonly array $marshallers,
-    ) {}
+    /** @var TypeSerializer<int<0, max>>  */
+    private readonly TypeSerializer $type;
 
     /**
-     * {@inheritdoc}
+     * @param list<int<0, max>> $variants
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): mixed
-    {
-        return $this->marshallers[$tag->num]->deserializeValue(
-            $buffer,
-            $deserializer,
-            $tag,
-        );
+    public function __construct(
+        public readonly array $variants,
+    ) {
+        $this->type = new VaruintType();
     }
 
     /**
@@ -64,18 +58,15 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $marshaller = $this->marshallers[$tag->num] ?? null;
+        $this->type->writeTo($buffer, $value);
+    }
 
-        if (null !== $marshaller && $marshaller->matchValue($value)) {
-            $tag = new Wire\Tag($tag->num, $marshaller->labels()[Labels::wireType]);
-
-            $marshaller->serializeValue($unionBuffer = $buffer->clone(), $serializer, $value, $tag);
-
-            if (!$unionBuffer->isEmpty()) {
-                $tag->encode($buffer);
-                $buffer->write($unionBuffer->reset());
-            }
-        }
+    /**
+     * {@inheritdoc}
+     */
+    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): mixed
+    {
+        return $this->type->readFrom($buffer);
     }
 
     /**
@@ -83,7 +74,7 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
      */
     public function matchValue(mixed $value): bool
     {
-        return false;
+        return \in_array($value, $this->variants, true);
     }
 
     /**
@@ -91,10 +82,9 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
      */
     public function labels(): TypedMap
     {
-        return Labels::new(Wire\Type::BYTES)
-            ->with(
-                Labels::serializeTag, false,
-            )
+        return $this->type->labels()
+            ->with(Labels::default, 0)
+            ->with(Labels::isEmpty, static fn (int $variant): bool => 0 === $variant)
             ;
     }
 }
