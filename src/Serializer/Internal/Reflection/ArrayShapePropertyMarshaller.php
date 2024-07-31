@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Prototype\Serializer\Internal\Reflection;
 
 use Kafkiansky\Binary;
+use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
@@ -35,11 +36,12 @@ use Typhoon\TypedMap\TypedMap;
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-implements PropertyMarshaller<iterable<non-empty-string, mixed>>
+ * @template T
+ * @template-implements PropertyMarshaller<iterable<non-empty-string, T>>
  */
 final class ArrayShapePropertyMarshaller implements PropertyMarshaller
 {
-    /** @var array<non-empty-string, PropertyMarshaller<mixed>>  */
+    /** @var array<non-empty-string, PropertyMarshaller<T>>  */
     private readonly array $marshallers;
 
     /** @var array<positive-int, non-empty-string> */
@@ -49,7 +51,7 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
     private readonly array $serializersNums;
 
     /**
-     * @param array<non-empty-string, PropertyMarshaller<mixed>> $marshallers
+     * @param array<non-empty-string, PropertyMarshaller<T>> $marshallers
      */
     public function __construct(array $marshallers)
     {
@@ -68,6 +70,8 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
     {
         $buffer = $buffer->split($buffer->consumeVarUint());
 
+        $values = [];
+
         while (!$buffer->isEmpty()) {
             $tag = Wire\Tag::decode($buffer);
 
@@ -79,8 +83,20 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
 
             $fieldName = $this->deserializerNums[$tag->num];
 
-            yield $fieldName => $this->marshallers[$fieldName]->deserializeValue($buffer, $deserializer, $tag);
+            $value = $this->marshallers[$fieldName]->deserializeValue($buffer, $deserializer, $tag);
+
+            if (\is_array($value)) {
+                if (!isset($values[$fieldName]) || !\is_array($values[$fieldName])) {
+                    $values[$fieldName] = [];
+                }
+
+                $value = array_merge($values[$fieldName], $value);
+            }
+
+            $values[$fieldName] = $value;
         }
+
+        yield from $values; // @phpstan-ignore-line
     }
 
     /**
@@ -92,10 +108,22 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
 
         /** @psalm-suppress MixedAssignment */
         foreach ($value as $key => $val) {
+            if (!isset($this->serializersNums[$key])) {
+                throw new PropertyValueIsInvalid($key);
+            }
+
             $num = $this->serializersNums[$key];
-            $fieldTag = new Wire\Tag($num, $this->marshallers[$key]->labels()[Labels::wireType]);
-            $fieldTag->encode($shapeBuffer);
-            $this->marshallers[$key]->serializeValue($shapeBuffer, $serializer, $val, $fieldTag);
+
+            $marshaller = $this->marshallers[$key];
+            $labels = $marshaller->labels();
+
+            $fieldTag = new Wire\Tag($num, $labels[Labels::wireType]);
+
+            if ($labels[Labels::serializeTag]) {
+                $fieldTag->encode($shapeBuffer);
+            }
+
+            $marshaller->serializeValue($shapeBuffer, $serializer, $val, $fieldTag);
         }
 
         if (!$shapeBuffer->isEmpty()) {

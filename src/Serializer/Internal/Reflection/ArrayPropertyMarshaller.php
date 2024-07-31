@@ -73,12 +73,13 @@ final class ArrayPropertyMarshaller implements PropertyMarshaller
         $arrayBuffer = $buffer->clone();
 
         $isPacked = $this->marshaller->labels()[Labels::packed];
+        $serializeTag = $this->marshaller->labels()[Labels::serializeTag];
 
         foreach ($value as $item) {
             $this->marshaller->serializeValue($valueBuffer = $arrayBuffer->clone(), $serializer, $item, $tag);
 
             if (!$valueBuffer->isEmpty()) {
-                if (!$isPacked) {
+                if (!$isPacked && $serializeTag) {
                     $tag->encode($arrayBuffer);
                 }
 
