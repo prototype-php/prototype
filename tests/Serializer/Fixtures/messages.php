@@ -1430,6 +1430,11 @@ final class EmptyMessageWillDiscardAllFields
     }
 }
 
+/**
+ * @psalm-type AddressType = array{street: string, city: string, state: string, zip: int32}
+ * @psalm-type PhoneNumberType = array{number: string, type?: PhoneType}
+ * @psalm-type TaskType = array{title: string, details: string, priority: int32, deadline: \DateTimeInterface}
+ */
 #[ProtobufMessage(path: 'resources/complex_array_shape.bin', constructorFunction: 'default')]
 final class Company
 {
@@ -1438,19 +1443,14 @@ final class Company
      *     name: string,
      *     id: int32,
      *     email: string,
-     *     phones: list<array{number: string, type?: PhoneType}>,
-     *     address: array{street: string, city: string, state: string, zip: int32},
+     *     phones: list<PhoneNumberType>,
+     *     address: AddressType,
      *  }> $employees
-     * @param array{
-     *     street: string,
-     *     city: string,
-     *     state: string,
-     *     zip: int32,
-     * } $headquarters
+     * @param AddressType $headquarters
      * @param array<string, array{
      *     name: string,
      *     description: string,
-     *     tasks: list<array{title: string, details: string, priority: int32, deadline: \DateTimeInterface}>,
+     *     tasks: list<TaskType>,
      *     validUntil: \DateInterval,
      * }> $projects
      */

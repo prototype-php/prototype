@@ -94,7 +94,7 @@ final class ProtobufReflector
                 ->attributes()
                 ->filter(static fn (AttributeReflection $attribute): bool => $attribute->class()->isInstanceOf(Field::class))
                 ->map(static fn (AttributeReflection $attribute): object => $attribute->newInstance())
-                ->toList()[0] ?? null
+                ->first()
             ;
 
             /** @var PropertyMarshaller|list<PropertyMarshaller> $propertyMarshaller */
