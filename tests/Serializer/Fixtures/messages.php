@@ -1429,3 +1429,126 @@ final class EmptyMessageWillDiscardAllFields
         return new self();
     }
 }
+
+#[ProtobufMessage(path: 'resources/complex_array_shape.bin', constructorFunction: 'default')]
+final class Company
+{
+    /**
+     * @param list<array{
+     *     name: string,
+     *     id: int32,
+     *     email: string,
+     *     phones: list<array{number: string, type?: PhoneType}>,
+     *     address: array{street: string, city: string, state: string, zip: int32},
+     *  }> $employees
+     * @param array{
+     *     street: string,
+     *     city: string,
+     *     state: string,
+     *     zip: int32,
+     * } $headquarters
+     * @param array<string, array{
+     *     name: string,
+     *     description: string,
+     *     tasks: list<array{title: string, details: string, priority: int32, deadline: \DateTimeInterface}>,
+     *     validUntil: \DateInterval,
+     * }> $projects
+     */
+    public function __construct(
+        public readonly string $name,
+        public readonly array $employees,
+        public readonly array $headquarters,
+        public readonly array $projects,
+    ) {}
+
+    public static function default(): self
+    {
+        $timestamp = \DateTimeImmutable::createFromFormat('U.u', \sprintf('%d.%d', 1720809416, 679224));
+        \assert($timestamp instanceof \DateTimeInterface);
+
+        $duration = new \DateInterval('PT86400S');
+
+        return new self(
+            'Tech Innovators Inc.',
+            [
+                [
+                    'name' => 'Alice Johnson',
+                    'id' => 1,
+                    'email' => 'alice.johnson@example.com',
+                    'phones' => [
+                        [
+                            'number' => '123-456-7890',
+                        ],
+                        [
+                            'number' => '098-765-4321',
+                            'type' => PhoneType::WORK,
+                        ],
+                    ],
+                    'address' => [
+                        'street' => '123 Main St',
+                        'city' => 'Anytown',
+                        'state' => 'CA',
+                        'zip' => 12345,
+                    ],
+                ],
+                [
+                    'name' => 'Bob Smith',
+                    'id' => 2,
+                    'email' => 'bob.smith@example.com',
+                    'phones' => [
+                        [
+                            'number' => '555-555-5555',
+                            'type' => PhoneType::HOME,
+                        ],
+                    ],
+                    'address' => [
+                        'street' => '456 Oak St',
+                        'city' => 'Othertown',
+                        'state' => 'NY',
+                        'zip' => 67890,
+                    ],
+                ],
+            ],
+            [
+                'street' => '123 Main St',
+                'city' => 'Anytown',
+                'state' => 'CA',
+                'zip' => 12345,
+            ],
+            [
+                'ProjectX' => [
+                    'name' => 'Project X',
+                    'description' => 'A secret project.',
+                    'tasks' => [
+                        [
+                            'title' => 'Task 1',
+                            'details' => 'Detail for task 1',
+                            'priority' => 1,
+                            'deadline' => $timestamp,
+                        ],
+                        [
+                            'title' => 'Task 2',
+                            'details' => 'Detail for task 2',
+                            'priority' => 2,
+                            'deadline' => $timestamp,
+                        ],
+                    ],
+                    'validUntil' => $duration,
+                ],
+                'ProjectY' => [
+                    'name' => 'Project Y',
+                    'description' => 'Another secret project.',
+                    'tasks' => [
+                        [
+                            'title' => 'Task A',
+                            'details' => 'Detail for task A',
+                            'priority' => 1,
+                            'deadline' => $timestamp,
+                        ],
+                    ],
+                    'validUntil' => $duration,
+                ],
+            ],
+        );
+    }
+}
