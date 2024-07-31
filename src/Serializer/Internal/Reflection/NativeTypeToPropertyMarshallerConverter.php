@@ -31,10 +31,12 @@ use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Internal\Type\BoolType;
 use Prototype\Serializer\Internal\Type\NativeTypeToProtobufTypeConverter;
 use Prototype\Serializer\PrototypeException;
+use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Typhoon\Type\stringify;
 
 /**
  * @internal
@@ -56,6 +58,18 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     public function list(Type $type, Type $valueType, array $elements): ArrayPropertyMarshaller
     {
         return new ArrayPropertyMarshaller($valueType->accept($this));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function self(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): ObjectPropertyMarshaller
+    {
+        if (null !== ($class = $resolvedClassId?->name) && class_exists($class)) {
+            return new ObjectPropertyMarshaller($class);
+        }
+
+        throw new TypeIsNotSupported(stringify($type));
     }
 
     /**
