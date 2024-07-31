@@ -2,6 +2,9 @@
 
 A modern strictly typed full-featured library for protobuf serialization without an inheritance.
 
+Why do we need another protobuf serialization library when there's `google/protobuf`? PHP is rapidly evolving, and we have long had tools for static analysis at our disposal that help add strict typing to arrays, lists, generics, and so on.
+However, all of this is missing in `google/protobuf`. It also lacks promoted readonly properties, modern enums, unions, but includes inheritance.
+
 ## Installation
 
 This package can be installed as a [Composer](https://getcomposer.org/) dependency.
@@ -11,12 +14,11 @@ composer require prototype/serializer
 ```
 
 ## Features
-- [x] `scalar (any type of numbers and floats, string, bool)`
+- [x] `scalar (any type of numbers and floats, string, bytes, bool)`
 - [x] `repeated`
 - [x] `map`
 - [x] `oneof`
 - [x] `enum`
-- [x] `message (recursive)`
 - [x] `google.protobuf.Timestamp`
 - [x] `google.protobuf.Duration`
 - [x] `google.protobuf.Struct`
