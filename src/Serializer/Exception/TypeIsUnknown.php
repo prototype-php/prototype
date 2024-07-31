@@ -34,8 +34,11 @@ use Prototype\Serializer\PrototypeException;
  */
 final class TypeIsUnknown extends \Exception implements PrototypeException
 {
-    public function __construct(public readonly int $type, ?\Throwable $previous = null)
-    {
-        parent::__construct(\sprintf('The field type "%d" is unknown.', $this->type), previous: $previous);
+    public function __construct(
+        public readonly int $num,
+        public readonly int $type,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct(\sprintf('The field\'s "%d" type "%d" is unknown.', $this->num, $this->type), previous: $previous);
     }
 }

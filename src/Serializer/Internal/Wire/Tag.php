@@ -59,7 +59,7 @@ final class Tag
 
         return new self(
             $num,
-            Type::tryFrom($type) ?: throw new TypeIsUnknown($type),
+            Type::tryFrom($type) ?: throw new TypeIsUnknown($num, $type),
         );
     }
 
