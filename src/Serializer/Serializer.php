@@ -31,7 +31,6 @@ use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Type\ProtobufType;
 use Prototype\Serializer\Internal\Wire;
 use Psr\SimpleCache\CacheInterface;
-use Typhoon\Reflection\Cache\InMemoryCache;
 use Typhoon\Reflection\TyphoonReflector;
 
 /**
@@ -42,7 +41,7 @@ final class Serializer
     private readonly Wire\ProtobufMarshaller $marshaller;
 
     public function __construct(
-        CacheInterface $cache = new InMemoryCache(),
+        ?CacheInterface $cache = null,
     ) {
         $this->marshaller = new Wire\ProtobufMarshaller(
             TyphoonReflector::build(

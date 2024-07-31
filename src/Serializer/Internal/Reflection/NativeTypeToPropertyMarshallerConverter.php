@@ -75,6 +75,18 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
+    public function self(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): ObjectPropertyMarshaller
+    {
+        if (null !== ($class = $resolvedClassId?->name) && class_exists($class)) {
+            return new ObjectPropertyMarshaller($class);
+        }
+
+        throw new TypeIsNotSupported(stringify($type));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function array(Type $type, Type $keyType, Type $valueType, array $elements): PropertyMarshaller
     {
         /** @psalm-suppress MixedArgumentTypeCoercion */
