@@ -35,6 +35,7 @@ use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Reflection\AttributeReflection;
 use Typhoon\Reflection\ClassReflection;
 use Typhoon\Reflection\PropertyReflection;
+use Typhoon\Reflection\TyphoonReflector;
 
 /**
  * @internal
@@ -48,9 +49,9 @@ final class ProtobufReflector
      * @psalm-return array<positive-int, PropertySerializeDescriptor>
      * @throws PrototypeException
      */
-    public function propertySerializers(ClassReflection $class): array
+    public function propertySerializers(ClassReflection $class, TyphoonReflector $reflector): array
     {
-        return self::properties($class, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller): PropertySerializeDescriptor => new PropertySerializeDescriptor(
+        return self::properties($class, $reflector, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller): PropertySerializeDescriptor => new PropertySerializeDescriptor(
             $property,
             $marshaller,
         ));
@@ -62,9 +63,9 @@ final class ProtobufReflector
      * @psalm-return array<positive-int, PropertyDeserializeDescriptor>
      * @throws PrototypeException
      */
-    public function propertyDeserializers(ClassReflection $class): array
+    public function propertyDeserializers(ClassReflection $class, TyphoonReflector $reflector): array
     {
-        return self::properties($class, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller): PropertyDeserializeDescriptor => new PropertyDeserializeDescriptor(
+        return self::properties($class, $reflector, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller): PropertyDeserializeDescriptor => new PropertyDeserializeDescriptor(
             $property,
             $marshaller,
         ));
@@ -78,7 +79,7 @@ final class ProtobufReflector
      * @psalm-return array<positive-int, E>
      * @throws PrototypeException
      */
-    private static function properties(ClassReflection $class, callable $toPropertyDescriptor): array
+    private static function properties(ClassReflection $class, TyphoonReflector $reflector, callable $toPropertyDescriptor): array
     {
         [$properties, $num] = [[], 0];
 
@@ -99,7 +100,7 @@ final class ProtobufReflector
             /** @var PropertyMarshaller|list<PropertyMarshaller> $propertyMarshaller */
             $propertyMarshaller = $property
                 ->type()
-                ->accept(new NativeTypeToPropertyMarshallerConverter())
+                ->accept(new NativeTypeToPropertyMarshallerConverter($reflector))
             ;
 
             $fieldNum = $field?->num ?: ++$num;

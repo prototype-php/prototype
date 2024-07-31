@@ -31,8 +31,10 @@ use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Internal\Type\BoolType;
 use Prototype\Serializer\Internal\Type\NativeTypeToProtobufTypeConverter;
 use Prototype\Serializer\PrototypeException;
+use Typhoon\DeclarationId\AliasId;
 use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
@@ -47,8 +49,9 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
 {
     private readonly NativeTypeToProtobufTypeConverter $nativeTypeToProtobufTypeConverter;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {
         $this->nativeTypeToProtobufTypeConverter = new NativeTypeToProtobufTypeConverter();
     }
 
@@ -70,6 +73,14 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
         }
 
         throw new TypeIsNotSupported(stringify($type));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
+    {
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
     }
 
     /**

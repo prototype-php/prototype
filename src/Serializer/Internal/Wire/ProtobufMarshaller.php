@@ -59,7 +59,7 @@ final class ProtobufMarshaller implements
     {
         $class = $this->classReflector->reflectClass($message::class);
 
-        $properties = $this->protobufReflector->propertySerializers($class);
+        $properties = $this->protobufReflector->propertySerializers($class, $this->classReflector);
 
         /** @psalm-var \WeakMap<\ReflectionProperty, bool> $serialized */
         $serialized = new \WeakMap();
@@ -106,7 +106,7 @@ final class ProtobufMarshaller implements
             ->newInstanceWithoutConstructor()
         ;
 
-        $properties = $this->protobufReflector->propertyDeserializers($class);
+        $properties = $this->protobufReflector->propertyDeserializers($class, $this->classReflector);
 
         /** @psalm-var \WeakMap<Reflection\PropertyDeserializeDescriptor, ValueContext> $values */
         $values = new \WeakMap();
