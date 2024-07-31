@@ -31,7 +31,6 @@ use Kafkiansky\Binary;
 use Prototype\Serializer\PrototypeException;
 
 /**
- * @api
  * @internal
  * @psalm-internal Prototype\Serializer
  */

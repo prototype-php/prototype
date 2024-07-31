@@ -46,10 +46,24 @@ final class ValueContext
             $value = iterator_to_array($value);
         }
 
-        $this->value = match (true) {
-            \is_array($value) => array_merge(!\is_array($this->value) ? [] : $this->value, $value),
-            default => $value,
-        };
+        if (\is_array($value)) {
+            if (!\is_array($this->value)) {
+                $this->value = [];
+            }
+
+            if (array_is_list($value)) {
+                $this->value = array_merge($this->value, $value);
+            } else {
+                /** @var ValueType $val */
+                foreach ($value as $key => $val) {
+                    $this->value[$key] = $val;
+                }
+            }
+
+            return;
+        }
+
+        $this->value = $value;
     }
 
     /**

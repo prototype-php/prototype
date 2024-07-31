@@ -25,20 +25,8 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Tests\Serializer\Fixtures;
 
-use Prototype\Serializer\PrototypeException;
-
-/**
- * @api
- */
-final class TooManyPropertyAttributes extends \Exception implements PrototypeException
+final class EmptyMessage
 {
-    public function __construct(
-        public readonly string $propertyName,
-        public readonly int $attributesCount,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('The property "%s" has too many property marshaller attributes: %d.', $this->propertyName, $this->attributesCount), previous: $previous);
-    }
 }
