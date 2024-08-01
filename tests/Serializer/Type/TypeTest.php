@@ -27,19 +27,19 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Type;
 
-use Kafkiansky\Binary\Buffer;
-use Kafkiansky\Binary\Endianness;
+use Prototype\Serializer\Byte\Buffer;
 use Prototype\Serializer\Internal\Type\BoolType;
 use Prototype\Serializer\Internal\Type\DoubleType;
-use Prototype\Serializer\Internal\Type\FixedInt32Type;
-use Prototype\Serializer\Internal\Type\FixedInt64Type;
-use Prototype\Serializer\Internal\Type\FixedUint32Type;
-use Prototype\Serializer\Internal\Type\FixedUint64Type;
+use Prototype\Serializer\Internal\Type\SFixed32Type;
+use Prototype\Serializer\Internal\Type\SFixed64Type;
+use Prototype\Serializer\Internal\Type\Fixed32Type;
+use Prototype\Serializer\Internal\Type\Fixed64Type;
 use Prototype\Serializer\Internal\Type\FloatType;
+use Prototype\Serializer\Internal\Type\SInt32Type;
+use Prototype\Serializer\Internal\Type\SInt64Type;
 use Prototype\Serializer\Internal\Type\StringType;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
 use Prototype\Serializer\Internal\Type\VarintType;
-use Prototype\Serializer\Internal\Type\VaruintType;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -47,13 +47,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(BoolType::class)]
 #[CoversClass(FloatType::class)]
 #[CoversClass(DoubleType::class)]
-#[CoversClass(FixedInt32Type::class)]
-#[CoversClass(FixedUint32Type::class)]
-#[CoversClass(FixedInt64Type::class)]
-#[CoversClass(FixedUint64Type::class)]
+#[CoversClass(Fixed32Type::class)]
+#[CoversClass(Fixed64Type::class)]
+#[CoversClass(SFixed32Type::class)]
+#[CoversClass(SFixed64Type::class)]
+#[CoversClass(SInt32Type::class)]
+#[CoversClass(SInt64Type::class)]
 #[CoversClass(StringType::class)]
 #[CoversClass(VarintType::class)]
-#[CoversClass(VaruintType::class)]
 final class TypeTest extends TestCase
 {
     /**
@@ -71,14 +72,9 @@ final class TypeTest extends TestCase
             false,
         ];
 
-        yield 'varuint' => [
-            new VaruintType(),
-            100,
-        ];
-
         yield 'varint' => [
             new VarintType(),
-            -1024,
+            1024,
         ];
 
         yield 'float' => [
@@ -97,23 +93,43 @@ final class TypeTest extends TestCase
         ];
 
         yield 'fixed32' => [
-            new FixedUint32Type(),
+            new Fixed32Type(),
             200,
         ];
 
         yield 'sfixed32' => [
-            new FixedInt32Type(),
+            new SFixed32Type(),
             -200,
         ];
 
         yield 'fixed64' => [
-            new FixedUint64Type(),
+            new Fixed64Type(),
             2048,
         ];
 
         yield 'sfixed64' => [
-            new FixedInt64Type(),
+            new SFixed64Type(),
             -2048,
+        ];
+
+        yield 'sint32/negative' => [
+            new SInt32Type(),
+            -2048,
+        ];
+
+        yield 'sint64/negative' => [
+            new SInt64Type(),
+            -5002,
+        ];
+
+        yield 'sint32/positive' => [
+            new SInt32Type(),
+            2048,
+        ];
+
+        yield 'sint64/positive' => [
+            new SInt64Type(),
+            5002,
         ];
     }
 
@@ -125,9 +141,9 @@ final class TypeTest extends TestCase
     #[DataProvider('fixtures')]
     public function testTypeRead(TypeSerializer $type, mixed $value): void
     {
-        $buffer = Buffer::empty(Endianness::little());
+        $buffer = Buffer::default();
         $type->writeTo($buffer, $value);
         self::assertSame($value, $type->readFrom($buffer));
-        self::assertTrue($buffer->isEmpty());
+        self::assertFalse($buffer->isNotEmpty());
     }
 }

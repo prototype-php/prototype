@@ -27,9 +27,9 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
-use Kafkiansky\Binary\BinaryException;
-use Kafkiansky\Binary\Buffer;
+use Prototype\Serializer\Byte;
 use Prototype\Serializer\Exception\TypeIsUnknown;
+use Prototype\Serializer\PrototypeException;
 
 /**
  * @internal
@@ -46,12 +46,12 @@ final class Tag
     ) {}
 
     /**
-     * @throws BinaryException
+     * @throws PrototypeException
      * @throws TypeIsUnknown   when protobuf type is not recognized
      */
-    public static function decode(Buffer $buffer): self
+    public static function decode(Byte\Reader $reader): self
     {
-        $tag = $buffer->consumeVarUint();
+        $tag = $reader->readVarint();
 
         /** @psalm-var positive-int $num */
         $num = $tag >> 3;
@@ -63,8 +63,11 @@ final class Tag
         );
     }
 
-    public function encode(Buffer $buffer): void
+    /**
+     * @throws PrototypeException
+     */
+    public function encode(Byte\Writer $writer): void
     {
-        $buffer->writeVarUint($this->num << 3 | $this->type->value);
+        $writer->writeVarint($this->num << 3 | $this->type->value);
     }
 }

@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\PrototypeException;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -41,8 +41,7 @@ interface Deserializer
      * @param class-string<T> $messageType
      * @return T
      * @throws \ReflectionException
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    public function deserialize(string $messageType, Binary\Buffer $buffer): object;
+    public function deserialize(string $messageType, Byte\Reader $reader): object;
 }

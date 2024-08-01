@@ -25,25 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Wire;
+namespace Prototype\Serializer\Exception;
 
-use Prototype\Serializer\Byte;
+use Kafkiansky\Binary\BinaryException;
 use Prototype\Serializer\PrototypeException;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
- * @throws PrototypeException
+ * @api
  */
-function discard(Byte\Reader $reader, Tag $tag): void
+final class BytesCannotBeWritten extends \Exception implements PrototypeException
 {
-    if ($tag->type === Type::VARINT) {
-        $reader->readVarint();
-    } elseif ($tag->type === Type::FIXED32) {
-        $reader->readFixed32();
-    } elseif ($tag->type === Type::FIXED64) {
-        $reader->readFixed64();
-    } else {
-        $reader->slice();
+    public static function fromException(BinaryException $exception): self
+    {
+        return new self($exception->getMessage(), $exception->getCode(), $exception);
     }
 }

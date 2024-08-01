@@ -27,12 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\DurationType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -44,9 +44,9 @@ final class DateIntervalPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): \DateInterval
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): \DateInterval
     {
-        $duration = $deserializer->deserialize(DurationType::class, $buffer->split($buffer->consumeVarUint()));
+        $duration = $deserializer->deserialize(DurationType::class, $reader->slice());
 
         try {
             return $duration->toDateInterval();
@@ -58,15 +58,12 @@ final class DateIntervalPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $serializer->serialize(DurationType::fromDateInterval($value), $objectBuffer = $buffer->clone());
+        $serializer->serialize(DurationType::fromDateInterval($value), $objectBuffer = $writer->clone());
 
-        if (!$objectBuffer->isEmpty()) {
-            $buffer
-                ->writeVarUint($objectBuffer->count())
-                ->write($objectBuffer->reset())
-            ;
+        if ($objectBuffer->isNotEmpty()) {
+            $writer->copyFrom($objectBuffer);
         }
     }
 

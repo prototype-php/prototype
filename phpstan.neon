@@ -17,9 +17,6 @@ parameters:
         - { identifier: function.alreadyNarrowedType }
         - { identifier: enum.generic }
         -
-            identifier: argument.type
-            path: src/Serializer/Internal/Type/ProtobufType.php
-        -
             identifier: generics.variance
             paths:
                 - src/Serializer/Internal/Label/LabelIsEmpty.php

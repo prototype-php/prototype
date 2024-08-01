@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -53,19 +53,19 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): iterable
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): iterable
     {
-        $buffer = $buffer->split($buffer->consumeVarUint());
+        $reader = $reader->slice();
 
         [$key, $value] = [null, null];
 
-        while (!$buffer->isEmpty()) {
-            $tag = Wire\Tag::decode($buffer);
+        while ($reader->isNotEmpty()) {
+            $tag = Wire\Tag::decode($reader);
 
             if ($tag->num === 1) {
-                $key = $this->keyMarshaller->deserializeValue($buffer, $deserializer, $tag);
+                $key = $this->keyMarshaller->deserializeValue($reader, $deserializer, $tag);
             } elseif ($tag->num === 2) {
-                $value = $this->valueMarshaller->deserializeValue($buffer, $deserializer, $tag);
+                $value = $this->valueMarshaller->deserializeValue($reader, $deserializer, $tag);
             }
         }
 
@@ -77,10 +77,10 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
         foreach ($value as $key => $val) {
-            $mapKeyValueBuffer = $buffer->clone();
+            $mapKeyValueBuffer = $writer->clone();
 
             $keyTag = new Wire\Tag(1, $this->keyMarshaller->labels()[Labels::wireType]);
             $keyTag->encode($mapKeyValueBuffer);
@@ -101,16 +101,13 @@ final class HashTablePropertyMarshaller implements PropertyMarshaller
                 $valueTag,
             );
 
-            if (!$valueBuffer->isEmpty()) {
+            if ($valueBuffer->isNotEmpty()) {
                 $valueTag->encode($mapKeyValueBuffer);
                 $mapKeyValueBuffer->write($valueBuffer->reset());
             }
 
-            $tag->encode($buffer);
-            $buffer
-                ->writeVarUint($mapKeyValueBuffer->count())
-                ->write($mapKeyValueBuffer->reset())
-            ;
+            $tag->encode($writer);
+            $writer->copyFrom($mapKeyValueBuffer);
         }
     }
 

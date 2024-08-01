@@ -29,6 +29,7 @@ namespace Prototype\Serializer\Internal\Type;
 
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\PrototypeException;
+use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
@@ -61,7 +62,7 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
      * @throws PrototypeException
      * @throws \ReflectionException
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): TypeSerializer
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): TypeSerializer
     {
         if ($classId->reflect()->implementsInterface(TypeSerializer::class)) {
             /** @var TypeSerializer */
@@ -74,12 +75,9 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function float(Type $type, ?float $min, ?float $max): FloatType|DoubleType
+    public function float(Type $type, Type $minType, Type $maxType): FloatType
     {
-        return match (true) {
-            $min === -1.7976931348623157E+308 && $max === 1.7976931348623157E+308 => new DoubleType(),
-            default => new FloatType(),
-        };
+        return new FloatType();
     }
 
     /**

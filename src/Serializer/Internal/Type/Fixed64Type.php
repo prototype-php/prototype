@@ -27,43 +27,41 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
+use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
  * @psalm-consistent-constructor
- * @psalm-type FixedUint32 = int<0, 4294967295>
- * @template-implements TypeSerializer<FixedUint32>
+ * @template-implements TypeSerializer<int<0, max>>
  */
-final class FixedUint32Type implements TypeSerializer
+final class Fixed64Type implements TypeSerializer
 {
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
-        $buffer->writeUint32($value);
+        $writer->writeFixed64($value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): int
+    public function readFrom(Byte\Reader $reader): int
     {
-        /** @var FixedUint32 */
-        return $buffer->consumeUint32();
+        return $reader->readFixed64();
     }
 
     public function labels(): TypedMap
     {
-        return Labels::new(Type::FIXED32)
+        return Labels::new(Wire\Type::FIXED64)
             ->with(Labels::default, 0)
             ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::uint32)
+            ->with(Labels::schemaType, ProtobufType::fixed64)
             ;
     }
 }

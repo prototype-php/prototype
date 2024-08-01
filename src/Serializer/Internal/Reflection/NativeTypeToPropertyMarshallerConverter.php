@@ -114,20 +114,24 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     /**
      * @throws PrototypeException
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): PropertyMarshaller
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): PropertyMarshaller
     {
         try {
             return new ScalarPropertyMarshaller($type->accept($this->nativeTypeToProtobufTypeConverter));
         } catch (\Throwable) {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            return match (true) {
-                enum_exists($classId->name) => new EnumPropertyMarshaller($classId->name),
-                instanceOfDateTime($classId->name) => new DateTimePropertyMarshaller($classId->name),
-                isClassOf($classId->name, \DateInterval::class) => new DateIntervalPropertyMarshaller(),
-                class_exists($classId->name) => new ObjectPropertyMarshaller($classId->name),
-                default => throw new TypeIsNotSupported($classId->name),
-            };
+            if (null !== ($className = $classId->name)) {
+                /** @psalm-suppress ArgumentTypeCoercion */
+                return match (true) {
+                    enum_exists($className) => new EnumPropertyMarshaller($className),
+                    instanceOfDateTime($className) => new DateTimePropertyMarshaller($className),
+                    isClassOf($className, \DateInterval::class) => new DateIntervalPropertyMarshaller(),
+                    class_exists($className) => new ObjectPropertyMarshaller($className),
+                    default => throw new TypeIsNotSupported($className),
+                };
+            }
         }
+
+        throw new TypeIsNotSupported(stringify($type));
     }
 
     /**

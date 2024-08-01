@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -50,10 +50,10 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): mixed
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): mixed
     {
         return $this->marshallers[$tag->num]->deserializeValue(
-            $buffer,
+            $reader,
             $deserializer,
             $tag,
         );
@@ -62,18 +62,18 @@ final class UnionPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
         $marshaller = $this->marshallers[$tag->num] ?? null;
 
         if (null !== $marshaller && $marshaller->matchValue($value)) {
             $tag = new Wire\Tag($tag->num, $marshaller->labels()[Labels::wireType]);
 
-            $marshaller->serializeValue($unionBuffer = $buffer->clone(), $serializer, $value, $tag);
+            $marshaller->serializeValue($unionBuffer = $writer->clone(), $serializer, $value, $tag);
 
-            if (!$unionBuffer->isEmpty()) {
-                $tag->encode($buffer);
-                $buffer->write($unionBuffer->reset());
+            if ($unionBuffer->isNotEmpty()) {
+                $tag->encode($writer);
+                $writer->write($unionBuffer->reset());
             }
         }
     }
