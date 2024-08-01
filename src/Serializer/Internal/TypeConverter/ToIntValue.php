@@ -25,23 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\PrototypeException;
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
+use Typhoon\Type\Type;
+use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @template-extends DefaultTypeVisitor<int>
  */
-final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
+final class ToIntValue extends DefaultTypeVisitor
 {
-    /**
-     * @psalm-param enum-string<\BackedEnum>|non-empty-string $enumName
-     */
     public function __construct(
-        public readonly string $enumName,
-        public readonly int $variant,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Enum "%s" does not contain variant "%d".', $this->enumName, $this->variant), previous: $previous);
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
+    {
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function intValue(Type $type, int $value): int
+    {
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): int
+    {
+        return 0;
     }
 }

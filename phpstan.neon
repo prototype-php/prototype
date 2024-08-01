@@ -20,11 +20,3 @@ parameters:
             identifier: generics.variance
             paths:
                 - src/Serializer/Internal/Label/LabelIsEmpty.php
-        -
-            identifier: missingType.iterableValue
-            paths:
-                - src/Serializer/Internal/Reflection/NativeTypeToPropertyMarshallerConverter.php
-        -
-            identifier: method.childReturnType
-            paths:
-                - src/Serializer/Internal/Reflection/NativeTypeToPropertyMarshallerConverter.php

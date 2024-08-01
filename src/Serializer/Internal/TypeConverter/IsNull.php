@@ -25,66 +25,31 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\Exception\TypeIsNotSupported;
-use Prototype\Serializer\PrototypeException;
-use Typhoon\DeclarationId\AnonymousClassId;
-use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
-use function Typhoon\Type\stringify;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-extends DefaultTypeVisitor<TypeSerializer>
+ * @template-extends DefaultTypeVisitor<bool>
  */
-final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
+final class IsNull extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function string(Type $type): StringType
+    public function null(Type $type): bool
     {
-        return new StringType();
+        return true;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function mixed(Type $type): ValueType
+    protected function default(Type $type): bool
     {
-        return new ValueType();
-    }
-
-    /**
-     * @throws PrototypeException
-     * @throws \ReflectionException
-     */
-    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): TypeSerializer
-    {
-        if ($classId->reflect()->implementsInterface(TypeSerializer::class)) {
-            /** @var TypeSerializer */
-            return $classId->reflect()->newInstanceWithoutConstructor();
-        }
-
-        return $this->default($type);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function float(Type $type, Type $minType, Type $maxType): FloatType
-    {
-        return new FloatType();
-    }
-
-    /**
-     * @throws TypeIsNotSupported
-     */
-    protected function default(Type $type): TypeSerializer
-    {
-        throw new TypeIsNotSupported(stringify($type));
+        return false;
     }
 }

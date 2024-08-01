@@ -25,23 +25,31 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\PrototypeException;
+use Typhoon\Type\Type;
+use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @template-extends DefaultTypeVisitor<bool>
  */
-final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
+final class IsMixed extends DefaultTypeVisitor
 {
     /**
-     * @psalm-param enum-string<\BackedEnum>|non-empty-string $enumName
+     * {@inheritdoc}
      */
-    public function __construct(
-        public readonly string $enumName,
-        public readonly int $variant,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Enum "%s" does not contain variant "%d".', $this->enumName, $this->variant), previous: $previous);
+    public function mixed(Type $type): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): bool
+    {
+        return false;
     }
 }

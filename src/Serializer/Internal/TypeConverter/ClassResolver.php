@@ -25,31 +25,59 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
+use Prototype\Serializer\Exception\TypeIsNotSupported;
+use Typhoon\DeclarationId\AnonymousClassId;
+use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Typhoon\Type\stringify;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-extends DefaultTypeVisitor<bool>
+ * @template-extends DefaultTypeVisitor<NamedClassId|AnonymousClassId>
  */
-final class IsNull extends DefaultTypeVisitor
+final class ClassResolver extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function null(Type $type): bool
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): mixed
     {
-        return true;
+        return $classId;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function default(Type $type): bool
+    public function self(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
     {
-        return false;
+        return $resolvedClassId ?? $this->default($type);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function parent(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
+    {
+        return $resolvedClassId ?? $this->default($type);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function static(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
+    {
+        return $resolvedClassId ?? $this->default($type);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): mixed
+    {
+        throw new TypeIsNotSupported(stringify($type));
     }
 }

@@ -25,29 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
- * @template-extends DefaultTypeVisitor<bool>
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @template-extends DefaultTypeVisitor<float>
  */
-final class IsMixed extends DefaultTypeVisitor
+final class ToFloatValue extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
-    public function mixed(Type $type): bool
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
     {
-        return true;
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function default(Type $type): bool
+    public function floatValue(Type $type, float $value): float
     {
-        return false;
+        return $value;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): float
+    {
+        return 0;
     }
 }

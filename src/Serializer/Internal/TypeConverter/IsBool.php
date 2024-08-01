@@ -25,23 +25,22 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\Internal\Type\StringType;
-use Typhoon\DeclarationId\AnonymousClassId;
-use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
+ * @internal
+ * @psalm-internal Prototype\Serializer
  * @template-extends DefaultTypeVisitor<bool>
  */
-final class IsString extends DefaultTypeVisitor
+final class IsBool extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function string(Type $type): bool
+    public function true(Type $type): bool
     {
         return true;
     }
@@ -49,9 +48,23 @@ final class IsString extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): bool
+    public function false(Type $type): bool
     {
-        return $classId->name === StringType::class;
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function union(Type $type, array $ofTypes): bool
+    {
+        foreach ($ofTypes as $ofType) {
+            if (!$ofType->accept($this)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
