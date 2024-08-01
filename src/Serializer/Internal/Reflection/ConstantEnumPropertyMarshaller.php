@@ -51,8 +51,8 @@ final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
      * @throws EnumDoesNotContainZeroVariant
      */
     public function __construct(
-        public readonly string $enumName,
-        public readonly array $variants,
+        private readonly string $enumName,
+        private readonly array $variants,
     ) {
         if (!\in_array(0, $this->variants, strict: true)) {
             throw new EnumDoesNotContainZeroVariant($this->enumName);
