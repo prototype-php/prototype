@@ -27,14 +27,14 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
-use Prototype\Serializer\Internal\Type\VaruintType;
+use Prototype\Serializer\Internal\Type\VarintType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -44,7 +44,7 @@ use Typhoon\TypedMap\TypedMap;
  */
 final class EnumPropertyMarshaller implements PropertyMarshaller
 {
-    /** @var TypeSerializer<int<0, max>>  */
+    /** @var TypeSerializer<int>  */
     private readonly TypeSerializer $type;
 
     /**
@@ -53,15 +53,15 @@ final class EnumPropertyMarshaller implements PropertyMarshaller
     public function __construct(
         private readonly string $enumName,
     ) {
-        $this->type = new VaruintType();
+        $this->type = new VarintType();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): \BackedEnum
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): \BackedEnum
     {
-        return $this->enumName::tryFrom($variant = $this->type->readFrom($buffer)) ?: throw new EnumDoesNotContainVariant(
+        return $this->enumName::tryFrom($variant = $this->type->readFrom($reader)) ?: throw new EnumDoesNotContainVariant(
             $this->enumName,
             $variant,
         );
@@ -70,12 +70,9 @@ final class EnumPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        /** @var int<0, max> $variant */
-        $variant = $value->value;
-
-        $this->type->writeTo($buffer, $variant);
+        $this->type->writeTo($writer, (int)$value->value);
     }
 
     /**

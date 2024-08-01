@@ -25,29 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Byte;
 
-use Typhoon\Type\Type;
-use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use Prototype\Serializer\PrototypeException;
 
 /**
- * @template-extends DefaultTypeVisitor<bool>
+ * @api
  */
-final class IsMixed extends DefaultTypeVisitor
+interface Cloneable
 {
     /**
-     * {@inheritdoc}
+     * @throws PrototypeException
      */
-    public function mixed(Type $type): bool
-    {
-        return true;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function default(Type $type): bool
-    {
-        return false;
-    }
+    public function clone(): static;
 }

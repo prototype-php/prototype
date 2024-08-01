@@ -27,22 +27,23 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
-use Kafkiansky\Binary;
+use Prototype\Serializer\Byte;
+use Prototype\Serializer\PrototypeException;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @throws Binary\BinaryException
+ * @throws PrototypeException
  */
-function discard(Binary\Buffer $buffer, Tag $tag): void
+function discard(Byte\Reader $reader, Tag $tag): void
 {
     if ($tag->type === Type::VARINT) {
-        $buffer->consumeVarUint();
+        $reader->readVarint();
     } elseif ($tag->type === Type::FIXED32) {
-        $buffer->consumeUint32();
+        $reader->readFixed32();
     } elseif ($tag->type === Type::FIXED64) {
-        $buffer->consumeUint64();
+        $reader->readFixed64();
     } else {
-        $buffer->consume($buffer->consumeVarUint());
+        $reader->slice();
     }
 }

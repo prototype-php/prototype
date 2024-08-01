@@ -25,23 +25,42 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\PrototypeException;
+use Prototype\Serializer\Internal\Type\StringType;
+use Typhoon\DeclarationId\AnonymousClassId;
+use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Type\Type;
+use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @template-extends DefaultTypeVisitor<bool>
  */
-final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
+final class IsString extends DefaultTypeVisitor
 {
     /**
-     * @psalm-param enum-string<\BackedEnum>|non-empty-string $enumName
+     * {@inheritdoc}
      */
-    public function __construct(
-        public readonly string $enumName,
-        public readonly int $variant,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Enum "%s" does not contain variant "%d".', $this->enumName, $this->variant), previous: $previous);
+    public function string(Type $type): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): bool
+    {
+        return $classId->name === StringType::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): bool
+    {
+        return false;
     }
 }

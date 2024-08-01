@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\PrototypeException;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -40,8 +40,7 @@ interface Serializer
      * @template T of object
      * @param T $message
      * @throws \ReflectionException
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    public function serialize(object $message, Binary\Buffer $buffer): void;
+    public function serialize(object $message, Byte\Writer $writer): void;
 }

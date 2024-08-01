@@ -25,11 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
 use Prototype\Serializer\Exception\TypeIsNotSupported;
+use Prototype\Serializer\Internal\Type\DoubleType;
+use Prototype\Serializer\Internal\Type\FloatType;
+use Prototype\Serializer\Internal\Type\StringType;
+use Prototype\Serializer\Internal\Type\TypeSerializer;
+use Prototype\Serializer\Internal\Type\ValueType;
 use Prototype\Serializer\PrototypeException;
+use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 use function Typhoon\Type\stringify;
@@ -41,6 +48,10 @@ use function Typhoon\Type\stringify;
  */
 final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
@@ -61,7 +72,7 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
      * @throws PrototypeException
      * @throws \ReflectionException
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): TypeSerializer
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): TypeSerializer
     {
         if ($classId->reflect()->implementsInterface(TypeSerializer::class)) {
             /** @var TypeSerializer */
@@ -74,10 +85,12 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function float(Type $type, ?float $min, ?float $max): FloatType|DoubleType
+    public function float(Type $type, Type $minType, Type $maxType): FloatType|DoubleType
     {
+        $floatValue = new ToFloatValue($this->reflector);
+
         return match (true) {
-            $min === -1.7976931348623157E+308 && $max === 1.7976931348623157E+308 => new DoubleType(),
+            $minType->accept($floatValue) === -1.7976931348623157E+308 && $maxType->accept($floatValue) === 1.7976931348623157E+308 => new DoubleType(),
             default => new FloatType(),
         };
     }

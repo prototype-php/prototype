@@ -25,45 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Kafkiansky\Binary;
-use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
-use Typhoon\TypedMap\TypedMap;
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
+use Typhoon\Type\Type;
+use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @psalm-consistent-constructor
- * @psalm-type FixedUint32 = int<0, 4294967295>
- * @template-implements TypeSerializer<FixedUint32>
+ * @template-extends DefaultTypeVisitor<float>
  */
-final class FixedUint32Type implements TypeSerializer
+final class ToFloatValue extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
     {
-        $buffer->writeUint32($value);
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): int
+    public function floatValue(Type $type, float $value): float
     {
-        /** @var FixedUint32 */
-        return $buffer->consumeUint32();
+        return $value;
     }
 
-    public function labels(): TypedMap
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): float
     {
-        return Labels::new(Type::FIXED32)
-            ->with(Labels::default, 0)
-            ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::uint32)
-            ;
+        return 0;
     }
 }

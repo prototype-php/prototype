@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary\Buffer;
+use Prototype\Serializer\Byte;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\Internal\Wire\Type;
@@ -91,11 +91,10 @@ final class PropertySerializeDescriptor
     /**
      * @param T $value
      * @throws PrototypeException
-     * @throws \Kafkiansky\Binary\BinaryException
      * @throws \ReflectionException
      */
-    public function encode(Buffer $buffer, Serializer $serializer, Tag $tag, mixed $value): void
+    public function encode(Byte\Writer $writer, Serializer $serializer, Tag $tag, mixed $value): void
     {
-        $this->serializer->serializeValue($buffer, $serializer, $value, $tag);
+        $this->serializer->serializeValue($writer, $serializer, $value, $tag);
     }
 }

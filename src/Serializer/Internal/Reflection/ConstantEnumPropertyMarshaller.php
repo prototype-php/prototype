@@ -27,8 +27,11 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
+use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
+use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Type\TimestampType;
+use Prototype\Serializer\Internal\Type\TypeSerializer;
+use Prototype\Serializer\Internal\Type\VarintType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
 use Prototype\Serializer\Byte;
@@ -36,25 +39,26 @@ use Prototype\Serializer\Byte;
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-implements PropertyMarshaller<\DateTimeInterface>
+ * @template-implements PropertyMarshaller<int>
  */
-final class DateTimePropertyMarshaller implements PropertyMarshaller
+final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
 {
+    /** @var TypeSerializer<int>  */
+    private readonly TypeSerializer $type;
+
     /**
-     * @psalm-param class-string<\DateTimeInterface>|interface-string<\DateTimeInterface> $dateTimeClass
+     * @param list<int> $variants
+     * @throws EnumDoesNotContainZeroVariant
      */
     public function __construct(
-        private readonly string $dateTimeClass,
-    ) {}
+        private readonly string $enumName,
+        private readonly array $variants,
+    ) {
+        if (!\in_array(0, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainZeroVariant($this->enumName);
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): \DateTimeInterface
-    {
-        $timestamp = $deserializer->deserialize(TimestampType::class, $reader->slice());
-
-        return $timestamp->toDateTime($this->dateTimeClass);
+        $this->type = new VarintType();
     }
 
     /**
@@ -62,11 +66,25 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $serializer->serialize(TimestampType::fromDateTime($value), $objectBuffer = $writer->clone());
-
-        if ($objectBuffer->isNotEmpty()) {
-            $writer->copyFrom($objectBuffer);
+        if (!\in_array($value, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainVariant($this->enumName, $value);
         }
+
+        $this->type->writeTo($writer, $value);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): mixed
+    {
+        $value = $this->type->readFrom($reader);
+
+        if (!\in_array($value, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainVariant($this->enumName, $value);
+        }
+
+        return $value;
     }
 
     /**
@@ -74,7 +92,7 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
      */
     public function matchValue(mixed $value): bool
     {
-        return $value instanceof \DateTimeInterface;
+        return \in_array($value, $this->variants, true);
     }
 
     /**
@@ -82,6 +100,9 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
      */
     public function labels(): TypedMap
     {
-        return Labels::new(Wire\Type::BYTES);
+        return $this->type->labels()
+            ->with(Labels::default, 0)
+            ->with(Labels::isEmpty, static fn (int $variant): bool => 0 === $variant)
+            ;
     }
 }

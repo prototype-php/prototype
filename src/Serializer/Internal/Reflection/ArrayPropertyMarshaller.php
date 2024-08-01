@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -50,34 +50,34 @@ final class ArrayPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): iterable
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): iterable
     {
         if ($this->marshaller->labels()[Labels::packed]) {
-            $buffer = $buffer->split($buffer->consumeVarUint());
+            $reader = $reader->slice();
 
-            while (!$buffer->isEmpty()) {
-                yield $this->marshaller->deserializeValue($buffer, $deserializer, $tag);
+            while ($reader->isNotEmpty()) {
+                yield $this->marshaller->deserializeValue($reader, $deserializer, $tag);
             }
 
             return;
         }
 
-        yield $this->marshaller->deserializeValue($buffer, $deserializer, $tag);
+        yield $this->marshaller->deserializeValue($reader, $deserializer, $tag);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $arrayBuffer = $buffer->clone();
+        $arrayBuffer = $writer->clone();
 
         $isPacked = $this->marshaller->labels()[Labels::packed];
 
         foreach ($value as $item) {
             $this->marshaller->serializeValue($valueBuffer = $arrayBuffer->clone(), $serializer, $item, $tag);
 
-            if (!$valueBuffer->isEmpty()) {
+            if ($valueBuffer->isNotEmpty()) {
                 if (!$isPacked) {
                     $tag->encode($arrayBuffer);
                 }
@@ -86,15 +86,15 @@ final class ArrayPropertyMarshaller implements PropertyMarshaller
             }
         }
 
-        if (!$arrayBuffer->isEmpty()) {
+        if ($arrayBuffer->isNotEmpty()) {
             if ($isPacked) {
-                $tag->encode($buffer);
-                $buffer
-                    ->writeVarUint($arrayBuffer->count())
+                $tag->encode($writer);
+                $writer
+                    ->writeVarint($arrayBuffer->size())
                 ;
             }
 
-            $buffer->write($arrayBuffer->reset());
+            $writer->write($arrayBuffer->reset());
         }
     }
 

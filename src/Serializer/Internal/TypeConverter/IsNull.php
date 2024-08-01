@@ -25,45 +25,31 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Kafkiansky\Binary;
-use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
-use Typhoon\TypedMap\TypedMap;
+use Typhoon\Type\Type;
+use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @psalm-consistent-constructor
- * @psalm-type FixedUint64 = int<0, max>
- * @template-implements TypeSerializer<FixedUint64>
+ * @template-extends DefaultTypeVisitor<bool>
  */
-final class FixedUint64Type implements TypeSerializer
+final class IsNull extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function null(Type $type): bool
     {
-        $buffer->writeUint64($value);
+        return true;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): int
+    protected function default(Type $type): bool
     {
-        /** @var FixedUint64 */
-        return $buffer->consumeUint64();
-    }
-
-    public function labels(): TypedMap
-    {
-        return Labels::new(Type::FIXED64)
-            ->with(Labels::default, 0)
-            ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::uint64)
-            ;
+        return false;
     }
 }

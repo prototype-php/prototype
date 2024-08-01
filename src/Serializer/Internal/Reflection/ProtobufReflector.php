@@ -29,6 +29,7 @@ namespace Prototype\Serializer\Internal\Reflection;
 
 use Prototype\Serializer\Field;
 use Prototype\Serializer\Internal;
+use Prototype\Serializer\Internal\TypeConverter\NativeTypeToPropertyMarshallerConverter;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;

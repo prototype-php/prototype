@@ -25,23 +25,43 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Serializer\Internal\Type;
 
-use Prototype\Serializer\PrototypeException;
+use Prototype\Serializer\Internal\Label\Labels;
+use Prototype\Serializer\Internal\Wire;
+use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @psalm-consistent-constructor
+ * @template-implements TypeSerializer<int<min, max>>
  */
-final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
+final class SInt64Type implements TypeSerializer
 {
     /**
-     * @psalm-param enum-string<\BackedEnum>|non-empty-string $enumName
+     * {@inheritdoc}
      */
-    public function __construct(
-        public readonly string $enumName,
-        public readonly int $variant,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Enum "%s" does not contain variant "%d".', $this->enumName, $this->variant), previous: $previous);
+    public function writeTo(Byte\Writer $writer, mixed $value): void
+    {
+        $writer->writeInt64Varint($value);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readFrom(Byte\Reader $reader): int
+    {
+        return $reader->readInt64Varint();
+    }
+
+    public function labels(): TypedMap
+    {
+        return Labels::new(Wire\Type::VARINT)
+            ->with(Labels::default, 0)
+            ->with(Labels::packed, true)
+            ->with(Labels::schemaType, ProtobufType::sint64)
+            ;
     }
 }

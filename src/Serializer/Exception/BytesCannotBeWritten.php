@@ -27,21 +27,16 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Exception;
 
+use Kafkiansky\Binary\BinaryException;
 use Prototype\Serializer\PrototypeException;
 
 /**
  * @api
  */
-final class EnumDoesNotContainVariant extends \Exception implements PrototypeException
+final class BytesCannotBeWritten extends \Exception implements PrototypeException
 {
-    /**
-     * @psalm-param enum-string<\BackedEnum>|non-empty-string $enumName
-     */
-    public function __construct(
-        public readonly string $enumName,
-        public readonly int $variant,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Enum "%s" does not contain variant "%d".', $this->enumName, $this->variant), previous: $previous);
+    public static function fromException(BinaryException $exception): self
+    {
+        return new self($exception->getMessage(), $exception->getCode(), $exception);
     }
 }

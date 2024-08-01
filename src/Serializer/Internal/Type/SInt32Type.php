@@ -25,39 +25,43 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\Type;
 
-use Prototype\Serializer\Internal\Type\StringType;
-use Typhoon\DeclarationId\NamedClassId;
-use Typhoon\Type\Type;
-use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use Prototype\Serializer\Internal\Label\Labels;
+use Prototype\Serializer\Internal\Wire;
+use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
- * @template-extends DefaultTypeVisitor<bool>
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @psalm-consistent-constructor
+ * @template-implements TypeSerializer<int<-2147483648, 2147483647>>
  */
-final class IsString extends DefaultTypeVisitor
+final class SInt32Type implements TypeSerializer
 {
     /**
      * {@inheritdoc}
      */
-    public function string(Type $type): bool
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
-        return true;
+        $writer->writeInt32Varint($value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): bool
+    public function readFrom(Byte\Reader $reader): int
     {
-        return $classId->name === StringType::class;
+        return $reader->readInt32Varint();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function default(Type $type): bool
+    public function labels(): TypedMap
     {
-        return false;
+        return Labels::new(Wire\Type::VARINT)
+            ->with(Labels::default, 0)
+            ->with(Labels::packed, true)
+            ->with(Labels::schemaType, ProtobufType::sint32)
+            ;
     }
 }

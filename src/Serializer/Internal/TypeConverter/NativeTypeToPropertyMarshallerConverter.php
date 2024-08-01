@@ -25,19 +25,33 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
 use Prototype\Serializer\Exception\TypeIsNotSupported;
+use Prototype\Serializer\Internal\Reflection\ArrayPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ArrayShapePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ConstantEnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateIntervalPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateTimePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\EnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\HashTablePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ObjectPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ScalarPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\StructPropertyMarshaller;
 use Prototype\Serializer\Internal\Type\BoolType;
-use Prototype\Serializer\Internal\Type\NativeTypeToProtobufTypeConverter;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\DeclarationId\AliasId;
 use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Reflection\ClassConstantReflection;
 use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
+use Typhoon\Type\types;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Prototype\Serializer\Internal\Reflection\instanceOfDateTime;
+use function Prototype\Serializer\Internal\Reflection\isClassOf;
 use function Typhoon\Type\stringify;
 
 /**
@@ -52,7 +66,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     public function __construct(
         private readonly TyphoonReflector $reflector,
     ) {
-        $this->nativeTypeToProtobufTypeConverter = new NativeTypeToProtobufTypeConverter();
+        $this->nativeTypeToProtobufTypeConverter = new NativeTypeToProtobufTypeConverter($this->reflector);
     }
 
     /**
@@ -112,27 +126,40 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     /**
      * @throws PrototypeException
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): PropertyMarshaller
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): PropertyMarshaller
     {
         try {
             return new ScalarPropertyMarshaller($type->accept($this->nativeTypeToProtobufTypeConverter));
         } catch (\Throwable) {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            return match (true) {
-                enum_exists($classId->name) => new EnumPropertyMarshaller($classId->name),
-                instanceOfDateTime($classId->name) => new DateTimePropertyMarshaller($classId->name),
-                isClassOf($classId->name, \DateInterval::class) => new DateIntervalPropertyMarshaller(),
-                class_exists($classId->name) => new ObjectPropertyMarshaller($classId->name),
-                default => throw new TypeIsNotSupported($classId->name),
-            };
+            if (null !== ($className = $classId->name)) {
+                /** @psalm-suppress ArgumentTypeCoercion */
+                return match (true) {
+                    enum_exists($className) => new EnumPropertyMarshaller($className),
+                    instanceOfDateTime($className) => new DateTimePropertyMarshaller($className),
+                    isClassOf($className, \DateInterval::class) => new DateIntervalPropertyMarshaller(),
+                    class_exists($className) => new ObjectPropertyMarshaller($className),
+                    default => throw new TypeIsNotSupported($className),
+                };
+            }
         }
+
+        throw new TypeIsNotSupported(stringify($type));
     }
 
     /**
      * {@inheritdoc}
      */
-    public function union(Type $type, array $ofTypes): array
+    public function union(Type $type, array $ofTypes): mixed
     {
+        if ($type->accept(new IsConstantEnum($this->reflector))) {
+            $intValue = new ToIntValue($this->reflector);
+
+            return new ConstantEnumPropertyMarshaller(
+                stringify($type),
+                array_map(static fn (Type $type): int => $type->accept($intValue), $ofTypes),
+            );
+        }
+
         $hasBool = false;
         $propertyMarshallers = [];
 
@@ -149,7 +176,22 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
             $propertyMarshallers[] = new ScalarPropertyMarshaller(new BoolType());
         }
 
-        return $propertyMarshallers;
+        return $propertyMarshallers; // @phpstan-ignore-line
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function classConstantMask(Type $type, Type $classType, string $namePrefix): mixed
+    {
+        $types = $this
+            ->reflector
+            ->reflect($classType->accept(new ClassResolver()))
+            ->constants()
+            ->filter(static fn (ClassConstantReflection $reflection): bool => str_starts_with($reflection->id->name, $namePrefix))
+            ->map(static fn (ClassConstantReflection $reflection): Type => $reflection->type());
+
+        return types::union(...$types->toList())->accept($this);
     }
 
     /**
