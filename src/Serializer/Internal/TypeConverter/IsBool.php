@@ -25,21 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
+ * @internal
+ * @psalm-internal Prototype\Serializer
  * @template-extends DefaultTypeVisitor<bool>
  */
-final class IsMixed extends DefaultTypeVisitor
+final class IsBool extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function mixed(Type $type): bool
+    public function true(Type $type): bool
     {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function false(Type $type): bool
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function union(Type $type, array $ofTypes): bool
+    {
+        foreach ($ofTypes as $ofType) {
+            if (!$ofType->accept($this)) {
+                return false;
+            }
+        }
+
         return true;
     }
 

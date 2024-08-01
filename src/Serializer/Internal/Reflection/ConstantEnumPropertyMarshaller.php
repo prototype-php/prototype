@@ -27,46 +27,46 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
-use Prototype\Serializer\Internal\Type\VaruintType;
+use Prototype\Serializer\Internal\Type\VarintType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-implements PropertyMarshaller<int<0, max>>
+ * @template-implements PropertyMarshaller<int>
  */
 final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
 {
-    /** @var TypeSerializer<int<0, max>>  */
+    /** @var TypeSerializer<int>  */
     private readonly TypeSerializer $type;
 
     /**
-     * @param list<int<0, max>> $variants
+     * @param list<int> $variants
      */
     public function __construct(
         public readonly array $variants,
     ) {
-        $this->type = new VaruintType();
+        $this->type = new VarintType();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $this->type->writeTo($buffer, $value);
+        $this->type->writeTo($writer, $value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): mixed
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): mixed
     {
-        return $this->type->readFrom($buffer);
+        return $this->type->readFrom($reader);
     }
 
     /**

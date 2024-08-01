@@ -25,35 +25,42 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\Exception\TypeIsNotSupported;
+use Prototype\Serializer\Internal\Type\StringType;
+use Typhoon\DeclarationId\AnonymousClassId;
+use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
-use function Typhoon\Type\stringify;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-extends DefaultTypeVisitor<int>
+ * @template-extends DefaultTypeVisitor<bool>
  */
-final class ToTypeInt extends DefaultTypeVisitor
+final class IsString extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function int(Type $type, ?int $min, ?int $max): int
+    public function string(Type $type): bool
     {
-        \assert(null !== $min, 'Min constraint expected.');
-
-        return $min;
+        return true;
     }
 
     /**
-     * @throws TypeIsNotSupported
+     * {@inheritdoc}
      */
-    protected function default(Type $type): never
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): bool
     {
-        throw new TypeIsNotSupported(stringify($type));
+        return $classId->name === StringType::class;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function default(Type $type): bool
+    {
+        return false;
     }
 }

@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
@@ -33,34 +33,23 @@ use Typhoon\Type\Visitor\DefaultTypeVisitor;
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @template-extends DefaultTypeVisitor<bool>
+ * @template-extends DefaultTypeVisitor<float>
  */
-final class IsConstantEnum extends DefaultTypeVisitor
+final class ToFloatValue extends DefaultTypeVisitor
 {
     /**
      * {@inheritdoc}
      */
-    public function int(Type $type, ?int $min, ?int $max): bool
+    public function floatValue(Type $type, float $value): float
     {
-        return $min !== null && $max !== null && $min === $max;
+        return $value;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function union(Type $type, array $ofTypes): bool
+    protected function default(Type $type): float
     {
-        foreach ($ofTypes as $ofType) {
-            if (!$ofType->accept($this)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    protected function default(Type $type): bool
-    {
-        return false;
+        return 0;
     }
 }

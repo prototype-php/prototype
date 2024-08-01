@@ -25,40 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
-use Prototype\Serializer\Internal\Type\StringType;
-use Typhoon\DeclarationId\AnonymousClassId;
-use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
 /**
- * @template-extends DefaultTypeVisitor<bool>
+ * @internal
+ * @psalm-internal Prototype\Serializer
+ * @template-extends DefaultTypeVisitor<int>
  */
-final class IsString extends DefaultTypeVisitor
+final class ToIntValue extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
-    public function string(Type $type): bool
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
     {
-        return true;
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): bool
+    public function intValue(Type $type, int $value): int
     {
-        return $classId->name === StringType::class;
+        return $value;
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function default(Type $type): bool
+    protected function default(Type $type): int
     {
-        return false;
+        return 0;
     }
 }

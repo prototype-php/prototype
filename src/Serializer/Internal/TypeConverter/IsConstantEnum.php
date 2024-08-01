@@ -25,8 +25,10 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
@@ -35,12 +37,24 @@ use Typhoon\Type\Visitor\DefaultTypeVisitor;
  * @psalm-internal Prototype\Serializer
  * @template-extends DefaultTypeVisitor<bool>
  */
-final class IsBool extends DefaultTypeVisitor
+final class IsConstantEnum extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
-    public function true(Type $type): bool
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
+    {
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function intValue(Type $type, int $value): bool
     {
         return true;
     }
@@ -48,9 +62,11 @@ final class IsBool extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function false(Type $type): bool
+    public function int(Type $type, Type $minType, Type $maxType): bool
     {
-        return true;
+        $intValue = new ToIntValue($this->reflector);
+
+        return $minType->accept($intValue) === $maxType->accept($intValue);
     }
 
     /**
@@ -67,9 +83,6 @@ final class IsBool extends DefaultTypeVisitor
         return true;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function default(Type $type): bool
     {
         return false;

@@ -25,11 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Serializer\Internal\TypeConverter;
 
 use Prototype\Serializer\Exception\TypeIsNotSupported;
+use Prototype\Serializer\Internal\Reflection\ArrayPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ArrayShapePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ConstantEnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateIntervalPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateTimePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\EnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\HashTablePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ObjectPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ScalarPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\StructPropertyMarshaller;
 use Prototype\Serializer\Internal\Type\BoolType;
-use Prototype\Serializer\Internal\Type\NativeTypeToProtobufTypeConverter;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\DeclarationId\AliasId;
 use Typhoon\DeclarationId\AnonymousClassId;
@@ -40,6 +50,8 @@ use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
 use Typhoon\Type\types;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Prototype\Serializer\Internal\Reflection\instanceOfDateTime;
+use function Prototype\Serializer\Internal\Reflection\isClassOf;
 use function Typhoon\Type\stringify;
 
 /**
@@ -139,9 +151,11 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
      */
     public function union(Type $type, array $ofTypes): mixed
     {
-        if ($type->accept(new IsConstantEnum())) {
+        if ($type->accept(new IsConstantEnum($this->reflector))) {
+            $intValue = new ToIntValue($this->reflector);
+
             return new ConstantEnumPropertyMarshaller(
-                array_map(static fn (Type $type): int => $type->accept(new ToTypeInt()), $ofTypes), // @phpstan-ignore-line
+                array_map(static fn (Type $type): int => $type->accept($intValue), $ofTypes),
             );
         }
 
@@ -171,44 +185,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     {
         $types = $this
             ->reflector
-            ->reflect($classType->accept(new /** @extends DefaultTypeVisitor<NamedClassId> */ class extends DefaultTypeVisitor {
-                /**
-                 * {@inheritdoc}
-                 */
-                public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): mixed
-                {
-                    return $classId;
-                }
-
-                /**
-                 * {@inheritdoc}
-                 */
-                public function self(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
-                {
-                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
-                }
-
-                /**
-                 * {@inheritdoc}
-                 */
-                public function parent(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
-                {
-                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
-                }
-
-                /**
-                 * {@inheritdoc}
-                 */
-                public function static(Type $type, array $typeArguments, NamedClassId|AnonymousClassId|null $resolvedClassId): mixed
-                {
-                    return $resolvedClassId ?? $this->default($type); // @phpstan-ignore-line
-                }
-
-                protected function default(Type $type): mixed
-                {
-                    throw new TypeIsNotSupported(stringify($type));
-                }
-            }))
+            ->reflect($classType->accept(new ClassResolver()))
             ->constants()
             ->filter(static fn (ClassConstantReflection $reflection): bool => str_starts_with($reflection->id->name, $namePrefix))
             ->map(static fn (ClassConstantReflection $reflection): Type => $reflection->type());
