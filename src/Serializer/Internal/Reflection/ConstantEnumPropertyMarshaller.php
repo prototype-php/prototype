@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
+use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
+use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
 use Prototype\Serializer\Internal\Type\VarintType;
@@ -46,10 +48,16 @@ final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
 
     /**
      * @param list<int> $variants
+     * @throws EnumDoesNotContainZeroVariant
      */
     public function __construct(
+        public readonly string $enumName,
         public readonly array $variants,
     ) {
+        if (!\in_array(0, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainZeroVariant($this->enumName);
+        }
+
         $this->type = new VarintType();
     }
 
@@ -58,6 +66,10 @@ final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
      */
     public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
+        if (!\in_array($value, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainVariant($this->enumName, $value);
+        }
+
         $this->type->writeTo($writer, $value);
     }
 
@@ -66,7 +78,13 @@ final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
      */
     public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): mixed
     {
-        return $this->type->readFrom($reader);
+        $value = $this->type->readFrom($reader);
+
+        if (!\in_array($value, $this->variants, strict: true)) {
+            throw new EnumDoesNotContainVariant($this->enumName, $value);
+        }
+
+        return $value;
     }
 
     /**

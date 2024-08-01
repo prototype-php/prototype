@@ -66,7 +66,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     public function __construct(
         private readonly TyphoonReflector $reflector,
     ) {
-        $this->nativeTypeToProtobufTypeConverter = new NativeTypeToProtobufTypeConverter();
+        $this->nativeTypeToProtobufTypeConverter = new NativeTypeToProtobufTypeConverter($this->reflector);
     }
 
     /**
@@ -155,6 +155,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
             $intValue = new ToIntValue($this->reflector);
 
             return new ConstantEnumPropertyMarshaller(
+                stringify($type),
                 array_map(static fn (Type $type): int => $type->accept($intValue), $ofTypes),
             );
         }

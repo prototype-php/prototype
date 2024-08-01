@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\TypeConverter;
 
+use Typhoon\DeclarationId\AliasId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 
@@ -37,6 +39,18 @@ use Typhoon\Type\Visitor\DefaultTypeVisitor;
  */
 final class ToFloatValue extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function alias(Type $type, AliasId $aliasId, array $typeArguments): mixed
+    {
+        return $this->reflector->reflect($aliasId)->type()->accept($this);
+    }
+
     /**
      * {@inheritdoc}
      */

@@ -1433,11 +1433,8 @@ final class EmptyMessageWillDiscardAllFields
 #[ProtobufMessage('resources/constant_enum.bin', constructorFunction: 'default')]
 final class EnumFromConstants
 {
-    /** @var 0 */
     public const TYPE_UNKNOWN = 0;
-    /** @var 1 */
     public const TYPE_GZIP = 1;
-    /** @var 2 */
     public const TYPE_LZ4 = 2;
 
     /**
@@ -1460,6 +1457,30 @@ final class EnumFromLiterals
 {
     /**
      * @psalm-param 0|1|2 $type
+     * @param int32 $level
+     */
+    public function __construct(
+        public readonly int $type,
+        public readonly int $level,
+    ) {}
+
+    public static function default(): self
+    {
+        return new self(2, 12);
+    }
+}
+
+/**
+ * @psalm-type CompressionTypeUnknown = 0
+ * @psalm-type CompressionTypeGZIP = 1
+ * @psalm-type CompressionTypeLZ4 = 2
+ * @psalm-type CompressionAliasType = CompressionTypeUnknown | CompressionTypeGZIP | CompressionTypeLZ4
+ */
+#[ProtobufMessage('resources/constant_enum.bin', constructorFunction: 'default')]
+final class EnumFromTypeAliases
+{
+    /**
+     * @param CompressionAliasType $type
      * @param int32 $level
      */
     public function __construct(

@@ -36,6 +36,7 @@ use Prototype\Serializer\Internal\Type\ValueType;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
+use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
 use function Typhoon\Type\stringify;
@@ -47,6 +48,10 @@ use function Typhoon\Type\stringify;
  */
 final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
 {
+    public function __construct(
+        private readonly TyphoonReflector $reflector,
+    ) {}
+
     /**
      * {@inheritdoc}
      */
@@ -82,8 +87,10 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
      */
     public function float(Type $type, Type $minType, Type $maxType): FloatType|DoubleType
     {
+        $floatValue = new ToFloatValue($this->reflector);
+
         return match (true) {
-            $minType->accept(new ToFloatValue()) === -1.7976931348623157E+308 && $maxType->accept(new ToFloatValue()) === 1.7976931348623157E+308 => new DoubleType(),
+            $minType->accept($floatValue) === -1.7976931348623157E+308 && $maxType->accept($floatValue) === 1.7976931348623157E+308 => new DoubleType(),
             default => new FloatType(),
         };
     }
