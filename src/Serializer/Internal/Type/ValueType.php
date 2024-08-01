@@ -85,7 +85,7 @@ final class ValueType implements TypeSerializer
         [$this->readers, $this->writers] = [
             [
                 self::NULL_TYPE   => static function (Binary\Buffer $buffer): mixed {
-                    (new VaruintType())->readFrom($buffer);
+                    $_ = (new VaruintType())->readFrom($buffer);
 
                     return null;
                 },
