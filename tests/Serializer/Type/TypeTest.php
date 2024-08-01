@@ -74,7 +74,7 @@ final class TypeTest extends TestCase
 
         yield 'varint' => [
             new VarintType(),
-            -1024,
+            1024,
         ];
 
         yield 'float' => [

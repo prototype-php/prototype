@@ -169,12 +169,8 @@ final class Buffer implements
      */
     public function readInt32Varint(): int
     {
-        try {
-            /** @var int<-2147483648, 2147483647> */
-            return $this->buffer->consumeVarInt();
-        } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
-        }
+        /** @var int<-2147483648, 2147483647> */
+        return self::decodeZigZag($this->readVarint());
     }
 
     /**
@@ -182,12 +178,8 @@ final class Buffer implements
      */
     public function readInt64Varint(): int
     {
-        try {
-            /** @var int<min, max> */
-            return $this->buffer->consumeVarInt();
-        } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
-        }
+        /** @var int<min, max> */
+        return self::decodeZigZag($this->readVarint());
     }
 
     /**
@@ -432,5 +424,10 @@ final class Buffer implements
     private static function encodeZigZag64(int $value): int
     {
         return ($value << 1) ^ ($value >> 64 - 1);
+    }
+
+    private static function decodeZigZag(int $value): int
+    {
+        return ($value >> 1) ^ -($value & 1);
     }
 }
