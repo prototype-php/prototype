@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -50,28 +50,20 @@ final class ObjectPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): object
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): object
     {
-        return $deserializer->deserialize(
-            $this->messageType,
-            $buffer->split(
-                $buffer->consumeVarUint(),
-            ),
-        );
+        return $deserializer->deserialize($this->messageType, $reader->slice());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $serializer->serialize($value, $objectBuffer = $buffer->clone());
+        $serializer->serialize($value, $objectBuffer = $writer->clone());
 
-        if (!$objectBuffer->isEmpty()) {
-            $buffer
-                ->writeVarUint($objectBuffer->count())
-                ->write($objectBuffer->reset())
-            ;
+        if ($objectBuffer->isNotEmpty()) {
+            $writer->copyFrom($objectBuffer);
         }
     }
 

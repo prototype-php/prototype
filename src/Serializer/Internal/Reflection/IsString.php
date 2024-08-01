@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Prototype\Serializer\Internal\Reflection;
 
 use Prototype\Serializer\Internal\Type\StringType;
+use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
@@ -48,7 +49,7 @@ final class IsString extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    public function namedObject(Type $type, NamedClassId $classId, array $typeArguments): bool
+    public function namedObject(Type $type, NamedClassId|AnonymousClassId $classId, array $typeArguments): bool
     {
         return $classId->name === StringType::class;
     }

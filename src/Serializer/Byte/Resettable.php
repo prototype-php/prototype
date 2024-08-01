@@ -25,45 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Byte;
 
-use Kafkiansky\Binary;
-use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
-use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\PrototypeException;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
- * @psalm-consistent-constructor
- * @psalm-type VarUint = int<0, max>
- * @template-implements TypeSerializer<VarUint>
+ * @api
  */
-final class VaruintType implements TypeSerializer
+interface Resettable
 {
     /**
-     * {@inheritdoc}
+     * @throws PrototypeException
      */
-    public function readFrom(Binary\Buffer $buffer): int
-    {
-        /** @var VarUint */
-        return $buffer->consumeVarUint();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
-    {
-        $buffer->writeVarUint($value);
-    }
-
-    public function labels(): TypedMap
-    {
-        return Labels::new(Type::VARINT)
-            ->with(Labels::default, 0)
-            ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::uint64)
-            ;
-    }
+    public function reset(): string;
 }

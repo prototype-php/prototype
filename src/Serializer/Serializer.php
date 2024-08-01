@@ -32,6 +32,7 @@ use Prototype\Serializer\Internal\Type\ProtobufType;
 use Prototype\Serializer\Internal\Wire;
 use Psr\SimpleCache\CacheInterface;
 use Typhoon\Reflection\TyphoonReflector;
+use Prototype\Serializer\Byte;
 
 /**
  * @api
@@ -54,17 +55,18 @@ final class Serializer
     /**
      * @template T of object
      * @param T $message
+     * @psalm-return ($writer is null ? Byte\Buffer : Byte\Writer)
      * @throws Binary\BinaryException
      * @throws PrototypeException
      * @throws \ReflectionException
      */
-    public function serialize(object $message, ?Binary\Buffer $buffer = null): Binary\Buffer
+    public function serialize(object $message, ?Byte\Writer $writer = null): Byte\Writer
     {
-        $buffer ??= Binary\Buffer::empty(Binary\Endianness::little());
+        $writer ??= Byte\Buffer::default();
 
-        $this->marshaller->serialize($message, $buffer);
+        $this->marshaller->serialize($message, $writer);
 
-        return $buffer;
+        return $writer;
     }
 
     /**
@@ -72,11 +74,10 @@ final class Serializer
      * @param class-string<T> $messageType
      * @return T
      * @throws \ReflectionException
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    public function deserialize(Binary\Buffer $buffer, string $messageType): object
+    public function deserialize(Byte\Reader $reader, string $messageType): object
     {
-        return $this->marshaller->deserialize($messageType, $buffer);
+        return $this->marshaller->deserialize($messageType, $reader);
     }
 }

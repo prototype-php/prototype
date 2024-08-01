@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer;
 
-use Kafkiansky\Binary\Buffer;
+use Prototype\Serializer\Byte\Buffer;
 use Kafkiansky\Binary\Endianness;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
@@ -50,14 +50,11 @@ final class SerializerTest extends TestCase
         $bin = file_get_contents(__DIR__ . '/Fixtures/' .$resourcePath);
         self::assertNotFalse($bin);
 
-        $buffer = Buffer::fromString(
-            $bin,
-            Endianness::little(),
-        );
+        $buffer = Buffer::fromString($bin);
 
         $serializer = new Serializer();
         self::assertEquals($message, $serializer->deserialize($buffer, $message::class));
-        self::assertTrue($buffer->isEmpty());
+        self::assertFalse($buffer->isNotEmpty());
     }
 
     #[DataProviderExternal(FixtureProvider::class, 'messages')]
@@ -66,7 +63,7 @@ final class SerializerTest extends TestCase
         $serializer = new Serializer();
         $buffer = $serializer->serialize($message);
         self::assertEquals($message, $serializer->deserialize($buffer, $message::class));
-        self::assertTrue($buffer->isEmpty());
+        self::assertFalse($buffer->isNotEmpty());
     }
 
     public function testSerializeNotSupportedType(): void
@@ -86,8 +83,8 @@ final class SerializerTest extends TestCase
 
     public function testDeserializeUnknownWireType(): void
     {
-        $buffer = Buffer::empty(Endianness::little());
-        $buffer = $buffer->writeVarUint(1 << 3 | 300);
+        $buffer = Buffer::default();
+        $buffer = $buffer->writeVarint(1 << 3 | 300);
 
         $serializer = new Serializer();
 
@@ -102,17 +99,17 @@ final class SerializerTest extends TestCase
 
         self::expectException(EnumDoesNotContainZeroVariant::class);
         self::expectExceptionMessage('Enum "Prototype\Tests\Serializer\Fixtures\InvalidEnum" must contain zero variant.');
-        $serializer->deserialize(Buffer::empty(Endianness::little()), InvalidMessage::class);
+        $serializer->deserialize(Buffer::default(), InvalidMessage::class);
     }
 
     public function testDeserializeEnumWithoutConcreteVariant(): void
     {
         $serializer = new Serializer();
 
-        $buffer = Buffer::empty(Endianness::little());
+        $buffer = Buffer::default();
         $buffer
-            ->writeVarUint(1 << 3 | 0)
-            ->writeVarUint(2)
+            ->writeVarint(1 << 3 | 0)
+            ->writeVarint(2)
         ;
 
         self::expectException(EnumDoesNotContainVariant::class);

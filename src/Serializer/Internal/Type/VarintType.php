@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
+use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -43,22 +43,22 @@ final class VarintType implements TypeSerializer
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): int
+    public function readFrom(Byte\Reader $reader): int
     {
-        return $buffer->consumeVarInt();
+        return $reader->readVarint();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
-        $buffer->writeVarInt($value);
+        $writer->writeVarint($value);
     }
 
     public function labels(): TypedMap
     {
-        return Labels::new(Type::VARINT)
+        return Labels::new(Wire\Type::VARINT)
             ->with(Labels::default, 0)
             ->with(Labels::packed, true)
             ->with(Labels::schemaType, ProtobufType::int64)

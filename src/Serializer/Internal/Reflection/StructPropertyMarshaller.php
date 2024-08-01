@@ -27,12 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
 use Prototype\Serializer\Internal\Type\ValueType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -53,26 +53,21 @@ final class StructPropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): array
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): array
     {
-        return $this->type->readFrom(
-            $buffer->split($buffer->consumeVarUint()),
-        );
+        return $this->type->readFrom($reader->slice());
     }
 
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $this->type->writeTo($structBuffer = $buffer->clone(), $value);
+        $this->type->writeTo($structBuffer = $writer->clone(), $value);
 
-        if (!$structBuffer->isEmpty()) {
-            $tag->encode($buffer);
-            $buffer
-                ->writeVarUint($structBuffer->count())
-                ->write($structBuffer->reset())
-            ;
+        if ($structBuffer->isNotEmpty()) {
+            $tag->encode($writer);
+            $writer->copyFrom($structBuffer);
         }
     }
 
