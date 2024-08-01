@@ -130,11 +130,7 @@ final class Buffer implements
      */
     public function readBool(): bool
     {
-        try {
-            return 0 !== $this->buffer->consumeVarInt();
-        } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
-        }
+        return 0 !== $this->readVarint();
     }
 
     /**
