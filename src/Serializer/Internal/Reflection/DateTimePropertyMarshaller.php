@@ -27,11 +27,11 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TimestampType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -50,9 +50,9 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): \DateTimeInterface
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): \DateTimeInterface
     {
-        $timestamp = $deserializer->deserialize(TimestampType::class, $buffer->split($buffer->consumeVarUint()));
+        $timestamp = $deserializer->deserialize(TimestampType::class, $reader->slice());
 
         return $timestamp->toDateTime($this->dateTimeClass);
     }
@@ -60,15 +60,12 @@ final class DateTimePropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $serializer->serialize(TimestampType::fromDateTime($value), $objectBuffer = $buffer->clone());
+        $serializer->serialize(TimestampType::fromDateTime($value), $objectBuffer = $writer->clone());
 
-        if (!$objectBuffer->isEmpty()) {
-            $buffer
-                ->writeVarUint($objectBuffer->count())
-                ->write($objectBuffer->reset())
-            ;
+        if ($objectBuffer->isNotEmpty()) {
+            $writer->copyFrom($objectBuffer);
         }
     }
 

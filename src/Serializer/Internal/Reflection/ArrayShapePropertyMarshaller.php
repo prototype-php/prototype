@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -64,31 +64,31 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
     /**
      * {@inheritdoc}
      */
-    public function deserializeValue(Binary\Buffer $buffer, Deserializer $deserializer, Wire\Tag $tag): iterable
+    public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): iterable
     {
-        $buffer = $buffer->split($buffer->consumeVarUint());
+        $reader = $reader->slice();
 
-        while (!$buffer->isEmpty()) {
-            $tag = Wire\Tag::decode($buffer);
+        while ($reader->isNotEmpty()) {
+            $tag = Wire\Tag::decode($reader);
 
             if (!isset($this->deserializerNums[$tag->num])) {
-                Wire\discard($buffer, $tag);
+                Wire\discard($reader, $tag);
 
                 continue;
             }
 
             $fieldName = $this->deserializerNums[$tag->num];
 
-            yield $fieldName => $this->marshallers[$fieldName]->deserializeValue($buffer, $deserializer, $tag);
+            yield $fieldName => $this->marshallers[$fieldName]->deserializeValue($reader, $deserializer, $tag);
         }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function serializeValue(Binary\Buffer $buffer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
+    public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void
     {
-        $shapeBuffer = $buffer->clone();
+        $shapeBuffer = $writer->clone();
 
         /** @psalm-suppress MixedAssignment */
         foreach ($value as $key => $val) {
@@ -98,13 +98,9 @@ final class ArrayShapePropertyMarshaller implements PropertyMarshaller
             $this->marshallers[$key]->serializeValue($shapeBuffer, $serializer, $val, $fieldTag);
         }
 
-        if (!$shapeBuffer->isEmpty()) {
-            $tag->encode($buffer);
-
-            $buffer
-                ->writeVarUint($shapeBuffer->count())
-                ->write($shapeBuffer->reset())
-            ;
+        if ($shapeBuffer->isNotEmpty()) {
+            $tag->encode($writer);
+            $writer->copyFrom($shapeBuffer);
         }
     }
 

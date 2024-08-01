@@ -27,7 +27,6 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Exception\PropertyNumberIsInvalid;
 use Prototype\Serializer\Exception\TypeWasNotExpected;
 use Prototype\Serializer\Exception\ValueIsNotSerializable;
@@ -36,6 +35,7 @@ use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\Internal\Wire\Type;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -58,24 +58,24 @@ final class ValueType implements TypeSerializer
 
     /**
      * @var array{
-     *     1: callable(Binary\Buffer): null,
-     *     2: callable(Binary\Buffer): double,
-     *     3: callable(Binary\Buffer): string,
-     *     4: callable(Binary\Buffer): bool,
-     *     5: callable(Binary\Buffer): array<string, JSONValue>,
-     *     6: callable(Binary\Buffer): JSONValue[],
+     *     1: callable(Byte\Reader): null,
+     *     2: callable(Byte\Reader): double,
+     *     3: callable(Byte\Reader): string,
+     *     4: callable(Byte\Reader): bool,
+     *     5: callable(Byte\Reader): array<string, JSONValue>,
+     *     6: callable(Byte\Reader): JSONValue[],
      * }
      */
     private readonly array $readers;
 
     /**
      * @var array{
-     *     1: callable(Binary\Buffer, null): void,
-     *     2: callable(Binary\Buffer, double): void,
-     *     3: callable(Binary\Buffer, string): void,
-     *     4: callable(Binary\Buffer, bool): void,
-     *     5: callable(Binary\Buffer, array<string, JSONValue>): void,
-     *     6: callable(Binary\Buffer, JSONValue[]): void,
+     *     1: callable(Byte\Writer, null): void,
+     *     2: callable(Byte\Writer, double): void,
+     *     3: callable(Byte\Writer, string): void,
+     *     4: callable(Byte\Writer, bool): void,
+     *     5: callable(Byte\Writer, array<string, JSONValue>): void,
+     *     6: callable(Byte\Writer, JSONValue[]): void,
      * }
      */
     private readonly array $writers;
@@ -84,8 +84,8 @@ final class ValueType implements TypeSerializer
     {
         [$this->readers, $this->writers] = [
             [
-                self::NULL_TYPE   => static function (Binary\Buffer $buffer): mixed {
-                    (new VaruintType())->readFrom($buffer);
+                self::NULL_TYPE   => static function (Byte\Reader $reader): mixed {
+                    (new VarintType())->readFrom($reader);
 
                     return null;
                 },
@@ -96,8 +96,8 @@ final class ValueType implements TypeSerializer
                 self::LIST_TYPE   => $this->readList(...),
             ],
             [
-                self::NULL_TYPE   => static function (Binary\Buffer $buffer): void {
-                    (new VaruintType())->writeTo($buffer, 0);
+                self::NULL_TYPE   => static function (Byte\Writer $writer): void {
+                    (new VarintType())->writeTo($writer, 0);
                 },
                 self::NUMBER_TYPE => (new DoubleType())->writeTo(...),
                 self::STRING_TYPE => (new StringType())->writeTo(...),
@@ -111,25 +111,25 @@ final class ValueType implements TypeSerializer
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): array
+    public function readFrom(Byte\Reader $reader): array
     {
         $values = [];
 
-        while (!$buffer->isEmpty()) {
+        while ($reader->isNotEmpty()) {
             // Tag for google.protobuf.Value. Always BYTES.
-            if (($type = Tag::decode($buffer)->type) !== Type::BYTES) {
+            if (($type = Tag::decode($reader)->type) !== Type::BYTES) {
                 throw new TypeWasNotExpected($type->name);
             }
 
             // Single key pair of map<string, google.protobuf.Value>.
-            $mapKeyValueBuffer = $buffer->split($buffer->consumeVarUint());
+            $mapKeyValueBuffer = $reader->slice();
 
             // Tag for key from map<string, google.protobuf.Value>. Always BYTES (string).
             if (($type = Tag::decode($mapKeyValueBuffer)->type) !== Type::BYTES) {
                 throw new TypeWasNotExpected($type->name);
             }
 
-            $key = $mapKeyValueBuffer->consume($mapKeyValueBuffer->consumeVarUint());
+            $key = $mapKeyValueBuffer->readString();
 
             $values[$key] = $this->readValue($mapKeyValueBuffer);
         }
@@ -140,20 +140,20 @@ final class ValueType implements TypeSerializer
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
         foreach ($value as $key => $val) {
             $tag = new Tag(1, Type::BYTES);
-            $tag->encode($buffer);
+            $tag->encode($writer);
 
-            $mapKeyValueBuffer = $buffer->clone();
+            $mapKeyValueBuffer = $writer->clone();
             $tag->encode($mapKeyValueBuffer);
 
-            $mapKeyValueBuffer->writeVarUint(\strlen($key))->write($key);
+            $mapKeyValueBuffer->writeString($key);
             $this->writeValue($mapKeyValueBuffer, $val);
 
-            $buffer
-                ->writeVarUint($mapKeyValueBuffer->count())
+            $writer
+                ->writeVarint($mapKeyValueBuffer->size())
                 ->write($mapKeyValueBuffer->reset())
             ;
         }
@@ -168,17 +168,16 @@ final class ValueType implements TypeSerializer
 
     /**
      * @return JSONValue[]
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function readList(Binary\Buffer $buffer): array
+    private function readList(Byte\Reader $reader): array
     {
-        $buffer = $buffer->split($buffer->consumeVarUint());
+        $reader = $reader->slice();
 
         $list = [];
 
-        while (!$buffer->isEmpty()) {
-            $list[] = $this->readValue($buffer);
+        while ($reader->isNotEmpty()) {
+            $list[] = $this->readValue($reader);
         }
 
         return $list;
@@ -186,45 +185,40 @@ final class ValueType implements TypeSerializer
 
     /**
      * @param JSONValue[] $value
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function writeList(Binary\Buffer $buffer, array $value): void
+    private function writeList(Byte\Writer $writer, array $value): void
     {
-        $list = $buffer->clone();
+        $list = $writer->clone();
 
         foreach ($value as $element) {
             // When we are inside the list, the tag number will be 1, as specified in `google.protobuf.Struct`.
             $this->writeValue($list, $element, 1);
         }
 
-        $buffer->writeVarUint($list->count())->write($list->reset());
+        $writer->writeVarint($list->size())->write($list->reset());
     }
 
     /**
      * @return array<string, JSONValue>
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function readStruct(Binary\Buffer $buffer): array
+    private function readStruct(Byte\Reader $reader): array
     {
-        return $this->readFrom(
-            $buffer->split($buffer->consumeVarUint()),
-        );
+        return $this->readFrom($reader->slice());
     }
 
     /**
      * @param array<string, JSONValue> $value
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function writeStruct(Binary\Buffer $buffer, array $value): void
+    private function writeStruct(Byte\Writer $writer, array $value): void
     {
-        $this->writeTo($structBuffer = $buffer->clone(), $value);
+        $this->writeTo($structBuffer = $writer->clone(), $value);
 
-        if (!$structBuffer->isEmpty()) {
-            $buffer
-                ->writeVarUint($structBuffer->count())
+        if ($writer->isNotEmpty()) {
+            $writer
+                ->writeVarint($structBuffer->size())
                 ->write($structBuffer->reset())
             ;
         }
@@ -232,18 +226,17 @@ final class ValueType implements TypeSerializer
 
     /**
      * @return JSONValue
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function readValue(Binary\Buffer $buffer): mixed
+    private function readValue(Byte\Reader $reader): mixed
     {
         // Tag for google.protobuf.Value. Always BYTES.
-        if (($type = Tag::decode($buffer)->type) !== Type::BYTES) {
+        if (($type = Tag::decode($reader)->type) !== Type::BYTES) {
             throw new TypeWasNotExpected($type->name);
         }
 
         // Value as google.protobuf.Value.
-        $valueBuffer = $buffer->split($buffer->consumeVarUint());
+        $valueBuffer = $reader->slice();
         $valueBufferTag = Tag::decode($valueBuffer);
 
         if ($valueBufferTag->num > self::LIST_TYPE) {
@@ -257,10 +250,9 @@ final class ValueType implements TypeSerializer
     /**
      * @param positive-int $tagNum
      * @param JSONValue $value
-     * @throws Binary\BinaryException
      * @throws PrototypeException
      */
-    private function writeValue(Binary\Buffer $buffer, mixed $value, int $tagNum = 2): void
+    private function writeValue(Byte\Writer $writer, mixed $value, int $tagNum = 2): void
     {
         /** @psalm-suppress DocblockTypeContradiction */
         $num = match (true) {
@@ -274,10 +266,10 @@ final class ValueType implements TypeSerializer
         };
 
         $keyValueTag = new Tag($tagNum, Type::BYTES);
-        $keyValueTag->encode($buffer);
+        $keyValueTag->encode($writer);
 
         // An empty buffer for tagged value.
-        $valueBuffer = $buffer->clone();
+        $valueBuffer = $writer->clone();
 
         $valueTag = new Tag($num, match ($num) {
             self::NULL_TYPE, self::BOOL_TYPE => Type::VARINT,
@@ -288,8 +280,8 @@ final class ValueType implements TypeSerializer
         /** @psalm-suppress InvalidArgument It is false positive here. */
         $this->writers[$num]($valueBuffer, $value);
 
-        $buffer
-            ->writeVarUint($valueBuffer->count())
+        $writer
+            ->writeVarint($valueBuffer->size())
             ->write($valueBuffer->reset())
         ;
     }

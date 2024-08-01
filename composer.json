@@ -11,6 +11,7 @@
     ],
     "require": {
         "php": "^8.1",
+        "ext-bcmath": "*",
         "kafkiansky/binary": "^0.4.4",
         "typhoon/reflection": "0.4.x"
     },

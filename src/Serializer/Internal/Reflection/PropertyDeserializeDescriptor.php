@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Kafkiansky\Binary;
+use Prototype\Serializer\Byte;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\PrototypeException;
@@ -59,13 +59,12 @@ final class PropertyDeserializeDescriptor
 
     /**
      * @return T
-     * @throws Binary\BinaryException
      * @throws \ReflectionException
      * @throws PrototypeException
      */
-    public function readValue(Binary\Buffer $buffer, Deserializer $deserializer, Tag $tag): mixed
+    public function readValue(Byte\Reader $reader, Deserializer $deserializer, Tag $tag): mixed
     {
-        return $this->marshaller->deserializeValue($buffer, $deserializer, $tag);
+        return $this->marshaller->deserializeValue($reader, $deserializer, $tag);
     }
 
     /**

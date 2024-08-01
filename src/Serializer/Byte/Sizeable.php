@@ -25,45 +25,14 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
-
-use Kafkiansky\Binary;
-use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
-use Typhoon\TypedMap\TypedMap;
+namespace Prototype\Serializer\Byte;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
- * @psalm-consistent-constructor
- * @psalm-type FixedInt32 = int<-2147483648, 2147483647>
- * @template-implements TypeSerializer<FixedInt32>
+ * @api
  */
-final class FixedInt32Type implements TypeSerializer
+interface Sizeable
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
-    {
-        $buffer->writeInt32($value);
-    }
+    public function size(): int;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function readFrom(Binary\Buffer $buffer): int
-    {
-        /** @var FixedInt32 */
-        return $buffer->consumeInt32();
-    }
-
-    public function labels(): TypedMap
-    {
-        return Labels::new(Type::FIXED32)
-            ->with(Labels::default, 0)
-            ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::sfixed32)
-            ;
-    }
+    public function isNotEmpty(): bool;
 }

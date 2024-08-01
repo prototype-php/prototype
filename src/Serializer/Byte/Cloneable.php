@@ -25,44 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Type;
+namespace Prototype\Serializer\Byte;
 
-use Kafkiansky\Binary;
-use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
-use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\PrototypeException;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
- * @psalm-consistent-constructor
- * @psalm-type FixedInt64 = int<min, max>
- * @template-implements TypeSerializer<FixedInt64>
+ * @api
  */
-final class FixedInt64Type implements TypeSerializer
+interface Cloneable
 {
     /**
-     * {@inheritdoc}
+     * @throws PrototypeException
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
-    {
-        $buffer->writeInt64($value);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function readFrom(Binary\Buffer $buffer): int
-    {
-        return $buffer->consumeInt64();
-    }
-
-    public function labels(): TypedMap
-    {
-        return Labels::new(Type::FIXED64)
-            ->with(Labels::default, 0)
-            ->with(Labels::packed, true)
-            ->with(Labels::schemaType, ProtobufType::sfixed64)
-            ;
-    }
+    public function clone(): static;
 }

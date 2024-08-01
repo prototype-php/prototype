@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Reflection;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\Reflection\TyphoonReflector;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -53,9 +53,8 @@ final class ProtobufMarshaller implements
      * @param T $message
      * @throws \ReflectionException
      * @throws PrototypeException
-     * @throws Binary\BinaryException
      */
-    public function serialize(object $message, Binary\Buffer $buffer): void
+    public function serialize(object $message, Byte\Writer $writer): void
     {
         $class = $this->classReflector->reflectClass($message::class);
 
@@ -74,16 +73,16 @@ final class ProtobufMarshaller implements
 
             if ($propertySerializer->isNotEmpty($propertyValue)) {
                 $tag = new Tag($num, $propertySerializer->wireType());
-                $propertySerializer->encode($propertyBuffer = $buffer->clone(), $this, $tag, $propertyValue);
+                $propertySerializer->encode($propertyBuffer = $writer->clone(), $this, $tag, $propertyValue);
 
-                if (!$propertyBuffer->isEmpty()) {
+                if ($propertyBuffer->isNotEmpty()) {
                     $serialized[$propertySerializer->property] = true;
 
                     if ($propertySerializer->shouldSerializeTag()) {
-                        $tag->encode($buffer);
+                        $tag->encode($writer);
                     }
 
-                    $buffer->write($propertyBuffer->reset());
+                    $writer->write($propertyBuffer->reset());
                 }
             }
         }
@@ -95,9 +94,8 @@ final class ProtobufMarshaller implements
      * @return T
      * @throws \ReflectionException
      * @throws PrototypeException
-     * @throws Binary\BinaryException
      */
-    public function deserialize(string $messageType, Binary\Buffer $buffer): object
+    public function deserialize(string $messageType, Byte\Reader $reader): object
     {
         $class = $this->classReflector->reflectClass($messageType);
 
@@ -111,12 +109,12 @@ final class ProtobufMarshaller implements
         /** @psalm-var \WeakMap<Reflection\PropertyDeserializeDescriptor, ValueContext> $values */
         $values = new \WeakMap();
 
-        while (!$buffer->isEmpty()) {
-            $tag = Tag::decode($buffer);
+        while ($reader->isNotEmpty()) {
+            $tag = Tag::decode($reader);
 
             // Discard bytes for the unknown field.
             if (!isset($properties[$tag->num])) {
-                discard($buffer, $tag);
+                discard($reader, $tag);
 
                 continue;
             }
@@ -124,7 +122,7 @@ final class ProtobufMarshaller implements
             $propertyDeserializer = $properties[$tag->num];
             $values[$propertyDeserializer] ??= new ValueContext();
             /** @psalm-suppress MixedArgument */
-            $values[$propertyDeserializer]->setValue($propertyDeserializer->readValue($buffer, $this, $tag)); // @phpstan-ignore-line
+            $values[$propertyDeserializer]->setValue($propertyDeserializer->readValue($reader, $this, $tag)); // @phpstan-ignore-line
         }
 
         foreach ($values as $propertyDeserializer => $propertyValue) {

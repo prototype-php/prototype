@@ -27,8 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Wire;
 
-use Kafkiansky\Binary\Buffer;
-use Kafkiansky\Binary\Endianness;
+use Prototype\Serializer\Byte\Buffer;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\Internal\Wire\Type;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -63,9 +62,9 @@ final class TagTest extends TestCase
     #[DataProvider('fixtures')]
     public function testEncodeDecode(Tag $tag): void
     {
-        $buffer = Buffer::empty(Endianness::little());
+        $buffer = Buffer::default();
         $tag->encode($buffer);
         self::assertEquals($tag, Tag::decode($buffer));
-        self::assertCount(0, $buffer);
+        self::assertSame(0, $buffer->size());
     }
 }

@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
+use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -43,22 +43,22 @@ final class FloatType implements TypeSerializer
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
-        $buffer->writeFloat($value);
+        $writer->writeFloat($value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): float
+    public function readFrom(Byte\Reader $reader): float
     {
-        return $buffer->consumeFloat();
+        return $reader->readFloat();
     }
 
     public function labels(): TypedMap
     {
-        return Labels::new(Type::FIXED32)
+        return Labels::new(Wire\Type::FIXED32)
             ->with(Labels::default, 0.0)
             ->with(Labels::packed, true)
             ->with(Labels::schemaType, ProtobufType::float)

@@ -25,25 +25,43 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Wire;
+namespace Prototype\Serializer\Internal\Type;
 
+use Prototype\Serializer\Internal\Label\Labels;
+use Prototype\Serializer\Internal\Wire;
+use Typhoon\TypedMap\TypedMap;
 use Prototype\Serializer\Byte;
-use Prototype\Serializer\PrototypeException;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @throws PrototypeException
+ * @psalm-consistent-constructor
+ * @template-implements TypeSerializer<int<-2147483648, 2147483647>>
  */
-function discard(Byte\Reader $reader, Tag $tag): void
+final class SFixed32Type implements TypeSerializer
 {
-    if ($tag->type === Type::VARINT) {
-        $reader->readVarint();
-    } elseif ($tag->type === Type::FIXED32) {
-        $reader->readFixed32();
-    } elseif ($tag->type === Type::FIXED64) {
-        $reader->readFixed64();
-    } else {
-        $reader->slice();
+    /**
+     * {@inheritdoc}
+     */
+    public function writeTo(Byte\Writer $writer, mixed $value): void
+    {
+        $writer->writeSFixed32($value);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function readFrom(Byte\Reader $reader): int
+    {
+        return $reader->readSFixed32();
+    }
+
+    public function labels(): TypedMap
+    {
+        return Labels::new(Wire\Type::FIXED32)
+            ->with(Labels::default, 0)
+            ->with(Labels::packed, true)
+            ->with(Labels::schemaType, ProtobufType::sfixed32)
+            ;
     }
 }

@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
-use Kafkiansky\Binary;
 use Prototype\Serializer\Internal\Label\Labels;
-use Prototype\Serializer\Internal\Wire\Type;
+use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
+use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -43,22 +43,22 @@ final class StringType implements TypeSerializer
     /**
      * {@inheritdoc}
      */
-    public function writeTo(Binary\Buffer $buffer, mixed $value): void
+    public function writeTo(Byte\Writer $writer, mixed $value): void
     {
-        $buffer->writeVarUint(\strlen($value))->write($value);
+        $writer->writeString($value);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function readFrom(Binary\Buffer $buffer): string
+    public function readFrom(Byte\Reader $reader): string
     {
-        return $buffer->consume($buffer->consumeVarUint());
+        return $reader->readString();
     }
 
     public function labels(): TypedMap
     {
-        return Labels::new(Type::BYTES)
+        return Labels::new(Wire\Type::BYTES)
             ->with(Labels::default, '')
             ->with(Labels::schemaType, ProtobufType::string)
             ;
