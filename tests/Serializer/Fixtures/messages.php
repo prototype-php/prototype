@@ -44,14 +44,16 @@ final class ProtobufMessage
 
 enum CompressionType: int
 {
-    case NONE = 0;
+    case DEFAULT = 0;
+    case NO_COMPRESSION = -1;
     case GZIP = 1;
     case LZ4 = 2;
 }
 
 #[ProtobufMessage(path: 'resources/message_with_enum_gzip.bin', constructorFunction: 'withGzipCompression')]
 #[ProtobufMessage(path: 'resources/message_with_enum_lz4.bin', constructorFunction: 'withLZ4Compression')]
-#[ProtobufMessage(path: 'resources/message_with_enum_none.bin', constructorFunction: 'withNoneCompression')]
+#[ProtobufMessage(path: 'resources/message_with_enum_none.bin', constructorFunction: 'withDefaultCompression')]
+#[ProtobufMessage(path: 'resources/message_with_enum_negative.bin', constructorFunction: 'withoutCompression')]
 final class MessageWithEnum
 {
     public function __construct(
@@ -68,9 +70,14 @@ final class MessageWithEnum
         return new self(CompressionType::LZ4);
     }
 
-    public static function withNoneCompression(): self
+    public static function withDefaultCompression(): self
     {
-        return new self(CompressionType::NONE);
+        return new self(CompressionType::DEFAULT);
+    }
+
+    public static function withoutCompression(): self
+    {
+        return new self(CompressionType::NO_COMPRESSION);
     }
 }
 
@@ -1431,9 +1438,11 @@ final class EmptyMessageWillDiscardAllFields
 }
 
 #[ProtobufMessage('resources/constant_enum.bin', constructorFunction: 'default')]
+#[ProtobufMessage('resources/constant_enum_negative.bin', constructorFunction: 'negative')]
 final class EnumFromConstants
 {
     public const TYPE_UNKNOWN = 0;
+    public const TYPE_NO_COMPRESSION = -1;
     public const TYPE_GZIP = 1;
     public const TYPE_LZ4 = 2;
 
@@ -1450,13 +1459,19 @@ final class EnumFromConstants
     {
         return new self(self::TYPE_LZ4, 12);
     }
+
+    public static function negative(): self
+    {
+        return new self(self::TYPE_NO_COMPRESSION, 12);
+    }
 }
 
 #[ProtobufMessage('resources/constant_enum.bin', constructorFunction: 'default')]
+#[ProtobufMessage('resources/constant_enum_negative.bin', constructorFunction: 'negative')]
 final class EnumFromLiterals
 {
     /**
-     * @psalm-param 0|1|2 $type
+     * @psalm-param -1|0|1|2 $type
      * @param int32 $level
      */
     public function __construct(
@@ -1468,15 +1483,22 @@ final class EnumFromLiterals
     {
         return new self(2, 12);
     }
+
+    public static function negative(): self
+    {
+        return new self(-1, 12);
+    }
 }
 
 /**
  * @psalm-type CompressionTypeUnknown = 0
+ * @psalm-type CompressionTypeNone = -1
  * @psalm-type CompressionTypeGZIP = 1
  * @psalm-type CompressionTypeLZ4 = 2
- * @psalm-type CompressionAliasType = CompressionTypeUnknown | CompressionTypeGZIP | CompressionTypeLZ4
+ * @psalm-type CompressionAliasType = CompressionTypeUnknown | CompressionTypeNone | CompressionTypeGZIP | CompressionTypeLZ4
  */
 #[ProtobufMessage('resources/constant_enum.bin', constructorFunction: 'default')]
+#[ProtobufMessage('resources/constant_enum_negative.bin', constructorFunction: 'negative')]
 final class EnumFromTypeAliases
 {
     /**
@@ -1491,5 +1513,10 @@ final class EnumFromTypeAliases
     public static function default(): self
     {
         return new self(2, 12);
+    }
+
+    public static function negative(): self
+    {
+        return new self(-1, 12);
     }
 }
