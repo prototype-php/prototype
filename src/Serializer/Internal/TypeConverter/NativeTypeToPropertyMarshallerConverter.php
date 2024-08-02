@@ -149,6 +149,21 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
+    public function iterable(Type $type, Type $keyType, Type $valueType): mixed
+    {
+        if ($keyType->accept(new IsMixed())) {
+            return new ArrayPropertyMarshaller($valueType->accept($this));
+        }
+
+        return new HashTablePropertyMarshaller(
+            new ScalarPropertyMarshaller($keyType->accept($this->nativeTypeToProtobufTypeConverter)),
+            $valueType->accept($this),
+        );
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function union(Type $type, array $ofTypes): mixed
     {
         if ($type->accept(new IsConstantEnum($this->reflector))) {

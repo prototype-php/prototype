@@ -165,6 +165,38 @@ final class SearchResponse
     }
 }
 
+#[ProtobufMessage(path: 'resources/search_response.bin', constructorFunction: 'twoResults')]
+final class SearchResponseWithIterable
+{
+    /**
+     * @param iterable<SearchResult> $results
+     * @param fixed32 $total
+     */
+    public function __construct(
+        public readonly iterable $results,
+        public readonly int $total,
+    ) {}
+
+    public static function twoResults(): self
+    {
+        return new self(
+            [
+                new SearchResult(
+                    url: 'https://google.com/?protobuf',
+                    title: 'Protobuf is a google implementation of binary serialization format',
+                    snippets: ['grpc', 'protobuf'],
+                ),
+                new SearchResult(
+                    url: 'https://google.com/?php+protobuf',
+                    title: 'A modern strictly typed full-featured library for protobuf serialization without an inheritance.',
+                    snippets: ['grpc', 'protobuf', 'php'],
+                ),
+            ],
+            2,
+        );
+    }
+}
+
 enum PhoneType: int
 {
     case MOBILE = 0;
@@ -194,6 +226,37 @@ final class Person
         public readonly string $email,
         public readonly PhoneNumber $phone,
         public readonly array $info,
+    ) {}
+
+    public static function withDifferentOrder(): self
+    {
+        return new self(
+            'John Doe',
+            -200,
+            'johndoe@gmail.com',
+            new PhoneNumber(
+                PhoneType::MOBILE,
+                '7900000000',
+            ),
+            ['sex' => 'male'],
+        );
+    }
+}
+
+
+#[ProtobufMessage(path: 'resources/person.bin', constructorFunction: 'withDifferentOrder')]
+final class PersonWithIterable
+{
+    /**
+     * @param iterable<string, string> $info
+     * @param sfixed32 $id
+     */
+    public function __construct(
+        public readonly string $name,
+        public readonly int $id,
+        public readonly string $email,
+        public readonly PhoneNumber $phone,
+        public readonly iterable $info,
     ) {}
 
     public static function withDifferentOrder(): self
