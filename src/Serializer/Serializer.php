@@ -47,7 +47,7 @@ final class Serializer
         $this->marshaller = new Wire\ProtobufMarshaller(
             TyphoonReflector::build(
                 cache: $cache,
-                customTypeResolver: ProtobufType::instance(),
+                customTypeResolvers: [ProtobufType::instance()],
             ),
         );
     }
