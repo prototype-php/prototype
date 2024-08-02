@@ -148,7 +148,7 @@ final class Message
     public const TYPE_LZ4 = 2;
 
     /**
-     * @psalm-param self::TYPE_* $type
+     * @psalm-param self::TYPE_* $compressionType
      */
     public function __construct(
         public readonly int $compressionType,
@@ -168,7 +168,7 @@ declare(strict_types=1);
 final class Message
 {
     /**
-     * @psalm-param -1|0|1|2 $type
+     * @psalm-param -1|0|1|2 $compressionType
      */
     public function __construct(
         public readonly int $compressionType,
@@ -193,7 +193,7 @@ declare(strict_types=1);
 final class Message
 {
     /**
-     * @param CompressionType $type
+     * @param CompressionType $compressionType
      */
     public function __construct(
         public readonly int $compressionType,
@@ -416,6 +416,8 @@ final class Message
   ) {}
 }
 ```
+
+The `iterable<string, mixed>` is also accepted.
 
 However, only `strings`, `booleans`, numbers (`int` and `float`), `nulls`, `lists`, and similar nested `array<string, mixed>` will be allowed for (de)serialization.
 
