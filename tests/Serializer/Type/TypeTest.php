@@ -72,19 +72,34 @@ final class TypeTest extends TestCase
             false,
         ];
 
-        yield 'varint' => [
+        yield 'varint/positive' => [
             new VarintType(),
-            1024,
+            10023,
         ];
 
-        yield 'float' => [
+        yield 'varint/negative' => [
+            new VarintType(),
+            -10023,
+        ];
+
+        yield 'float/negative' => [
             new FloatType(),
-            2.5,
+            -10.25,
         ];
 
-        yield 'double' => [
-            new DoubleType(),
+        yield 'float/positive' => [
+            new FloatType(),
             10.25,
+        ];
+
+        yield 'double/positive' => [
+            new DoubleType(),
+            100.25,
+        ];
+
+        yield 'double/negative' => [
+            new DoubleType(),
+            -100.25,
         ];
 
         yield 'string' => [
@@ -97,9 +112,14 @@ final class TypeTest extends TestCase
             200,
         ];
 
-        yield 'sfixed32' => [
+        yield 'sfixed32/positive' => [
             new SFixed32Type(),
-            -200,
+            10023,
+        ];
+
+        yield 'sfixed32/negative' => [
+            new SFixed32Type(),
+            -10023,
         ];
 
         yield 'fixed64' => [
@@ -107,29 +127,34 @@ final class TypeTest extends TestCase
             2048,
         ];
 
-        yield 'sfixed64' => [
+        yield 'sfixed64/positive' => [
             new SFixed64Type(),
-            -2048,
+            10023,
         ];
 
-        yield 'sint32/negative' => [
-            new SInt32Type(),
-            -2048,
-        ];
-
-        yield 'sint64/negative' => [
-            new SInt64Type(),
-            -5002,
+        yield 'sfixed64/negative' => [
+            new SFixed64Type(),
+            -10023,
         ];
 
         yield 'sint32/positive' => [
             new SInt32Type(),
-            2048,
+            10023,
+        ];
+
+        yield 'sint32/negative' => [
+            new SInt32Type(),
+            -10023,
+        ];
+
+        yield 'sint64/negative' => [
+            new SInt64Type(),
+            -10023,
         ];
 
         yield 'sint64/positive' => [
             new SInt64Type(),
-            5002,
+            10023,
         ];
     }
 
