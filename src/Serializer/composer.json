@@ -15,8 +15,7 @@
     ],
     "require": {
         "php": "^8.1",
-        "ext-bcmath": "*",
-        "kafkiansky/binary": "^0.4.4",
+        "prototype/byte": "*",
         "psr/simple-cache": "^3.0",
         "typhoon/reflection": "^0.4.0",
         "typhoon/typed-map": "^0.4.0"

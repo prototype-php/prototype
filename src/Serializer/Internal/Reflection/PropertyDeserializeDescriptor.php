@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Prototype\Serializer\Byte;
+use Prototype\Byte;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\PrototypeException;

@@ -25,15 +25,14 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Exception;
+namespace Prototype\Byte;
 
 use Kafkiansky\Binary\BinaryException;
-use Prototype\Serializer\PrototypeException;
 
 /**
  * @api
  */
-final class BytesCannotBeRead extends \Exception implements PrototypeException
+final class BytesCannotBeWritten extends \Exception implements ByteException
 {
     public static function fromException(BinaryException $exception): self
     {

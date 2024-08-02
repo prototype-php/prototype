@@ -27,12 +27,11 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer;
 
-use Kafkiansky\Binary;
+use Prototype\Byte;
 use Prototype\Serializer\Internal\Type\ProtobufType;
 use Prototype\Serializer\Internal\Wire;
 use Psr\SimpleCache\CacheInterface;
 use Typhoon\Reflection\TyphoonReflector;
-use Prototype\Serializer\Byte;
 
 /**
  * @api
@@ -56,7 +55,7 @@ final class Serializer
      * @template T of object
      * @param T $message
      * @psalm-return ($writer is null ? Byte\Buffer : Byte\Writer)
-     * @throws Binary\BinaryException
+     * @throws Byte\ByteException
      * @throws PrototypeException
      * @throws \ReflectionException
      */

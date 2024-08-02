@@ -25,24 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
+namespace Prototype\Byte;
 
-use Prototype\Byte;
-use Prototype\Serializer\PrototypeException;
+use Kafkiansky\Binary\BinaryException;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
+ * @api
  */
-interface Deserializer
+final class PlatformCannotBeIdentified extends \Exception implements ByteException
 {
-    /**
-     * @template T of object
-     * @param class-string<T> $messageType
-     * @return T
-     * @throws \ReflectionException
-     * @throws PrototypeException
-     * @throws Byte\ByteException
-     */
-    public function deserialize(string $messageType, Byte\Reader $reader): object;
+    public static function fromException(BinaryException $exception): self
+    {
+        return new self($exception->getMessage(), $exception->getCode(), $exception);
+    }
 }

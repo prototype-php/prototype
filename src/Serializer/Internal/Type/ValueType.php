@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
+use Prototype\Byte;
 use Prototype\Serializer\Exception\PropertyNumberIsInvalid;
 use Prototype\Serializer\Exception\TypeWasNotExpected;
 use Prototype\Serializer\Exception\ValueIsNotSerializable;
@@ -35,7 +36,6 @@ use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\Internal\Wire\Type;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\TypedMap\TypedMap;
-use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -169,6 +169,7 @@ final class ValueType implements TypeSerializer
     /**
      * @return JSONValue[]
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     private function readList(Byte\Reader $reader): array
     {
@@ -185,6 +186,7 @@ final class ValueType implements TypeSerializer
 
     /**
      * @param JSONValue[] $value
+     * @throws Byte\ByteException
      * @throws PrototypeException
      */
     private function writeList(Byte\Writer $writer, array $value): void
@@ -201,6 +203,7 @@ final class ValueType implements TypeSerializer
 
     /**
      * @return array<string, JSONValue>
+     * @throws Byte\ByteException
      * @throws PrototypeException
      */
     private function readStruct(Byte\Reader $reader): array
@@ -210,7 +213,7 @@ final class ValueType implements TypeSerializer
 
     /**
      * @param array<string, JSONValue> $value
-     * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     private function writeStruct(Byte\Writer $writer, array $value): void
     {
@@ -226,6 +229,7 @@ final class ValueType implements TypeSerializer
 
     /**
      * @return JSONValue
+     * @throws Byte\ByteException
      * @throws PrototypeException
      */
     private function readValue(Byte\Reader $reader): mixed
@@ -251,6 +255,7 @@ final class ValueType implements TypeSerializer
      * @param positive-int $tagNum
      * @param JSONValue $value
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     private function writeValue(Byte\Writer $writer, mixed $value, int $tagNum = 2): void
     {

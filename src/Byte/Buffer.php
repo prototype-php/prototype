@@ -25,11 +25,9 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Byte;
+namespace Prototype\Byte;
 
 use Kafkiansky\Binary;
-use Prototype\Serializer\Exception;
-use Prototype\Serializer\PrototypeException;
 
 /**
  * @api
@@ -43,11 +41,15 @@ final class Buffer implements
     ) {}
 
     /**
-     * @throws Binary\BinaryException
+     * @throws ByteException
      */
     public static function default(): self
     {
-        return self::fromBinaryBuffer(Binary\Buffer::empty(Binary\Endianness::little()));
+        try {
+            return self::fromBinaryBuffer(Binary\Buffer::empty(Binary\Endianness::little()));
+        } catch (Binary\BinaryException $e) {
+            throw PlatformCannotBeIdentified::fromException($e);
+        }
     }
 
     public static function fromBinaryBuffer(Binary\Buffer $buffer): self
@@ -57,20 +59,28 @@ final class Buffer implements
 
     /**
      * @param non-empty-string $bytes
-     * @throws Binary\BinaryException
+     * @throws ByteException
      */
     public static function fromString(string $bytes): self
     {
-        return new self(Binary\Buffer::fromString($bytes, Binary\Endianness::little()));
+        try {
+            return new self(Binary\Buffer::fromString($bytes, Binary\Endianness::little()));
+        } catch (Binary\BinaryException $e) {
+            throw PlatformCannotBeIdentified::fromException($e);
+        }
     }
 
     /**
      * @param resource $stream
-     * @throws Binary\BinaryException
+     * @throws ByteException
      */
     public static function fromResource($stream): self
     {
-        return new self(Binary\Buffer::fromResource($stream, Binary\Endianness::little()));
+        try {
+            return new self(Binary\Buffer::fromResource($stream, Binary\Endianness::little()));
+        } catch (Binary\BinaryException $e) {
+            throw PlatformCannotBeIdentified::fromException($e);
+        }
     }
 
     /**
@@ -91,7 +101,7 @@ final class Buffer implements
         try {
             return $this->buffer->consumeFloat();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -113,7 +123,7 @@ final class Buffer implements
         try {
             return $this->buffer->consumeDouble();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -160,7 +170,7 @@ final class Buffer implements
         try {
             return $this->buffer->consumeVarUint();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -208,7 +218,7 @@ final class Buffer implements
 
             return $this;
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeWritten::fromException($e);
+            throw BytesCannotBeWritten::fromException($e);
         }
     }
 
@@ -221,7 +231,7 @@ final class Buffer implements
             /** @var int<0, 4294967295> */
             return $this->buffer->consumeUint32();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -235,7 +245,7 @@ final class Buffer implements
 
             return $this;
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeWritten::fromException($e);
+            throw BytesCannotBeWritten::fromException($e);
         }
     }
 
@@ -248,7 +258,7 @@ final class Buffer implements
             /** @var int<0, max> */
             return $this->buffer->consumeUint64();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -262,7 +272,7 @@ final class Buffer implements
 
             return $this;
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeWritten::fromException($e);
+            throw BytesCannotBeWritten::fromException($e);
         }
     }
 
@@ -275,7 +285,7 @@ final class Buffer implements
             /** @var int<-2147483648, 2147483647> */
             return $this->buffer->consumeInt32();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -289,7 +299,7 @@ final class Buffer implements
 
             return $this;
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeWritten::fromException($e);
+            throw BytesCannotBeWritten::fromException($e);
         }
     }
 
@@ -302,7 +312,7 @@ final class Buffer implements
             /** @var int<min, max> */
             return $this->buffer->consumeInt64();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -332,7 +342,7 @@ final class Buffer implements
 
             return $this;
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeWritten::fromException($e);
+            throw BytesCannotBeWritten::fromException($e);
         }
     }
 
@@ -344,7 +354,7 @@ final class Buffer implements
         try {
             return $this->buffer->consume($n);
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -361,7 +371,7 @@ final class Buffer implements
         try {
             return self::fromBinaryBuffer($this->buffer->split($this->readVarint()));
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -373,7 +383,7 @@ final class Buffer implements
         try {
             return self::fromBinaryBuffer($this->buffer->clone());
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
@@ -401,13 +411,13 @@ final class Buffer implements
         try {
             return $this->buffer->reset();
         } catch (Binary\BinaryException $e) {
-            throw Exception\BytesCannotBeRead::fromException($e);
+            throw BytesCannotBeRead::fromException($e);
         }
     }
 
     /**
      * @param callable(int): int $encodeZigZag
-     * @throws PrototypeException
+     * @throws ByteException
      */
     private function writeZigZagVarint(int $value, callable $encodeZigZag): self
     {

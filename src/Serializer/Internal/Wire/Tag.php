@@ -27,9 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
-use Prototype\Serializer\Byte;
+use Prototype\Byte;
 use Prototype\Serializer\Exception\TypeIsUnknown;
-use Prototype\Serializer\PrototypeException;
 
 /**
  * @internal
@@ -46,7 +45,7 @@ final class Tag
     ) {}
 
     /**
-     * @throws PrototypeException
+     * @throws Byte\ByteException
      * @throws TypeIsUnknown   when protobuf type is not recognized
      */
     public static function decode(Byte\Reader $reader): self
@@ -64,7 +63,7 @@ final class Tag
     }
 
     /**
-     * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function encode(Byte\Writer $writer): void
     {

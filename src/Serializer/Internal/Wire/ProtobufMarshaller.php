@@ -27,10 +27,10 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
+use Prototype\Byte;
 use Prototype\Serializer\Internal\Reflection;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\Reflection\TyphoonReflector;
-use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -53,6 +53,7 @@ final class ProtobufMarshaller implements
      * @param T $message
      * @throws \ReflectionException
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function serialize(object $message, Byte\Writer $writer): void
     {
@@ -94,6 +95,7 @@ final class ProtobufMarshaller implements
      * @return T
      * @throws \ReflectionException
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function deserialize(string $messageType, Byte\Reader $reader): object
     {

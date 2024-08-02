@@ -1,0 +1,28 @@
+{
+    "name": "prototype/byte",
+    "description": "A tool to write and read bytes using protobuf serialization encoding.",
+    "license": "MIT",
+    "type": "library",
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "ext-bcmath": "*",
+        "kafkiansky/binary": "^0.4.4"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Prototype\\Byte\\": ""
+        }
+    },
+    "config": {
+        "lock": false,
+        "sort-packages": true
+    }
+}

@@ -27,12 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
+use Prototype\Byte;
 use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\DurationType;
 use Prototype\Serializer\Internal\Wire;
 use Typhoon\TypedMap\TypedMap;
-use Prototype\Serializer\Byte;
 
 /**
  * @internal
