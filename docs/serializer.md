@@ -67,7 +67,6 @@ $byteBuffer = $serializer->serialize(new Message('kafkiansky'));
 echo $serializer->deserialize($byteBuffer, Message::class)->name; // kafkiansky
 ```
 
-
 ## Features
 - [scalars](#scalars)
 - [enums](#enums)
@@ -105,6 +104,8 @@ final class Message
   ) {}
 }
 ```
+
+Also [see](#types-mapping) the type compatibility table.
 
 ### Enums
 
@@ -430,29 +431,29 @@ However, only `strings`, `booleans`, numbers (`int` and `float`), `nulls`, `list
 
 ## Types mapping
 
-| Protobuf Type               | Native Type          | PHPDoc Type            | Requires typehint? |
-|-----------------------------|----------------------|------------------------|--------------------|
-| `fixed32`                   | `int`                | `fixed32`              | **Yes**            |
-| `fixed64`                   | `int`                | `fixed64`              | **Yes**            |
-| `sfixed32`                  | `int`                | `sfixed32`             | **Yes**            |
-| `sfixed64`                  | `int`                | `sfixed64`             | **Yes**            |
-| `int32`                     | `int`                | `int32`                | **Yes**            |
-| `uint32`                    | `int`                | `uint32`               | **Yes**            |
-| `sint32`                    | `int`                | `sint32`               | **Yes**            |
-| `int64`                     | `int`                | `int64`                | **Yes**            |
-| `uint64`                    | `int`                | `uint64`               | **Yes**            |
-| `sint64`                    | `int`                | `sint64`               | **Yes**            |
-| `string`                    | `string`             | `string`               | **No**             |
-| `bytes`                     | `string`             | `bytes`                | **Yes**            |
-| `bool`                      | `bool`               | `bool`                 | **No**             |
-| `float`                     | `float`              | `float`                | **No**             |
-| `double`                    | `float`              | `double`               | **Yes**            |
-| `enum`                      | `enum T: int {}`     | -                      | **No**             |
-| `google.protobuf.Struct`    | `array`              | `array<string, mixed>` | **Yes**            |
-| `google.protobuf.Timestamp` | `\DateTimeInterface` | -                      | **No**             |
-| `google.protobuf.Duration`  | `\DateInterval`      | -                      | **No**             |
-| `map<K, V>`                 | `array`              | `array<K, V>`          | **Yes**            |
-| `repeated T`                | `array`              | `list<T>`              | **Yes**            |
+| Protobuf Type               | Native Type          | PHPDoc Type            |
+|-----------------------------|----------------------|------------------------|
+| `fixed32`                   | `int`                | `fixed32`              |
+| `fixed64`                   | `int`                | `fixed64`              |
+| `sfixed32`                  | `int`                | `sfixed32`             |
+| `sfixed64`                  | `int`                | `sfixed64`             |
+| `int32`                     | `int`                | `int32`                |
+| `uint32`                    | `int`                | `uint32`               |
+| `sint32`                    | `int`                | `sint32`               |
+| `int64`                     | `int`                | `int64`                |
+| `uint64`                    | `int`                | `uint64`               |
+| `sint64`                    | `int`                | `sint64`               |
+| `string`                    | `string`             | `string`               |
+| `bytes`                     | `string`             | `bytes`                |
+| `bool`                      | `bool`               | `bool`                 |
+| `float`                     | `float`              | `float`                |
+| `double`                    | `float`              | `double`               |
+| `enum`                      | `enum T: int {}`     | -                      |
+| `google.protobuf.Struct`    | `array`              | `array<string, mixed>` |
+| `google.protobuf.Timestamp` | `\DateTimeInterface` | -                      |
+| `google.protobuf.Duration`  | `\DateInterval`      | -                      |
+| `map<K, V>`                 | `array`              | `array<K, V>`          |
+| `repeated T`                | `array`              | `list<T>`              |
 
 ## Testing
 
