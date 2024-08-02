@@ -27,10 +27,13 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\TypeConverter;
 
+use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Typhoon\DeclarationId\AliasId;
+use Typhoon\DeclarationId\ConstantId;
 use Typhoon\Reflection\TyphoonReflector;
 use Typhoon\Type\Type;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Typhoon\Type\stringify;
 
 /**
  * @internal
@@ -62,8 +65,22 @@ final class ToIntValue extends DefaultTypeVisitor
     /**
      * {@inheritdoc}
      */
-    protected function default(Type $type): int
+    public function constant(Type $type, ConstantId $constantId): mixed
     {
-        return 0;
+        $value = \constant($constantId->name);
+
+        if (\is_int($value)) {
+            return $value;
+        }
+
+        return $this->default($type);
+    }
+
+    /**
+     * @throws TypeIsNotSupported
+     */
+    protected function default(Type $type): mixed
+    {
+        throw new TypeIsNotSupported(stringify($type));
     }
 }

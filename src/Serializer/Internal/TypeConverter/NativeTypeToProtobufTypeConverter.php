@@ -90,7 +90,7 @@ final class NativeTypeToProtobufTypeConverter extends DefaultTypeVisitor
         $floatValue = new ToFloatValue($this->reflector);
 
         return match (true) {
-            $minType->accept($floatValue) === -1.7976931348623157E+308 && $maxType->accept($floatValue) === 1.7976931348623157E+308 => new DoubleType(),
+            $minType->accept($floatValue) === 2.2250738585072E-308 && $maxType->accept($floatValue) === 1.7976931348623E+308 => new DoubleType(),
             default => new FloatType(),
         };
     }
