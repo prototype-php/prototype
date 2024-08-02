@@ -205,7 +205,7 @@ A zero value is still required.
 
 ### Repeated
 
-To indicate that a field is repeated, it is not enough to say that it is of type `array`, you have to specify `list<T>` via phpdoc, where `T` is any type (object, enum, scalar) except map and list, as protobuf requires.
+To indicate that a field is repeated, it is not enough to say that it is of type `array`, you have to specify `list<T>` or `iterable<T>` via phpdoc, where `T` is any type (object, enum, scalar) except map and list, as protobuf requires.
 
 ```php
 <?php
@@ -253,11 +253,11 @@ final class Message
 {
     /**
      * @param list<Label> $labels
-     * @param list<Partition> $partitions
+     * @param iterable<Partition> $partitions
      */
     public function __construct(
         public readonly array $labels,
-        public readonly array $partitions,
+        public readonly iterable $partitions,
     ) {}
 }
 ```
@@ -266,7 +266,7 @@ final class Message
 
 ### Maps
 
-Maps in php can also be specificized via phpdoc, as you've already been doing for a long time.
+Maps in php can also be specified via phpdoc (either `array<K, V>` or `iterable<K, V>`), as you've already been doing for a long time.
 
 ```php
 <?php
@@ -277,9 +277,11 @@ final class Topic
 {
   /**
    * @param list<sint32> $partitions
+   * @param iterable<string, string> $options 
    */   
   public function __construct(
     public readonly array $partitions,
+    public readonly iterable $options,
   ) {}
 }
 
