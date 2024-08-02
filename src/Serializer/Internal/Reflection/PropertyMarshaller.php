@@ -27,10 +27,11 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
+use Prototype\Byte\ByteException;
+use Prototype\Byte;
 use Prototype\Serializer\Internal\Wire;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\TypedMap\TypedMap;
-use Prototype\Serializer\Byte;
 
 /**
  * @template T
@@ -41,6 +42,7 @@ interface PropertyMarshaller
      * @param T $value
      * @throws PrototypeException
      * @throws \ReflectionException
+     * @throws ByteException
      */
     public function serializeValue(Byte\Writer $writer, Serializer $serializer, mixed $value, Wire\Tag $tag): void;
 
@@ -48,6 +50,7 @@ interface PropertyMarshaller
      * @return T
      * @throws \ReflectionException
      * @throws PrototypeException
+     * @throws ByteException
      */
     public function deserializeValue(Byte\Reader $reader, Deserializer $deserializer, Wire\Tag $tag): mixed;
 

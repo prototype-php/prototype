@@ -25,24 +25,9 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Internal\Reflection;
-
-use Prototype\Byte;
-use Prototype\Serializer\PrototypeException;
+namespace Prototype\Byte;
 
 /**
- * @internal
- * @psalm-internal Prototype\Serializer
+ * @api
  */
-interface Deserializer
-{
-    /**
-     * @template T of object
-     * @param class-string<T> $messageType
-     * @return T
-     * @throws \ReflectionException
-     * @throws PrototypeException
-     * @throws Byte\ByteException
-     */
-    public function deserialize(string $messageType, Byte\Reader $reader): object;
-}
+interface ByteException extends \Throwable {}

@@ -27,12 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Wire;
 
-use Prototype\Serializer\Byte\Buffer;
-use Prototype\Serializer\Internal\Wire\Tag;
-use Prototype\Serializer\Internal\Wire\Type;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Prototype\Byte\Buffer;
+use Prototype\Serializer\Internal\Wire\Tag;
+use Prototype\Serializer\Internal\Wire\Type;
 
 #[CoversClass(Tag::class)]
 final class TagTest extends TestCase

@@ -58,7 +58,8 @@
         "normalize-all": [
             "@composer normalize --diff",
             "@composer normalize --diff src/PHPStan/composer.json",
-            "@composer normalize --diff src/Serializer/composer.json"
+            "@composer normalize --diff src/Serializer/composer.json",
+            "@composer normalize --diff src/Byte/composer.json"
         ],
         "phpstan": "phpstan -v",
         "psalm": "./vendor/bin/psalm --show-info --no-diff --no-cache",

@@ -25,9 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Byte;
-
-use Prototype\Serializer\PrototypeException;
+namespace Prototype\Byte;
 
 /**
  * @api
@@ -35,7 +33,7 @@ use Prototype\Serializer\PrototypeException;
 interface Resettable
 {
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
     public function reset(): string;
 }

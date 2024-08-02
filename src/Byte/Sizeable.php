@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Byte;
+namespace Prototype\Byte;
 
 /**
  * @api

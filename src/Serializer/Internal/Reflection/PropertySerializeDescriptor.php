@@ -27,7 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
-use Prototype\Serializer\Byte;
+use Prototype\Byte;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\Internal\Wire\Type;
@@ -92,6 +92,7 @@ final class PropertySerializeDescriptor
      * @param T $value
      * @throws PrototypeException
      * @throws \ReflectionException
+     * @throws Byte\ByteException
      */
     public function encode(Byte\Writer $writer, Serializer $serializer, Tag $tag, mixed $value): void
     {

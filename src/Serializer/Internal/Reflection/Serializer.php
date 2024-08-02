@@ -27,8 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Reflection;
 
+use Prototype\Byte;
 use Prototype\Serializer\PrototypeException;
-use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -41,6 +41,7 @@ interface Serializer
      * @param T $message
      * @throws \ReflectionException
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function serialize(object $message, Byte\Writer $writer): void;
 }

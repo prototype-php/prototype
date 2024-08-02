@@ -27,15 +27,15 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer;
 
-use Prototype\Serializer\Byte\Buffer;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProviderExternal;
+use PHPUnit\Framework\TestCase;
+use Prototype\Byte\Buffer;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Exception\TypeIsUnknown;
 use Prototype\Serializer\Serializer;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProviderExternal;
-use PHPUnit\Framework\TestCase;
 use Prototype\Tests\Serializer\Fixtures\EmptyMessage;
 use Prototype\Tests\Serializer\Fixtures\InvalidMessage;
 use Prototype\Tests\Serializer\Fixtures\MessageWithConstantEnum;
