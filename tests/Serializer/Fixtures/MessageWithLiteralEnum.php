@@ -27,9 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Fixtures;
 
-final class InvalidMessage
+final class MessageWithLiteralEnum
 {
+    /**
+     * @param -1|1|2 $compressionType
+     */
     public function __construct(
-        public readonly InvalidEnum $enum,
+        public readonly int $compressionType,
     ) {}
 }

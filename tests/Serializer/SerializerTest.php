@@ -28,7 +28,6 @@ declare(strict_types=1);
 namespace Prototype\Tests\Serializer;
 
 use Prototype\Serializer\Byte\Buffer;
-use Kafkiansky\Binary\Endianness;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
@@ -39,6 +38,9 @@ use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Prototype\Tests\Serializer\Fixtures\EmptyMessage;
 use Prototype\Tests\Serializer\Fixtures\InvalidMessage;
+use Prototype\Tests\Serializer\Fixtures\MessageWithConstantEnum;
+use Prototype\Tests\Serializer\Fixtures\MessageWithLiteralEnum;
+use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 
 #[CoversClass(Serializer::class)]
 final class SerializerTest extends TestCase
@@ -100,6 +102,33 @@ final class SerializerTest extends TestCase
         self::expectException(EnumDoesNotContainZeroVariant::class);
         self::expectExceptionMessage('Enum "Prototype\Tests\Serializer\Fixtures\InvalidEnum" must contain zero variant.');
         $serializer->deserialize(Buffer::default(), InvalidMessage::class);
+    }
+
+    public function testDeserializeConstantEnumWithoutZeroVariant(): void
+    {
+        $serializer = new Serializer();
+
+        self::expectException(EnumDoesNotContainZeroVariant::class);
+        self::expectExceptionMessage('Enum "-1|1|2" must contain zero variant.');
+        $serializer->deserialize(Buffer::default(), MessageWithConstantEnum::class);
+    }
+
+    public function testDeserializeLiteralEnumWithoutZeroVariant(): void
+    {
+        $serializer = new Serializer();
+
+        self::expectException(EnumDoesNotContainZeroVariant::class);
+        self::expectExceptionMessage('Enum "-1|1|2" must contain zero variant.');
+        $serializer->deserialize(Buffer::default(), MessageWithLiteralEnum::class);
+    }
+
+    public function testDeserializeTypeAliasEnumWithoutZeroVariant(): void
+    {
+        $serializer = new Serializer();
+
+        self::expectException(EnumDoesNotContainZeroVariant::class);
+        self::expectExceptionMessage('Enum "CompressionTypeNone@Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum|CompressionTypeGZIP@Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum|CompressionTypeLZ4@Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum" must contain zero variant.');
+        $serializer->deserialize(Buffer::default(), MessageWithTypeAliasEnum::class);
     }
 
     public function testDeserializeEnumWithoutConcreteVariant(): void

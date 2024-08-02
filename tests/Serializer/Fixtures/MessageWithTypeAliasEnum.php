@@ -27,9 +27,18 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Fixtures;
 
-final class InvalidMessage
+/**
+ * @psalm-type CompressionTypeNone = -1
+ * @psalm-type CompressionTypeGZIP = 1
+ * @psalm-type CompressionTypeLZ4 = 2
+ * @psalm-type CompressionAliasType = CompressionTypeNone | CompressionTypeGZIP | CompressionTypeLZ4
+ */
+final class MessageWithTypeAliasEnum
 {
+    /**
+     * @param CompressionAliasType $compressionType
+     */
     public function __construct(
-        public readonly InvalidEnum $enum,
+        public readonly int $compressionType,
     ) {}
 }

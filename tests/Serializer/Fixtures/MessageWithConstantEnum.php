@@ -27,9 +27,16 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Fixtures;
 
-final class InvalidMessage
+final class MessageWithConstantEnum
 {
+    public const TYPE_NO_COMPRESSION = -1;
+    public const TYPE_GZIP = 1;
+    public const TYPE_LZ4 = 2;
+
+    /**
+     * @param self::TYPE_* $compressionType
+     */
     public function __construct(
-        public readonly InvalidEnum $enum,
+        public readonly int $compressionType,
     ) {}
 }
