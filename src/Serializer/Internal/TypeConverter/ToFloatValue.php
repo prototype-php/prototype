@@ -79,7 +79,7 @@ final class ToFloatValue extends DefaultTypeVisitor
     /**
      * @throws TypeIsNotSupported
      */
-    protected function default(Type $type): never
+    protected function default(Type $type): mixed
     {
         throw new TypeIsNotSupported(stringify($type));
     }
