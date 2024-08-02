@@ -25,88 +25,85 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Byte;
-
-use Prototype\Serializer\PrototypeException;
+namespace Prototype\Byte;
 
 /**
  * @api
  */
-interface Reader extends
+interface Writer extends
     Sizeable,
     Resettable,
     Cloneable
 {
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
-    public function readFloat(): float;
+    public function writeFloat(float $value): static;
 
     /**
-     * @return double
-     * @throws PrototypeException
+     * @param double $value
+     * @throws ByteException
      */
-    public function readDouble(): float;
+    public function writeDouble(float $value): static;
 
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
-    public function readBool(): bool;
+    public function writeBool(bool $value): static;
 
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
-    public function readVarint(): int;
+    public function writeVarint(int $value): static;
 
     /**
-     * @return int<-2147483648, 2147483647>
-     * @throws PrototypeException
+     * @param int<-2147483648, 2147483647> $value
+     * @throws ByteException
      */
-    public function readInt32Varint(): int;
+    public function writeInt32Varint(int $value): static;
 
     /**
-     * @return int<min, max>
-     * @throws PrototypeException
+     * @param int<min, max> $value
+     * @throws ByteException
      */
-    public function readInt64Varint(): int;
+    public function writeInt64Varint(int $value): static;
 
     /**
-     * @return int<0, 4294967295>
-     * @throws PrototypeException
+     * @param int<0, 4294967295> $value
+     * @throws ByteException
      */
-    public function readFixed32(): int;
+    public function writeFixed32(int $value): static;
 
     /**
-     * @return int<0, max>
-     * @throws PrototypeException
+     * @param int<0, max> $value
+     * @throws ByteException
      */
-    public function readFixed64(): int;
+    public function writeFixed64(int $value): static;
 
     /**
-     * @return int<-2147483648, 2147483647>
-     * @throws PrototypeException
+     * @param int<-2147483648, 2147483647> $value
+     * @throws ByteException
      */
-    public function readSFixed32(): int;
+    public function writeSFixed32(int $value): static;
 
     /**
-     * @return int<min, max>
-     * @throws PrototypeException
+     * @param int<min, max> $value
+     * @throws ByteException
      */
-    public function readSFixed64(): int;
+    public function writeSFixed64(int $value): static;
 
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
-    public function readString(): string;
+    public function writeString(string $value): static;
 
     /**
-     * @throws PrototypeException
-     * @psalm-return ($n is positive-int ? non-empty-string : string)
+     * @throws ByteException
      */
-    public function read(int $n): string;
+    public function write(string $bytes): static;
 
     /**
-     * @throws PrototypeException
+     * @throws ByteException
      */
-    public function slice(): static;
+    public function copyFrom(self $writer): static;
 }

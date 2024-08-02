@@ -27,22 +27,22 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Serializer\Type;
 
-use Prototype\Serializer\Byte\Buffer;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Prototype\Byte\Buffer;
 use Prototype\Serializer\Internal\Type\BoolType;
 use Prototype\Serializer\Internal\Type\DoubleType;
-use Prototype\Serializer\Internal\Type\SFixed32Type;
-use Prototype\Serializer\Internal\Type\SFixed64Type;
 use Prototype\Serializer\Internal\Type\Fixed32Type;
 use Prototype\Serializer\Internal\Type\Fixed64Type;
 use Prototype\Serializer\Internal\Type\FloatType;
+use Prototype\Serializer\Internal\Type\SFixed32Type;
+use Prototype\Serializer\Internal\Type\SFixed64Type;
 use Prototype\Serializer\Internal\Type\SInt32Type;
 use Prototype\Serializer\Internal\Type\SInt64Type;
 use Prototype\Serializer\Internal\Type\StringType;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
 use Prototype\Serializer\Internal\Type\VarintType;
-use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 
 #[CoversClass(BoolType::class)]
 #[CoversClass(FloatType::class)]

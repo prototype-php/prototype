@@ -27,13 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Wire;
 
-use Prototype\Serializer\Byte;
-use Prototype\Serializer\PrototypeException;
+use Prototype\Byte;
 
 /**
  * @internal
  * @psalm-internal Prototype\Serializer
- * @throws PrototypeException
+ * @throws Byte\ByteException
  */
 function discard(Byte\Reader $reader, Tag $tag): void
 {

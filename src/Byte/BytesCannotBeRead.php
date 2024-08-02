@@ -25,17 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Serializer\Byte;
+namespace Prototype\Byte;
 
-use Prototype\Serializer\PrototypeException;
+use Kafkiansky\Binary\BinaryException;
 
 /**
  * @api
  */
-interface Cloneable
+final class BytesCannotBeRead extends \Exception implements ByteException
 {
-    /**
-     * @throws PrototypeException
-     */
-    public function clone(): static;
+    public static function fromException(BinaryException $exception): self
+    {
+        return new self($exception->getMessage(), $exception->getCode(), $exception);
+    }
 }

@@ -27,9 +27,9 @@ declare(strict_types=1);
 
 namespace Prototype\Serializer\Internal\Type;
 
+use Prototype\Byte;
 use Prototype\Serializer\PrototypeException;
 use Typhoon\TypedMap\TypedMap;
-use Prototype\Serializer\Byte;
 
 /**
  * @internal
@@ -41,12 +41,13 @@ interface TypeSerializer
 {
     /**
      * @param T $value
-     * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function writeTo(Byte\Writer $writer, mixed $value): void;
 
     /**
      * @return T
+     * @throws Byte\ByteException
      * @throws PrototypeException
      */
     public function readFrom(Byte\Reader $reader): mixed;
