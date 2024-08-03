@@ -11,13 +11,17 @@
     ],
     "require": {
         "php": "^8.1",
-        "antlr/antlr4-php-runtime": "^0.9.1"
+        "antlr/antlr4-php-runtime": "^0.9.1",
+        "nette/php-generator": "^4.1"
     },
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
             "Prototype\\Compiler\\": ""
-        }
+        },
+        "files": [
+            "Internal/functions.php"
+        ]
     },
     "config": {
         "lock": false,

@@ -15,6 +15,7 @@
         "amphp/http-client": "^5.1",
         "antlr/antlr4-php-runtime": "^0.9.1",
         "kafkiansky/binary": "^0.4.4",
+        "nette/php-generator": "^4.1",
         "typhoon/reflection": "^0.4.0"
     },
     "require-dev": {
@@ -33,7 +34,8 @@
         },
         "files": [
             "src/Serializer/Internal/Wire/functions.php",
-            "src/Serializer/Internal/Reflection/functions.php"
+            "src/Serializer/Internal/Reflection/functions.php",
+            "src/Compiler/Internal/functions.php"
         ]
     },
     "autoload-dev": {
