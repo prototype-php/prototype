@@ -80,7 +80,7 @@ final class Generator
             foreach ($message->fields as $field) {
                 $parameters[] = (new PromotedParameter($field->name))
                     ->setReadOnly()
-                    ->setType($field->type->toNative())
+                    ->setType($field->type->nativeType)
                 ;
 
                 $method->addComment(

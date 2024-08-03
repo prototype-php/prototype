@@ -34,8 +34,8 @@ use Prototype\Compiler\CompilerException;
  */
 final class TypeIsNotDefined extends \Exception implements CompilerException
 {
-    public static function forTypeName(string $typeName): self
+    public static function forField(string $fieldName): self
     {
-        return new self(\sprintf('No suitable php type for protobuf type "%s".', $typeName));
+        return new self(\sprintf('No suitable php type for field "%s".', $fieldName));
     }
 }

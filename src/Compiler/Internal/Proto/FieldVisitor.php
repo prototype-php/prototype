@@ -30,6 +30,7 @@ namespace Prototype\Compiler\Internal\Proto;
 use Prototype\Compiler\Exception\TypeIsNotDefined;
 use Prototype\Compiler\Internal\Parser\Context;
 use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
+use Typhoon\Type\types;
 
 /**
  * @internal
@@ -45,11 +46,20 @@ final class FieldVisitor extends Protobuf3BaseVisitor
         if (null !== ($fieldName = $context->fieldName()?->ident()?->IDENTIFIER()?->getText())) {
             return new Field(
                 $fieldName,
-                Type::tryFrom($type = $context->type_()?->getText() ?: '') ?: throw TypeIsNotDefined::forTypeName($type),
+                self::tryType($context->type_() ?: throw TypeIsNotDefined::forField($fieldName))->accept(
+                    new ToPhpTypeGenerator(),
+                ),
                 (int)$context->fieldNumber()?->getText() ?: 0,
             );
         }
 
         return null;
+    }
+
+    private static function tryType(Context\Type_Context $context): \Typhoon\Type\Type
+    {
+        return match (true) {
+            default => types::class($context->getText()),
+        };
     }
 }

@@ -35,7 +35,7 @@ final class Field
 {
     public function __construct(
         public readonly string $name,
-        public readonly Type $type,
+        public readonly PhpType $type,
         public readonly int $num,
     ) {}
 }
