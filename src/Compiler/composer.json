@@ -1,0 +1,26 @@
+{
+    "name": "prototype/compiler",
+    "description": "A tool for compiling protobuf grammars into modern PHP code.",
+    "license": "MIT",
+    "type": "project",
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "antlr/antlr4-php-runtime": "^0.9.1"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Prototype\\Compiler\\": ""
+        }
+    },
+    "config": {
+        "lock": false,
+        "sort-packages": true
+    }
+}
