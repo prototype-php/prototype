@@ -41,6 +41,9 @@ final class Message
         public readonly array $fields = [],
     ) {}
 
+    /**
+     * @return non-empty-string
+     */
     public function asFileName(): string
     {
         return $this->name.'.php';

@@ -61,7 +61,7 @@ final class ToPhpTypeGenerator extends DefaultTypeVisitor
      */
     public function array(Type $type, Type $keyType, Type $valueType, array $elements): mixed
     {
-        return PhpType::map($keyType->accept($this), $valueType->accept($this));
+        return PhpType::array($keyType->accept($this), $valueType->accept($this));
     }
 
     /**

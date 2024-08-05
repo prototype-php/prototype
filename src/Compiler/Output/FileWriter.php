@@ -25,27 +25,25 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal;
+namespace Prototype\Compiler\Output;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @psalm-return ($value is null ? null : string)
+ * @api
  */
-function trimString(?string $value): ?string
+final class FileWriter implements Writer
 {
-    if (null !== $value) {
-        $value = trim($value, '"\'');
+    /**
+     * @param non-empty-string $dir
+     */
+    public function __construct(
+        private readonly string $dir,
+    ) {}
+
+    public function writePhpFile(PhpFile $file): void
+    {
+        file_put_contents(
+            implode(\DIRECTORY_SEPARATOR, [$this->dir, $file->name]),
+            $file->content,
+        );
     }
-
-    return $value;
-}
-
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-function fixPhpNamespace(string $namespace): string
-{
-    return str_replace('\\\\', '\\', $namespace);
 }

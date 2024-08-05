@@ -25,27 +25,37 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal;
+namespace Prototype\Compiler\Locator;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @psalm-return ($value is null ? null : string)
+ * @api
  */
-function trimString(?string $value): ?string
+final class RecursiveFilesLocator implements FilesLocator
 {
-    if (null !== $value) {
-        $value = trim($value, '"\'');
+    private const PROTO_EXTENSION = 'proto';
+
+    /**
+     * @param non-empty-string $dir
+     */
+    public function __construct(
+        private readonly string $dir,
+    ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function files(): iterable
+    {
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveCallbackFilterIterator(
+                new \RecursiveDirectoryIterator($this->dir),
+                static fn (\SplFileInfo $file): bool => $file->isFile() && self::PROTO_EXTENSION === $file->getExtension(),
+            ),
+        );
+
+        /** @var non-empty-string $path */
+        foreach ($iterator as $path => $_) {
+            yield $path;
+        }
     }
-
-    return $value;
-}
-
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-function fixPhpNamespace(string $namespace): string
-{
-    return str_replace('\\\\', '\\', $namespace);
 }

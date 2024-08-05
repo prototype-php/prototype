@@ -25,21 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler;
+namespace Prototype\Compiler\Output;
 
 /**
  * @api
  */
-final class CompilerOptions
+final class PhpFile
 {
     /**
-     * @param non-empty-string $inputDir
-     * @param non-empty-string $outputDir
-     * @param ?non-empty-string $phpNamespace
+     * @param non-empty-string $name
      */
     public function __construct(
-        public readonly string $inputDir,
-        public readonly string $outputDir,
-        public readonly ?string $phpNamespace = null,
+        public readonly string $name,
+        public readonly string $content,
     ) {}
 }

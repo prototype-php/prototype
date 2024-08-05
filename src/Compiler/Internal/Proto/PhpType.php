@@ -67,7 +67,7 @@ final class PhpType
         );
     }
 
-    public static function map(self $keyType, self $valueType): self
+    public static function array(self $keyType, self $valueType): self
     {
         return new self(
             'array',

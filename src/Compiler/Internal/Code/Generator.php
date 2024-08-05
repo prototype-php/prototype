@@ -32,6 +32,7 @@ use Nette\PhpGenerator\Printer;
 use Nette\PhpGenerator\PromotedParameter;
 use Prototype\Compiler\Internal\Proto\Schema;
 use Prototype\Compiler\Internal;
+use Prototype\Compiler\Output;
 
 /**
  * @internal
@@ -43,13 +44,10 @@ final class Generator
         private readonly Printer $printer,
     ) {}
 
-    /**
-     * @param non-empty-string $dir
-     */
     public function generateFile(
         Schema $schema,
         string $phpNamespace,
-        string $dir,
+        Output\Writer $writer,
     ): void {
         foreach ($schema->messages as $message) {
             $file = (new PhpFile())
@@ -90,10 +88,11 @@ final class Generator
 
             $method->setParameters($parameters);
 
-            Internal\writeFile(
-                $this->printer->printFile($file),
-                $dir,
-                $message->asFileName(),
+            $writer->writePhpFile(
+                new Output\PhpFile(
+                    $message->asFileName(),
+                    $this->printer->printFile($file),
+                ),
             );
         }
     }

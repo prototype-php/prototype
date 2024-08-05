@@ -25,27 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal;
+namespace Prototype\Compiler;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @psalm-return ($value is null ? null : string)
+ * @api
  */
-function trimString(?string $value): ?string
+final class CompileOptions
 {
-    if (null !== $value) {
-        $value = trim($value, '"\'');
-    }
-
-    return $value;
-}
-
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-function fixPhpNamespace(string $namespace): string
-{
-    return str_replace('\\\\', '\\', $namespace);
+    /**
+     * @param ?non-empty-string $phpNamespace
+     */
+    public function __construct(
+        public readonly ?string $phpNamespace = null,
+    ) {}
 }

@@ -38,6 +38,8 @@ use Prototype\Compiler\Internal\Parser\Protobuf3Lexer;
 use Prototype\Compiler\Internal\Parser\Protobuf3Parser;
 use Prototype\Compiler\Internal\Proto\Schema;
 use Prototype\Compiler\Internal\Proto\ToSchemaConverter;
+use Prototype\Compiler\Locator\FilesLocator;
+use Prototype\Compiler\Output;
 
 /**
  * @api
@@ -58,20 +60,12 @@ final class Compiler
     /**
      * @throws CompilerException
      */
-    public function compile(CompilerOptions $options): void
-    {
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveCallbackFilterIterator(
-                new \RecursiveDirectoryIterator($options->inputDir),
-                static fn (\SplFileInfo $file): bool => $file->isFile() && 'proto' === $file->getExtension(),
-            ),
-        );
-
-        /**
-         * @var non-empty-string $path
-         * @var \SplFileInfo $file
-         */
-        foreach ($iterator as $path => $file) {
+    public function compile(
+        FilesLocator $locator,
+        Output\Writer $writer,
+        CompileOptions $options = new CompileOptions(),
+    ): void {
+        foreach ($locator->files() as $path) {
             /** @var Schema $schema */
             $schema = self::parse(InputStream::fromPath($path))->accept( // @phpstan-ignore-line
                 new ToSchemaConverter(),
@@ -86,7 +80,7 @@ final class Compiler
             $this->generator->generateFile(
                 $schema,
                 $phpNamespace,
-                $options->outputDir,
+                $writer,
             );
         }
     }
