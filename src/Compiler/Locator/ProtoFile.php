@@ -25,17 +25,32 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Exception;
+namespace Prototype\Compiler\Locator;
 
-use Prototype\Compiler\CompilerException;
+use Antlr\Antlr4\Runtime\InputStream;
 
 /**
  * @api
  */
-final class NamespaceIsNotDefined extends \Exception implements CompilerException
+final class ProtoFile
 {
-    public static function forSchema(string $schema): self
+    private function __construct(
+        public readonly InputStream $stream,
+    ) {}
+
+    /**
+     * @param non-empty-string $path
+     */
+    public static function fromPath(string $path): self
     {
-        return new self(\sprintf('Unable to determine php namespace for schema "%s".', $schema));
+        return new self(InputStream::fromPath($path));
+    }
+
+    /**
+     * @param non-empty-string $content
+     */
+    public static function fromString(string $content): self
+    {
+        return new self(InputStream::fromString($content));
     }
 }

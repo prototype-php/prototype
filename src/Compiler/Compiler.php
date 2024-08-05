@@ -65,21 +65,17 @@ final class Compiler
         Output\Writer $writer,
         CompileOptions $options = new CompileOptions(),
     ): void {
-        foreach ($locator->files() as $path) {
+        foreach ($locator->files() as $file) {
             /** @var Schema $schema */
-            $schema = self::parse(InputStream::fromPath($path))->accept( // @phpstan-ignore-line
+            $schema = self::parse($file->stream)->accept( // @phpstan-ignore-line
                 new ToSchemaConverter(),
             );
 
-            $phpNamespace = $schema->phpNamespace() ?: $options->phpNamespace;
-
-            if (null === $phpNamespace) {
-                throw Exception\NamespaceIsNotDefined::forFile($path);
-            }
-
             $this->generator->generateFile(
                 $schema,
-                $phpNamespace,
+                ($schema->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema(
+                    (string)$file->stream,
+                ),
                 $writer,
             );
         }

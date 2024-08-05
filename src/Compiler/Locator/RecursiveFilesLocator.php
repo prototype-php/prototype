@@ -55,7 +55,7 @@ final class RecursiveFilesLocator implements FilesLocator
 
         /** @var non-empty-string $path */
         foreach ($iterator as $path => $_) {
-            yield $path;
+            yield ProtoFile::fromPath($path);
         }
     }
 }

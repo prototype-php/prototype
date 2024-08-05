@@ -33,7 +33,7 @@ namespace Prototype\Compiler\Locator;
 interface FilesLocator
 {
     /**
-     * @return iterable<non-empty-string>
+     * @return iterable<ProtoFile>
      */
     public function files(): iterable;
 }
