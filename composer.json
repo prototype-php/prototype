@@ -64,6 +64,7 @@
             "@composer normalize --diff src/Serializer/composer.json",
             "@composer normalize --diff src/Byte/composer.json",
             "@composer normalize --diff src/GRPC/composer.json",
+            "@composer normalize --diff src/WellKnown/composer.json",
             "@composer normalize --diff src/Compiler/composer.json"
         ],
         "phpstan": "phpstan -v",

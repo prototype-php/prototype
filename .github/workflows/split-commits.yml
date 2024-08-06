@@ -17,6 +17,7 @@ jobs:
           - { namespace: PHPStan, repo: phpstan-extension }
           - { namespace: Byte, repo: byte-buffer }
           - { namespace: GRPC, repo: grpc }
+          - { namespace: WellKnown, repo: well-known }
     steps:
       - uses: actions/checkout@v4
         with:
