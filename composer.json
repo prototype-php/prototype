@@ -59,7 +59,8 @@
             "@composer normalize --diff src/PHPStan/composer.json",
             "@composer normalize --diff src/Serializer/composer.json",
             "@composer normalize --diff src/Byte/composer.json",
-            "@composer normalize --diff src/GRPC/composer.json"
+            "@composer normalize --diff src/GRPC/composer.json",
+            "@composer normalize --diff src/WellKnown/composer.json"
         ],
         "phpstan": "phpstan -v",
         "psalm": "./vendor/bin/psalm --show-info --no-diff --no-cache",

@@ -1,0 +1,28 @@
+{
+    "name": "prototype/well-known",
+    "description": "Protobuf well-known types location.",
+    "license": "MIT",
+    "type": "library",
+    "keywords": [
+        "protobuf"
+    ],
+    "authors": [
+        {
+            "name": "kafkiansky",
+            "email": "vadimzanfir@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1"
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Prototype\\WellKnown\\": ""
+        }
+    },
+    "config": {
+        "lock": false,
+        "sort-packages": true
+    }
+}
