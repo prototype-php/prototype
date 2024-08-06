@@ -75,7 +75,7 @@ final class Generator
             /** @var PromotedParameter[] $parameters */
             $parameters = [];
 
-            foreach ($message->fields as $field) {
+            foreach ($message as $field) {
                 $parameters[] = (new PromotedParameter($field->name))
                     ->setReadOnly()
                     ->setType($field->type->nativeType)

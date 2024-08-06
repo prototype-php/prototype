@@ -27,33 +27,32 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Proto;
 
+use Prototype\Compiler\Internal\Parser\Context;
+use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
+use Prototype\Compiler\Internal;
+
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Schema
+final class ImportVisitor extends Protobuf3BaseVisitor
 {
-    private const PHP_NAMESPACE = 'php_namespace';
-
     /**
-     * @param Option[] $options
-     * @param Import[] $imports
-     * @param Message[] $messages
+     * {@inheritdoc}
      */
-    public function __construct(
-        public readonly ?string $packageName = null,
-        public readonly array $imports = [],
-        public readonly array $options = [],
-        public readonly array $messages = [],
-    ) {}
-
-    public function phpNamespace(): ?string
+    public function visitImportStatement(Context\ImportStatementContext $context): ?Import
     {
-        $phpNamespaceOption = array_filter(
-            $this->options,
-            static fn (Option $option): bool => self::PHP_NAMESPACE === $option->name,
-        );
+        if (null !== ($path = $context->strLit()?->getText())) {
+            return new Import(
+                Internal\trimString($path),
+                match (true) {
+                    null !== $context->PUBLIC() => ImportType::public,
+                    null !== $context->WEAK() => ImportType::weak,
+                    default => ImportType::default,
+                },
+            );
+        }
 
-        return $phpNamespaceOption[0]->value ?? null;
+        return null;
     }
 }

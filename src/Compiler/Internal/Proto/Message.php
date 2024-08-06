@@ -30,16 +30,29 @@ namespace Prototype\Compiler\Internal\Proto;
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-implements \IteratorAggregate<array-key, Field>
  */
-final class Message
+final class Message implements \IteratorAggregate, \Countable
 {
+    /** @var Field[] */
+    public readonly array $fields;
+
     /**
      * @param Field[] $fields
      */
     public function __construct(
         public readonly string $name,
-        public readonly array $fields = [],
-    ) {}
+        array $fields = [],
+    ) {
+        uasort($fields, static fn (Field $l, Field $r): int => match (true) {
+            $l->num === $r->num => throw new \LogicException(
+                \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->num),
+            ),
+            default => $l->num < $r->num ? -1 : 1,
+        });
+
+        $this->fields = $fields;
+    }
 
     /**
      * @return non-empty-string
@@ -47,5 +60,21 @@ final class Message
     public function asFileName(): string
     {
         return $this->name.'.php';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): \Traversable
+    {
+        yield from $this->fields;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return \count($this->fields);
     }
 }

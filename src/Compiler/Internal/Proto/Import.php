@@ -31,29 +31,13 @@ namespace Prototype\Compiler\Internal\Proto;
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Schema
+final class Import
 {
-    private const PHP_NAMESPACE = 'php_namespace';
-
     /**
-     * @param Option[] $options
-     * @param Import[] $imports
-     * @param Message[] $messages
+     * @param non-empty-string $path
      */
     public function __construct(
-        public readonly ?string $packageName = null,
-        public readonly array $imports = [],
-        public readonly array $options = [],
-        public readonly array $messages = [],
+        public readonly string $path,
+        public readonly ImportType $type,
     ) {}
-
-    public function phpNamespace(): ?string
-    {
-        $phpNamespaceOption = array_filter(
-            $this->options,
-            static fn (Option $option): bool => self::PHP_NAMESPACE === $option->name,
-        );
-
-        return $phpNamespaceOption[0]->value ?? null;
-    }
 }

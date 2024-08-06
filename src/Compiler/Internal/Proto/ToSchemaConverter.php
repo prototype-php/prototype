@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Proto;
 
+use Antlr\Antlr4\Runtime\Tree\ParseTree;
+use Antlr\Antlr4\Runtime\Tree\ParseTreeVisitor;
 use Prototype\Compiler\Internal\Parser\Context;
 use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
 
@@ -43,13 +45,8 @@ final class ToSchemaConverter extends Protobuf3BaseVisitor
     {
         return new Schema(
             $context->packageStatement(0)?->accept(new PackageNameVisitor()) ?: null,
-            array_filter(
-                array_map(
-                    static fn (Context\OptionStatementContext $context): ?Option => $context->accept(new OptionVisitor()),
-                    $context->optionStatement() ?: [],
-                ),
-                static fn (?Option $option): bool => null !== $option,
-            ),
+            self::applyVisitor($context->importStatement() ?: [], new ImportVisitor()),
+            self::applyVisitor($context->optionStatement() ?: [], new OptionVisitor()),
             array_filter(
                 array_map(
                     static fn (Context\MessageDefContext $context): ?Message => $context->accept(new MessageVisitor()),
@@ -63,6 +60,23 @@ final class ToSchemaConverter extends Protobuf3BaseVisitor
                 ),
                 static fn (?Message $message): bool => null !== $message,
             ),
+        );
+    }
+
+    /**
+     * @template T
+     * @param ParseTree[] $contexts
+     * @param ParseTreeVisitor<T> $visitor
+     * @return T[]
+     */
+    private static function applyVisitor(array $contexts, ParseTreeVisitor $visitor): array
+    {
+        return array_filter(
+            array_map(
+                static fn (ParseTree $context): mixed => $context->accept($visitor),
+                $contexts,
+            ),
+            static fn (mixed $item): bool => null !== $item,
         );
     }
 }
