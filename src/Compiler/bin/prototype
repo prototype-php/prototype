@@ -1,0 +1,37 @@
+#!/usr/bin/env php
+<?php declare(strict_types=1);
+
+use Prototype\Compiler\CompilerVersion;
+use Prototype\Compiler\Console\CompileCommand;
+use Symfony\Component\Console\Application;
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+error_reporting(\E_ALL);
+ini_set('display_errors', 'stderr');
+
+$cli = new Application(
+    'Prototype Compiler',
+    CompilerVersion::pretty(),
+);
+
+$cli
+    ->setDefaultCommand('compile')
+    ->addCommands([
+        new CompileCommand(getcwd() ?: (static function (): string {
+            $dir = __DIR__;
+
+            while (!file_exists($dir.\DIRECTORY_SEPARATOR.'composer.json')) {
+                $parent = dirname($dir);
+                if ($parent === $dir) {
+                    throw new \RuntimeException('Could not locate project.');
+                }
+
+                $dir = $parent;
+            }
+
+            return $dir;
+        })()),
+    ])
+;
+$cli->run();

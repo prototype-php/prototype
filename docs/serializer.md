@@ -459,12 +459,6 @@ However, only `strings`, `booleans`, numbers (`int` and `float`), `nulls`, `list
 | `map<K, V>`                 | `array`              | `array<K, V>`          |
 | `repeated T`                | `array`              | `list<T>`              |
 
-## Testing
-
-``` bash
-$ composer test
-```  
-
 ## License
 
 The MIT License (MIT). See [License File](../src/Serializer/LICENSE) for more information.

@@ -32,6 +32,9 @@ $config = (new Config())
     ->setFinder(
         Finder::create()
             ->in(__DIR__ . '/src')
+            ->exclude([
+                'Compiler/Internal/Parser',
+            ])
             ->append([__FILE__])
             ->append(
                 Finder::create()
