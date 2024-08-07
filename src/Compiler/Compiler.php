@@ -27,18 +27,14 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler;
 
-use Antlr\Antlr4\Runtime\CommonTokenStream;
-use Antlr\Antlr4\Runtime\Error\Listeners\DiagnosticErrorListener;
-use Antlr\Antlr4\Runtime\InputStream;
+use Nette\PhpGenerator\Printer;
 use Nette\PhpGenerator\PsrPrinter;
 use Prototype\Compiler\Exception;
 use Prototype\Compiler\Internal\Code\Generator;
-use Prototype\Compiler\Internal\Parser\Context\ProtoContext;
-use Prototype\Compiler\Internal\Parser\Protobuf3Lexer;
-use Prototype\Compiler\Internal\Parser\Protobuf3Parser;
+use Prototype\Compiler\Internal\Proto\Parser;
 use Prototype\Compiler\Internal\Proto\Schema;
 use Prototype\Compiler\Internal\Proto\ToSchemaConverter;
-use Prototype\Compiler\Locator\FilesLocator;
+use Prototype\Compiler\Locator\ProtoFile;
 use Prototype\Compiler\Output;
 
 /**
@@ -47,51 +43,61 @@ use Prototype\Compiler\Output;
 final class Compiler
 {
     private function __construct(
-        private readonly Generator $generator = new Generator(
-            new PsrPrinter(),
-        ),
+        private readonly Generator $generator,
+        private readonly Output\Writer $writer,
+        private readonly Printer $printer,
+        private readonly Parser $parser,
     ) {}
 
-    public static function buildDefault(): self
+    public static function build(Output\Writer $writer): self
     {
-        return new self();
+        return new self(
+            new Generator(
+                new Internal\Php\FileFactory(
+                    CompilerVersion::pretty(),
+                ),
+            ),
+            $writer,
+            new PsrPrinter(),
+            new Parser(),
+        );
     }
 
     /**
      * @throws CompilerException
      */
     public function compile(
-        FilesLocator $locator,
-        Output\Writer $writer,
+        ProtoFile $file,
         CompileOptions $options = new CompileOptions(),
     ): void {
-        foreach ($locator->files() as $file) {
-            /** @var Schema $schema */
-            $schema = self::parse($file->stream)->accept( // @phpstan-ignore-line
-                new ToSchemaConverter(),
-            );
+        /** @var Schema $schema */
+        $schema = $this->parser->parse($file->stream)->accept( // @phpstan-ignore-line
+            new ToSchemaConverter(),
+        );
 
-            $this->generator->generateFile(
-                $schema,
-                ($schema->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema(
-                    (string)$file->stream,
+        foreach (
+            $this->generator->generate($schema, ($schema->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema((string)$file->stream))
+            as $fileName => $phpFile
+        ) {
+            $this->writer->writePhpFile(
+                new Output\PhpFile(
+                    $fileName,
+                    $this->printer->printFile($phpFile),
                 ),
-                $writer,
             );
         }
     }
 
-    private static function parse(InputStream $stream): ProtoContext // @phpstan-ignore-line
-    {
-        $parser = new Protobuf3Parser(
-            new CommonTokenStream(
-                new Protobuf3Lexer($stream),
-            ),
-        );
-
-        $parser->addErrorListener(new DiagnosticErrorListener());
-        $parser->setBuildParseTree(true);
-
-        return $parser->proto();
+    /**
+     * @param iterable<ProtoFile> $files
+     * @throws CompilerException
+     */
+    public function compileAll(
+        iterable $files,
+        CompileOptions $options = new CompileOptions(),
+    ): void {
+        foreach ($files as $file) {
+            $this->compile($file, $options);
+        }
     }
 }

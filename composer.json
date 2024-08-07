@@ -16,7 +16,9 @@
         "antlr/antlr4-php-runtime": "^0.9.1",
         "kafkiansky/binary": "^0.4.4",
         "nette/php-generator": "^4.1",
-        "typhoon/reflection": "^0.4.0"
+        "symfony/console": "^6.4",
+        "typhoon/reflection": "^0.4.0",
+        "typhoon/type": "^0.4.3"
     },
     "require-dev": {
         "antlr/antlr-php-runtime-phpstan": "^0.3.0",
@@ -43,6 +45,9 @@
             "Prototype\\Tests\\": "tests/"
         }
     },
+    "bin": [
+        "src/Compiler/bin/prototype"
+    ],
     "config": {
         "allow-plugins": {
             "ergebnis/composer-normalize": true

@@ -16,16 +16,15 @@ composer require prototype/compiler
 declare(strict_types=1);
 
 use Prototype\Compiler\Compiler;
-use Prototype\Compiler\Locator\RecursiveFilesLocator;
+use Prototype\Compiler\Locator\ProtoFile;
 use Prototype\Compiler\Output\FileWriter;
 
 require_once __DIR__.'/../vendor/autoload.php';
 
-$compiler = Compiler::buildDefault();
+$compiler = Compiler::build(new FileWriter(__DIR__.'/build'));
 
 $compiler->compile(
-    new RecursiveFilesLocator(__DIR__.'/proto'),
-    new FileWriter(__DIR__.'/build'),
+    ProtoFile::fromPath(__DIR__.'/path/to/proto/file'),
 );
 ```
 

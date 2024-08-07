@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal;
 
+use Prototype\Compiler\Locator\ProtoFile;
+
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
@@ -48,4 +50,35 @@ function trimString(?string $value): ?string
 function fixPhpNamespace(string $namespace): string
 {
     return str_replace('\\\\', '\\', $namespace);
+}
+
+/**
+ * @param non-empty-list<non-empty-string> $paths
+ * @return \Generator<ProtoFile>
+ */
+function locateProtoFiles(array $paths): \Generator
+{
+    foreach ($paths as $path) {
+        if (!is_file($path) && !is_dir($path)) {
+            throw new \RuntimeException(\sprintf('Path "%s" could not be resolved.', $path));
+        }
+
+        if (is_file($path)) {
+            yield ProtoFile::fromPath($path);
+        }
+
+        if (is_dir($path)) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveCallbackFilterIterator(
+                    new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_PATHNAME),
+                    static fn (\SplFileInfo $fileInfo): bool => $fileInfo->isFile() && 'proto' === $fileInfo->getExtension(),
+                ),
+            );
+
+            /** @var non-empty-string $path */
+            foreach ($iterator as $path => $_) {
+                yield ProtoFile::fromPath($path);
+            }
+        }
+    }
 }
