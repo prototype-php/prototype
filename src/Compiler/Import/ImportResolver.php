@@ -25,50 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Import;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-final class Generator
+interface ImportResolver
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+    /**
+     * @param non-empty-string $path Relative path to the import.
+     */
+    public function canResolve(string $path): bool;
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $path Relative path to the import.
+     * @return iterable<non-empty-string> Iterable of absolute paths.
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
-    {
-        return str_replace('\\\\', '\\', $namespace);
-    }
+    public function resolve(string $path): iterable;
 }

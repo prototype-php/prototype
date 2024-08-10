@@ -25,50 +25,42 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Import;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-final class Generator
+final class FileImportResolver implements ImportResolver
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
+    /**
+     * @param list<non-empty-string> $paths
+     */
     public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
+        private readonly array $paths,
+    ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function canResolve(string $path): bool
+    {
+        foreach ($this->paths as $absoluteImportPath) {
+            if (is_file($absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public function resolve(string $path): iterable
     {
-        return str_replace('\\\\', '\\', $namespace);
+        foreach ($this->paths as $absoluteImportPath) {
+            if (is_file($importPath = $absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
+                return yield $importPath;
+            }
+        }
+
+        throw new \LogicException(\sprintf('Import path "%s" not found.', $path));
     }
 }

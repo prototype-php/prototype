@@ -28,7 +28,11 @@ declare(strict_types=1);
 namespace Prototype\Compiler\Console;
 
 use Prototype\Compiler\Compiler;
-use Prototype\Compiler\Output\FileWriter;
+use Prototype\Compiler\Import\CombineImportResolver;
+use Prototype\Compiler\Import\FileImportResolver;
+use Prototype\Compiler\Import\VirtualImportResolver;
+use Prototype\Compiler\Output;
+use Prototype\Compiler\RecursiveFilesLocator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -37,7 +41,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Prototype\Compiler\Internal;
+use Psl\Type;
 
 /**
  * @api
@@ -63,7 +67,7 @@ final class CompileCommand extends Command
         $this
             ->addArgument('paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Paths with proto files')
             ->addOption('imports', 'i', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Import paths.')
-            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'The directory where to save the generated PHP code.')
+            ->addOption('output', 'o', InputOption::VALUE_OPTIONAL, 'The directory where to save the generated PHP code.')
             ->addOption('namespace', null, InputOption::VALUE_OPTIONAL, 'Optional PHP namespace for generated code.')
         ;
     }
@@ -78,22 +82,44 @@ final class CompileCommand extends Command
         /** @var non-empty-list<non-empty-string> $paths */
         $paths = $input->getArgument('paths');
 
-        /** @var non-empty-string $outputDir */
-        $outputDir = $this->cwd.\DIRECTORY_SEPARATOR.($input->getOption('output') ?: '');
+        [$writer, $verbose] = [new Output\StdOutWriter(), false];
+        if (null !== ($outputDir = $input->getOption('output'))) {
+            /**
+             * @psalm-var non-empty-string $outputDir
+             */
+            $outputDir = $this->cwd.\DIRECTORY_SEPARATOR.$outputDir; // @phpstan-ignore-line
+            [$writer, $verbose] = [new Output\FileWriter($outputDir), true];
+        }
 
-        $files = iterator_to_array(Internal\locateProtoFiles($paths));
+        $files = [...RecursiveFilesLocator::files($paths)];
 
         $progress = new ProgressBar($output, \count($files));
 
-        $compiler = Compiler::build(new FileWriter($outputDir));
+        $compiler = Compiler::build(
+            $writer,
+            new CombineImportResolver([
+                VirtualImportResolver::build(),
+                new FileImportResolver(
+                    Type\vec(Type\non_empty_string())->assert($input->getOption('imports')),
+                ),
+            ]),
+        );
 
         foreach ($files as $file) {
             $compiler->compile($file);
-            $progress->advance();
+
+            if ($verbose) {
+                $progress->advance();
+            }
         }
 
-        $progress->finish();
-        $io->success(\sprintf('All files were compiled successfully into the directory "%s".', $outputDir));
+        if ($verbose) {
+            $progress->finish();
+        }
+
+        if ($verbose) {
+            $io->success(\sprintf('All files were compiled successfully into the directory "%s".', $outputDir));
+        }
 
         return self::SUCCESS;
     }

@@ -25,50 +25,27 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Ir;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+enum Scalar: string
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
-    /**
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
-    {
-        return str_replace('\\\\', '\\', $namespace);
-    }
+    case double   = 'double';
+    case float    = 'float';
+    case int32    = 'int32';
+    case int64    = 'int64';
+    case uint32   = 'uint32';
+    case uint64   = 'uint64';
+    case sint32   = 'sint32';
+    case sint64   = 'sint64';
+    case fixed32  = 'fixed32';
+    case fixed64  = 'fixed64';
+    case sfixed32 = 'sfixed32';
+    case sfixed64 = 'sfixed64';
+    case bool     = 'bool';
+    case string   = 'string';
+    case bytes    = 'bytes';
 }

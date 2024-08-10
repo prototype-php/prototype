@@ -25,50 +25,35 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Parser;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class ImportVisitor extends Parser\Protobuf3BaseVisitor
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @return iterable<array-key, Import>
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
+    public function visitProto(Parser\Context\ProtoContext $context): iterable
+    {
+        return array_map(
+            fn (Parser\Context\ImportStatementContext $context): Import => $context->accept($this),
+            $context->importStatement() ?: [],
+        );
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    public function visitImportStatement(Parser\Context\ImportStatementContext $context): Import
     {
-        return str_replace('\\\\', '\\', $namespace);
+        $path = trimString(toNonEmptyString($context->strLit()?->getText()));
+
+        return match (true) {
+            null !== $context->WEAK()   => Import::weak($path),
+            null !== $context->PUBLIC() => Import::public($path),
+            default                     => Import::default($path),
+        };
     }
 }

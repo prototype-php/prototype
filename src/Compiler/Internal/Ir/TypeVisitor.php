@@ -25,50 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Ir;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-covariant T
  */
-final class Generator
+interface TypeVisitor
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+    /**
+     * @return T
+     */
+    public function scalar(ProtoType $type, Scalar $scalar): mixed;
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $message
+     * @return T
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+    public function message(ProtoType $type, string $message): mixed;
 
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
+    /**
+     * @param non-empty-string $enum
+     * @return T
+     */
+    public function enum(ProtoType $type, string $enum): mixed;
 
-            yield $definition->filename() => $file;
-        }
-    }
+    /**
+     * @return T
+     */
+    public function repeated(ProtoType $type, ProtoType $elementType): mixed;
 
-    private static function fixPhpNamespace(string $namespace): string
-    {
-        return str_replace('\\\\', '\\', $namespace);
-    }
+    /**
+     * @return T
+     */
+    public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): mixed;
+
+    /**
+     * @param ProtoType[] $variants
+     * @return T
+     */
+    public function oneof(ProtoType $type, array $variants): mixed;
 }

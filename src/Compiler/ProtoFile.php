@@ -25,50 +25,38 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Antlr\Antlr4\Runtime\InputStream;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Generator
+final class ProtoFile
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    /**
+     * @param non-empty-string $path
+     */
+    private function __construct(
+        public readonly InputStream $stream,
+        public readonly string $path,
+    ) {}
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
+    /**
+     * @param non-empty-string $path
+     */
+    public static function fromPath(string $path): self
+    {
+        return new self(InputStream::fromPath($path), $path);
     }
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $content
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public static function fromString(string $content): self
     {
-        return str_replace('\\\\', '\\', $namespace);
+        $stream = InputStream::fromString($content);
+
+        return new self($stream, $stream->getSourceName() ?: 'unspecified');
     }
 }

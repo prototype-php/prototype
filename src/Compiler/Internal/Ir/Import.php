@@ -25,50 +25,56 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Ir;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class Import implements \Stringable
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    public const TYPE_DEFAULT = 0;
+    public const TYPE_WEAK = 1;
+    public const TYPE_PUBLIC = 2;
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
+    /**
+     * @param non-empty-string $path
+     * @param self::TYPE_* $type
+     */
+    private function __construct(
+        public readonly string $path,
+        public readonly int $type,
+    ) {}
+
+    /**
+     * @param non-empty-string $path
+     */
+    public static function default(string $path): self
+    {
+        return new self($path, self::TYPE_DEFAULT);
     }
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $path
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
+    public static function weak(string $path): self
+    {
+        return new self($path, self::TYPE_WEAK);
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    /**
+     * @param non-empty-string $path
+     */
+    public static function public(string $path): self
     {
-        return str_replace('\\\\', '\\', $namespace);
+        return new self($path, self::TYPE_PUBLIC);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function __toString(): string
+    {
+        return $this->path;
     }
 }

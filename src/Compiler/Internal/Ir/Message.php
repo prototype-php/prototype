@@ -25,50 +25,67 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Code\DefinitionGenerator;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-implements \IteratorAggregate<array-key, Field>
  */
-final class Generator
+final class Message implements
+    Definition,
+    \IteratorAggregate,
+    \Countable
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    /** @var Field[] */
+    public readonly array $fields;
 
+    /**
+     * @param non-empty-string $name
+     * @param Field[] $fields
+     */
     public function __construct(
-        private readonly PhpFileFactory $files,
+        public readonly string $name,
+        array $fields = [],
     ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
+        uasort($fields, static fn (Field $l, Field $r): int => match (true) {
+            $l->number === $r->number => throw new \LogicException(
+                \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
+            ),
+            default => $l->number <=> $r->number,
+        });
+
+        $this->fields = $fields;
+    }
+
+    public function generate(DefinitionGenerator $generator): void
+    {
+        $generator->generateClass($this);
     }
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @return non-empty-string
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
+    public function filename(): string
+    {
+        return $this->name.'.php';
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): \Traversable
     {
-        return str_replace('\\\\', '\\', $namespace);
+        yield from $this->fields;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return \count($this->fields);
     }
 }

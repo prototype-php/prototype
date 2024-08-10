@@ -16,8 +16,8 @@ composer require prototype/compiler
 declare(strict_types=1);
 
 use Prototype\Compiler\Compiler;
-use Prototype\Compiler\Locator\ProtoFile;
 use Prototype\Compiler\Output\FileWriter;
+use Prototype\Compiler\ProtoFile;
 
 require_once __DIR__.'/../vendor/autoload.php';
 

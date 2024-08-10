@@ -25,50 +25,43 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Generator
+final class RecursiveFilesLocator
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+    private const PROTO_EXTENSION = 'proto';
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-list<non-empty-string> $paths
+     * @return iterable<ProtoFile>
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public static function files(array $paths): iterable
     {
-        return str_replace('\\\\', '\\', $namespace);
+        foreach ($paths as $path) {
+            if (!is_file($path) && !is_dir($path)) {
+                throw new \RuntimeException(\sprintf('Path "%s" could not be resolved.', $path));
+            }
+
+            if (is_file($path)) {
+                yield ProtoFile::fromPath($path);
+            }
+
+            if (is_dir($path)) {
+                $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveCallbackFilterIterator(
+                        new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS | \FilesystemIterator::KEY_AS_PATHNAME),
+                        static fn (\SplFileInfo $fileInfo): bool => $fileInfo->isFile() && self::PROTO_EXTENSION === $fileInfo->getExtension(),
+                    ),
+                );
+
+                /** @var non-empty-string $path */
+                foreach ($iterator as $path => $_) {
+                    yield ProtoFile::fromPath($path);
+                }
+            }
+        }
     }
 }

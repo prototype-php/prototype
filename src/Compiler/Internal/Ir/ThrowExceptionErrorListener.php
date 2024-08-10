@@ -25,50 +25,26 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Antlr\Antlr4\Runtime\Error\Exceptions\RecognitionException;
+use Antlr\Antlr4\Runtime\Error\Listeners\BaseErrorListener;
+use Antlr\Antlr4\Runtime\Recognizer;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class ThrowExceptionErrorListener extends BaseErrorListener
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
-    /**
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
-    {
-        return str_replace('\\\\', '\\', $namespace);
+    public function syntaxError(
+        Recognizer $recognizer,
+        ?object $offendingSymbol,
+        int $line,
+        int $charPositionInLine,
+        string $msg,
+        ?RecognitionException $exception,
+    ): never {
+        throw new \RuntimeException(\sprintf('Syntax error on line %d:%d %s', $line, $charPositionInLine, $msg));
     }
 }

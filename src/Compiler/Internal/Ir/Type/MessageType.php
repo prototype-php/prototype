@@ -25,50 +25,29 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir\Type;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Ir\ProtoType;
+use Prototype\Compiler\Internal\Ir\TypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class MessageType implements ProtoType
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
+    /**
+     * @param non-empty-string $message
+     */
     public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+        private readonly string $message,
+    ) {}
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public function accept(TypeVisitor $visitor): mixed
     {
-        return str_replace('\\\\', '\\', $namespace);
+        return $visitor->message($this, $this->message);
     }
 }

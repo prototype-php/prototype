@@ -25,50 +25,53 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Import;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Code\WellKnown;
 
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- */
-final class Generator
+final class VirtualImportResolver implements ImportResolver
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    /**
+     * @param array<non-empty-string, bool> $imports
+     */
+    private function __construct(
+        private readonly array $imports,
+    ) {}
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
+    /**
+     * @param list<non-empty-string> $imports
+     */
+    public static function build(array $imports = []): self
+    {
+        $paths = array_combine(
+            $types = array_keys([...WellKnown::pathToType()]),
+            array_fill(0, \count($types), true),
+        );
+
+        return new self(
+            array_merge(
+                $paths,
+                array_combine(
+                    $imports,
+                    array_fill(0, \count($imports), true),
+                ),
+            ),
+        );
     }
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
+    public function canResolve(string $path): bool
+    {
+        return isset($this->imports[$path]);
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    /**
+     * {@inheritdoc}
+     */
+    public function resolve(string $path): iterable
     {
-        return str_replace('\\\\', '\\', $namespace);
+        return [];
     }
 }

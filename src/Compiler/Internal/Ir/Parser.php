@@ -25,50 +25,34 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Antlr\Antlr4\Runtime\CommonTokenStream;
+use Antlr\Antlr4\Runtime\Error\Listeners\ANTLRErrorListener;
+use Antlr\Antlr4\Runtime\InputStream;
+use Prototype\Compiler\Internal\Parser as Generated;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class Parser
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
     public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+        private readonly ANTLRErrorListener $errorListener = new ThrowExceptionErrorListener(),
+    ) {}
 
-    /**
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public function parse(InputStream $stream): Generated\Context\ProtoContext
     {
-        return str_replace('\\\\', '\\', $namespace);
+        $parser = new Generated\Protobuf3Parser(
+            new CommonTokenStream(
+                new Generated\Protobuf3Lexer($stream),
+            ),
+        );
+
+        $parser->addErrorListener($this->errorListener);
+        $parser->setBuildParseTree(true);
+
+        return $parser->proto();
     }
 }

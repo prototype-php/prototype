@@ -31,9 +31,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prototype\Compiler\Compiler;
-use Prototype\Compiler\Locator\ProtoFile;
 use Prototype\Compiler\Output\PhpFile;
 use Prototype\Compiler\Output\Writer;
+use Prototype\Compiler\ProtoFile;
 
 #[CoversClass(Compiler::class)]
 final class CompilerTest extends TestCase

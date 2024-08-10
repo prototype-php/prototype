@@ -80,6 +80,7 @@ $config = (new Config())
         'no_unset_on_property' => false,
         'no_extra_blank_lines' => false,
         'constant_case' => false,
+        'comment_to_phpdoc' => false,
     ])
 ;
 

@@ -30,11 +30,9 @@ namespace Prototype\Compiler;
 use Nette\PhpGenerator\Printer;
 use Nette\PhpGenerator\PsrPrinter;
 use Prototype\Compiler\Exception;
-use Prototype\Compiler\Internal\Code\Generator;
-use Prototype\Compiler\Internal\Proto\Parser;
-use Prototype\Compiler\Internal\Proto\Schema;
-use Prototype\Compiler\Internal\Proto\ToSchemaConverter;
-use Prototype\Compiler\Locator\ProtoFile;
+use Prototype\Compiler\Import;
+use Prototype\Compiler\Internal\Code;
+use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Output;
 
 /**
@@ -43,23 +41,25 @@ use Prototype\Compiler\Output;
 final class Compiler
 {
     private function __construct(
-        private readonly Generator $generator,
+        private readonly Code\Generator $generator,
         private readonly Output\Writer $writer,
         private readonly Printer $printer,
-        private readonly Parser $parser,
+        private readonly Ir\ProtoResolver $protoResolver,
     ) {}
 
-    public static function build(Output\Writer $writer): self
-    {
+    public static function build(
+        Output\Writer $writer = new Output\StdOutWriter(),
+        ?Import\ImportResolver $imports = null,
+    ): self {
         return new self(
-            new Generator(
-                new Internal\Php\FileFactory(
-                    CompilerVersion::pretty(),
-                ),
+            new Code\Generator(
+                new Code\PhpFileFactory(CompilerVersion::pretty()),
             ),
             $writer,
             new PsrPrinter(),
-            new Parser(),
+            Ir\ProtoResolver::build($imports ?: new Import\CombineImportResolver([
+                Import\VirtualImportResolver::build(),
+            ])),
         );
     }
 
@@ -70,21 +70,21 @@ final class Compiler
         ProtoFile $file,
         CompileOptions $options = new CompileOptions(),
     ): void {
-        /** @var Schema $schema */
-        $schema = $this->parser->parse($file->stream)->accept( // @phpstan-ignore-line
-            new ToSchemaConverter(),
-        );
-
-        foreach (
-            $this->generator->generate($schema, ($schema->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema((string)$file->stream))
-            as $fileName => $phpFile
-        ) {
-            $this->writer->writePhpFile(
-                new Output\PhpFile(
-                    $fileName,
-                    $this->printer->printFile($phpFile),
-                ),
-            );
+        foreach ($this->protoResolver->resolve($file->path, $file->stream) as $proto) {
+            foreach (
+                $this->generator->generate(
+                    $proto,
+                    ($proto->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema($file->path),
+                )
+                as $fileName => $phpFile
+            ) {
+                $this->writer->writePhpFile(
+                    new Output\PhpFile(
+                        $fileName,
+                        $this->printer->printFile($phpFile),
+                    ),
+                );
+            }
         }
     }
 

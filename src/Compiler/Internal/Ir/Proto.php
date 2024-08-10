@@ -25,50 +25,49 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Ir;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class Proto
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+    private const PHP_NAMESPACE = 'php_namespace';
 
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $packageName
+     * @param array<non-empty-string, Definition> $definitions
+     * @param Option[] $options
+     * @param list<non-empty-string> $imports
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+    public function __construct(
+        public readonly string $packageName,
+        public readonly array $definitions = [],
+        public readonly array $options = [],
+        public readonly array $imports = [],
+    ) {}
 
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
+    /**
+     * @param list<non-empty-string> $imports
+     */
+    public function withImports(array $imports): self
+    {
+        return new self(
+            $this->packageName,
+            $this->definitions,
+            $this->options,
+            $imports,
+        );
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    public function phpNamespace(): ?string
     {
-        return str_replace('\\\\', '\\', $namespace);
+        $phpNamespaceOption = array_filter(
+            $this->options,
+            static fn (Option $option): bool => self::PHP_NAMESPACE === $option->name,
+        );
+
+        return $phpNamespaceOption[0]->value ?? null;
     }
 }

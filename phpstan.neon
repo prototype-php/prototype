@@ -13,6 +13,7 @@ parameters:
         - tests/Serializer
     excludePaths:
     	- src/*/vendor/*
+    	- src/Compiler
     tmpDir: var/phpstan
     ignoreErrors:
         - { identifier: missingType.generics }

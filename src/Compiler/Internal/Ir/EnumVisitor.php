@@ -25,50 +25,47 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Parser;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class EnumVisitor extends Parser\Protobuf3BaseVisitor
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
     public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+        private readonly string $parentMessageName = '',
+    ) {}
 
-    /**
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
-        }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
+    public function visitEnumDef(Parser\Context\EnumDefContext $context): Enum
     {
-        return str_replace('\\\\', '\\', $namespace);
+        return new Enum(
+            toNonEmptyString(
+                \sprintf('%s%s',
+                    '' !== $this->parentMessageName ? $this->parentMessageName.'.' : '',
+                    $context->enumName()?->ident()?->IDENTIFIER()?->getText(), // @phpstan-ignore-line
+                ),
+            ),
+            array_map(
+                fn (Parser\Context\EnumElementContext $context): EnumCase => $context->accept($this),
+                $context->enumBody()?->enumElement() ?: [],
+            ),
+        );
+    }
+
+    public function visitEnumElement(Parser\Context\EnumElementContext $context): EnumCase
+    {
+        $number = (int) ($context->enumField()?->intLit()?->getText() ?: 0);
+
+        if (null !== $context->enumField()?->MINUS()) {
+            $number = -$number;
+        }
+
+        return new EnumCase(
+            toNonEmptyString($context->enumField()?->ident()?->IDENTIFIER()?->getText()),
+            $number,
+        );
     }
 }

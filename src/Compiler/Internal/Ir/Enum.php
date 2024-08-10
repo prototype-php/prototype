@@ -25,50 +25,59 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Code\DefinitionGenerator;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-implements \IteratorAggregate<array-key, EnumCase>
  */
-final class Generator
+final class Enum implements
+    Definition,
+    \IteratorAggregate,
+    \Countable
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
     /**
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $name
+     * @param EnumCase[] $cases
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $definition->filename() => $file;
+    public function __construct(
+        public readonly string $name,
+        public readonly array $cases,
+    ) {
+        if (!\in_array(0, array_map(static fn (EnumCase $case): int => $case->value, $this->cases), true)) {
+            throw new \LogicException(\sprintf('The enum "%s" must has zero variant.', $this->name));
         }
     }
 
-    private static function fixPhpNamespace(string $namespace): string
+    public function generate(DefinitionGenerator $generator): void
     {
-        return str_replace('\\\\', '\\', $namespace);
+        $generator->generateEnum($this);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function filename(): string
+    {
+        return $this->name.'.php';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getIterator(): \Traversable
+    {
+        yield from $this->cases;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function count(): int
+    {
+        return \count($this->cases);
     }
 }
