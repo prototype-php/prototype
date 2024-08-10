@@ -48,7 +48,7 @@ final class ImportVisitor extends Parser\Protobuf3BaseVisitor
 
     public function visitImportStatement(Parser\Context\ImportStatementContext $context): Import
     {
-        $path = trimString(toNonEmptyString($context->strLit()?->getText()));
+        $path = trimString($context->strLit()?->getText());
 
         return match (true) {
             null !== $context->WEAK()   => Import::weak($path),

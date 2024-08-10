@@ -39,11 +39,11 @@ final class WellKnown
     public static function typeToPhpType(): iterable
     {
         yield 'google.protobuf.Timestamp' => PhpType::class(
-            \DateTimeInterface::class,
+            '\DateTimeInterface',
         );
 
         yield 'google.protobuf.Duration' => PhpType::class(
-            \DateInterval::class,
+            '\DateInterval',
         );
 
         yield 'google.protobuf.Struct' => PhpType::array(
@@ -100,6 +100,16 @@ final class WellKnown
             'TimeOfDay',
             'Prototype\WellKnown\TimeOfDay',
         );
+
+        yield 'google.type.Date' => PhpType::class(
+            'Date',
+            'Prototype\WellKnown\Date',
+        );
+
+        yield 'google.protobuf.FieldMask' => PhpType::class(
+            'FieldMask',
+            'Prototype\WellKnown\FieldMask',
+        );
     }
 
     /**
@@ -110,6 +120,7 @@ final class WellKnown
         yield 'google/protobuf/timestamp.proto'   => 'google.protobuf.Timestamp';
         yield 'google/protobuf/duration.proto'    => 'google.protobuf.Duration';
         yield 'google/protobuf/struct.proto'      => 'google.protobuf.Struct';
+        yield 'google/protobuf/field_mask.proto'  => 'google.protobuf.FieldMask';
         yield 'google/type/color.proto'           => 'google.type.Color';
         yield 'google/type/calendar_period.proto' => 'google.type.CalendarPeriod';
         yield 'google/type/dayofweek.proto'       => 'google.type.DayOfWeek';
@@ -120,5 +131,6 @@ final class WellKnown
         yield 'google/type/phone_number.proto'    => 'google.type.PhoneNumber';
         yield 'google/type/postal_address.proto'  => 'google.type.PostalAddress';
         yield 'google/type/timeofday.proto'       => 'google.type.TimeOfDay';
+        yield 'google/type/date.proto'            => 'google.type.Date';
     }
 }

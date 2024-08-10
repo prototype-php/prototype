@@ -56,7 +56,7 @@ final class Compiler
                 new Code\PhpFileFactory(CompilerVersion::pretty()),
             ),
             $writer,
-            new PsrPrinter(),
+            (new PsrPrinter())->setTypeResolving(false),
             Ir\ProtoResolver::build($imports ?: new Import\CombineImportResolver([
                 Import\VirtualImportResolver::build(),
             ])),

@@ -46,7 +46,7 @@ final class DefinitionGenerator
     {
         $phpEnum = $this
             ->namespace
-            ->addEnum($enum->name)
+            ->addEnum(self::fixClassLikeName($enum->name))
             ->addComment('@api')
             ->setType('int')
         ;
@@ -63,7 +63,7 @@ final class DefinitionGenerator
     {
         $class = $this
             ->namespace
-            ->addClass($message->name)
+            ->addClass(self::fixClassLikeName($message->name))
             ->setFinal()
             ->addComment('@api')
         ;
@@ -79,16 +79,50 @@ final class DefinitionGenerator
             /** @var PhpType $type */
             $type = $field->type->accept($this->typeVisitor);
 
-            $parameters[] = (new PromotedParameter($field->name))
+            if (null !== ($use = $type->use)) {
+                $this->namespace->addUse($use);
+            }
+
+            $fieldName = self::snakeCaseToCamelCase($field->name);
+
+            $parameters[] = (new PromotedParameter($fieldName))
                 ->setReadOnly()
                 ->setType($type->nativeType)
+                ->setNullable($type->nullable)
+                ->setDefaultValue($type->default)
             ;
 
-            $method->addComment(
-                $type->toPhpDoc($field->name),
-            );
+            if ('' !== ($phpDoc = $type->toPhpDoc($fieldName))) {
+                $method->addComment($phpDoc);
+            }
         }
 
         $method->setParameters($parameters);
+    }
+
+    /**
+     * @param non-empty-string $name
+     * @return non-empty-string
+     */
+    private static function fixClassLikeName(string $name): string
+    {
+        /** @var non-empty-string */
+        return str_replace('.', '', $name);
+    }
+
+    /**
+     * @param non-empty-string $name
+     * @return non-empty-string
+     */
+    private static function snakeCaseToCamelCase(string $name): string
+    {
+        /** @var non-empty-string */
+        return lcfirst(
+            str_replace(' ', '',
+                ucwords(
+                    str_replace('_', ' ', $name),
+                ),
+            ),
+        );
     }
 }

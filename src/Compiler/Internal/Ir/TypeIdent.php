@@ -52,7 +52,12 @@ enum TypeIdent
                 self::scalar(Scalar::from(toNonEmptyString($context->mapField()?->keyType()?->getText()))),
                 self::fromType($context->mapField()?->type_()),
             ),
+            default => throw new \RuntimeException('Unreachable.'),
         };
+
+        if (null !== $context->field()->fieldLabel()?->REPEATED()) {
+            $type = self::repeated($type);
+        }
 
         return $type;
     }

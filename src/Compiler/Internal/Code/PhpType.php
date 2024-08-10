@@ -42,6 +42,8 @@ final class PhpType
         public readonly string $nativeType,
         public readonly ?string $phpDocType = null,
         public readonly ?string $use = null,
+        public readonly bool $nullable = false,
+        public readonly mixed $default = null,
     ) {}
 
     public function toPhpDoc(string $paramName): string
@@ -56,9 +58,9 @@ final class PhpType
      * @param non-empty-string $nativeType
      * @param ?non-empty-string $phpDocType
      */
-    public static function scalar(string $nativeType, ?string $phpDocType = null): self
+    public static function scalar(string $nativeType, ?string $phpDocType = null, null|bool|string|int $default = null): self
     {
-        return new self($nativeType, $phpDocType);
+        return new self($nativeType, $phpDocType, default: $default);
     }
 
     /**
@@ -67,7 +69,7 @@ final class PhpType
      */
     public static function class(string $class, ?string $use = null): self
     {
-        return new self($class, use: $use);
+        return new self($class, use: $use, nullable: true);
     }
 
     /**
@@ -76,7 +78,7 @@ final class PhpType
      */
     public static function enum(string $enum, ?string $use = null): self
     {
-        return new self($enum, use: $use);
+        return new self($enum, use: $use, nullable: true);
     }
 
     public static function list(self $type): self
@@ -84,6 +86,7 @@ final class PhpType
         return new self(
             'array',
             'list<'.($type->phpDocType ?: $type->nativeType).'>',
+            default: [],
         );
     }
 
@@ -92,6 +95,7 @@ final class PhpType
         return new self(
             'array',
             'array<'.($keyType->phpDocType ?: $keyType->nativeType).', '.($valueType->phpDocType ?: $valueType->nativeType).'>',
+            default: [],
         );
     }
 
@@ -100,6 +104,8 @@ final class PhpType
      */
     public static function union(array $types): self
     {
+        $types = [self::scalar('null'), ...$types];
+
         $requirePhpDoc = false;
 
         foreach ($types as $type) {
@@ -110,8 +116,8 @@ final class PhpType
         }
 
         return new self(
-            implode('|', array_map(static fn (self $type): string => $type->nativeType, $types)), // @phpstan-ignore-line
-            $requirePhpDoc ? implode('|', array_map(static fn (self $type): string => $type->phpDocType ?: $type->nativeType, $types)) : null, // @phpstan-ignore-line
+            implode('|', array_map(static fn (self $type): string => $type->nativeType, $types)),
+            $requirePhpDoc ? implode('|', array_map(static fn (self $type): string => $type->phpDocType ?: $type->nativeType, $types)) : null,
         );
     }
 }

@@ -49,7 +49,7 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 
                 foreach ($messageDefinitions as $name => $messageDef) {
                     if (isset($definitions[$name])) {
-                        throw new \LogicException(\sprintf('Message "%s" is duplicated.', $name));
+                        throw new \LogicException(\sprintf('Message "%s" from package "%s" is duplicated.', $name, $packageName));
                     }
 
                     $definitions[$name] = $messageDef;

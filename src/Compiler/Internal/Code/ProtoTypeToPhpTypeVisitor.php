@@ -41,11 +41,11 @@ final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
     /**
      * @var array<non-empty-string, PhpType>
      */
-    private readonly array $wellKnowns;
+    private readonly array $types;
 
     public function __construct()
     {
-        $this->wellKnowns = [...WellKnown::typeToPhpType()];
+        $this->types = [...WellKnown::typeToPhpType()];
     }
 
     /**
@@ -54,12 +54,12 @@ final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
     public function scalar(ProtoType $type, Scalar $scalar): PhpType
     {
         return match ($scalar) {
-            Scalar::bool   => PhpType::scalar('bool'),
-            Scalar::string => PhpType::scalar('string'),
-            Scalar::bytes  => PhpType::scalar('string', 'bytes'),
-            Scalar::double => PhpType::scalar('float', 'double'),
-            Scalar::float  => PhpType::scalar('float'),
-            default        => PhpType::scalar('int', $scalar->value),
+            Scalar::bool   => PhpType::scalar('bool', default: false),
+            Scalar::string => PhpType::scalar('string', default: ''),
+            Scalar::bytes  => PhpType::scalar('string', 'bytes', ''),
+            Scalar::double => PhpType::scalar('float', 'double', 0),
+            Scalar::float  => PhpType::scalar('float', default: 0),
+            default        => PhpType::scalar('int', $scalar->value, 0),
         };
     }
 
@@ -68,7 +68,7 @@ final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
      */
     public function message(ProtoType $type, string $message): PhpType
     {
-        return $this->wellKnowns[$message] ?? PhpType::class($message);
+        return $this->types[$message] ?? PhpType::class($message);
     }
 
     /**
@@ -76,7 +76,7 @@ final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
      */
     public function enum(ProtoType $type, string $enum): PhpType
     {
-        return $this->wellKnowns[$enum] ?? PhpType::enum($enum);
+        return $this->types[$enum] ?? PhpType::enum($enum);
     }
 
     /**
