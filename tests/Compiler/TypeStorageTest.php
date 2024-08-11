@@ -50,6 +50,11 @@ final class TypeStorageTest extends TestCase
             'Request',
         ];
 
+        yield 'Task-> RequestTask' => [
+            'Task',
+            'RequestTask',
+        ];
+
         yield 'Task.Request -> null' => [
             'Task.Request',
             null,
@@ -102,6 +107,11 @@ final class TypeStorageTest extends TestCase
 
         yield 'Request.Type -> null' => [
             'Request.Type',
+            null,
+        ];
+
+        yield 'api.v1.test.Type -> null' => [
+            'api.v1.test.Type',
             null,
         ];
     }
