@@ -77,7 +77,12 @@ final class DefinitionGenerator
 
         foreach ($message as $field) {
             /** @var PhpType $type */
-            $type = $field->type->accept($this->typeVisitor);
+            $type = $field->type->accept(
+                new ResolveReferenceTypeVisitor(
+                    $this->typeVisitor,
+                    $message->typeStorage(),
+                ),
+            );
 
             if (null !== ($use = $type->use)) {
                 $this->namespace->addUse($use);
@@ -87,7 +92,7 @@ final class DefinitionGenerator
 
             $parameters[] = (new PromotedParameter($fieldName))
                 ->setReadOnly()
-                ->setType($type->nativeType)
+                ->setType(self::fixClassLikeName($type->nativeType))
                 ->setNullable($type->nullable)
                 ->setDefaultValue($type->default)
             ;

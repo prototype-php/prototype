@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace Prototype\Compiler\Internal\Ir;
 
 use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 
 /**
  * @internal
@@ -48,6 +49,7 @@ final class Message implements
      */
     public function __construct(
         public readonly string $name,
+        private readonly TypeStorage $types,
         array $fields = [],
     ) {
         uasort($fields, static fn (Field $l, Field $r): int => match (true) {
@@ -60,17 +62,22 @@ final class Message implements
         $this->fields = $fields;
     }
 
+    public function typeStorage(): TypeStorage
+    {
+        return clone $this->types;
+    }
+
     public function generate(DefinitionGenerator $generator): void
     {
         $generator->generateClass($this);
     }
 
     /**
-     * @return non-empty-string
+     * {@inheritdoc}
      */
-    public function filename(): string
+    public function typeName(): string
     {
-        return $this->name.'.php';
+        return $this->name;
     }
 
     /**

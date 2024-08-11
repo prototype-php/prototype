@@ -40,5 +40,5 @@ interface Definition
     /**
      * @return non-empty-string
      */
-    public function filename(): string;
+    public function typeName(): string;
 }

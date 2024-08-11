@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 use Prototype\Compiler\Internal\Parser;
 
 /**
@@ -40,6 +41,7 @@ final class MessageVisitor extends Parser\Protobuf3BaseVisitor
      */
     public function __construct(
         private readonly string $packageName,
+        private readonly TypeStorage $types,
         private readonly string $parentMessageName = '',
     ) {}
 
@@ -52,9 +54,10 @@ final class MessageVisitor extends Parser\Protobuf3BaseVisitor
             toNonEmptyString(
                 \sprintf('%s%s',
                     '' !== $this->parentMessageName ? $this->parentMessageName.'.' : '',
-                    $context->messageName()?->ident()?->IDENTIFIER()?->getText(), // @phpstan-ignore-line
+                    $messageName = $context->messageName()?->ident()?->IDENTIFIER()?->getText(), // @phpstan-ignore-line
                 ),
             ),
+            $types = $this->types->fork($messageName),
             array_map(
                 static fn (Parser\Context\MessageElementContext $context): Field => $context->accept(new MessageFieldVisitor()),
                 array_filter(
@@ -68,7 +71,7 @@ final class MessageVisitor extends Parser\Protobuf3BaseVisitor
 
         foreach ($context->messageBody()?->messageElement() ?: [] as $element) { // @phpstan-ignore-line
             if (null !== $element->messageDef()) {
-                $messageElements = $element->messageDef()->accept(new self($this->packageName, $message->name));
+                $messageElements = $element->messageDef()->accept(new self($this->packageName, $types, $message->name));
 
                 foreach ($messageElements as $messageName => $messageElement) {
                     if (isset($definitions[$messageName])) {
@@ -81,7 +84,7 @@ final class MessageVisitor extends Parser\Protobuf3BaseVisitor
 
             if (null !== $element->enumDef()) {
                 /** @var Enum $enum */
-                $enum = $element->enumDef()->accept(new EnumVisitor($message->name));
+                $enum = $element->enumDef()->accept(new EnumVisitor($types, $message->name));
 
                 if (isset($definitions[$enum->name])) {
                     throw new \LogicException(\sprintf('Enum "%s" from package "%s" is duplicated.', $enum->name, $this->packageName));

@@ -51,6 +51,11 @@ final class WellKnown
             PhpType::scalar('mixed'),
         );
 
+        yield 'google.protobuf.FieldMask' => PhpType::class(
+            'FieldMask',
+            'Prototype\WellKnown\FieldMask',
+        );
+
         yield 'google.type.Color' => PhpType::class(
             'Color',
             'Prototype\WellKnown\Color',
@@ -106,9 +111,14 @@ final class WellKnown
             'Prototype\WellKnown\Date',
         );
 
-        yield 'google.protobuf.FieldMask' => PhpType::class(
-            'FieldMask',
-            'Prototype\WellKnown\FieldMask',
+        yield 'google.type.LocalizedText' => PhpType::class(
+            'LocalizedText',
+            'Prototype\WellKnown\LocalizedText',
+        );
+
+        yield 'google.type.Expr' => PhpType::class(
+            'Expr',
+            'Prototype\WellKnown\Expr',
         );
     }
 
@@ -132,5 +142,7 @@ final class WellKnown
         yield 'google/type/postal_address.proto'  => 'google.type.PostalAddress';
         yield 'google/type/timeofday.proto'       => 'google.type.TimeOfDay';
         yield 'google/type/date.proto'            => 'google.type.Date';
+        yield 'google/type/localized_text.proto'  => 'google.type.LocalizedText';
+        yield 'google/type/expr.proto'            => 'google.type.Expr';
     }
 }

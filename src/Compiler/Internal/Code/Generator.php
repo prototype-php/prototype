@@ -63,7 +63,7 @@ final class Generator
                 ),
             );
 
-            yield $definition->filename() => $file;
+            yield str_replace('.', '', $definition->typeName()).'.php' => $file;
         }
     }
 

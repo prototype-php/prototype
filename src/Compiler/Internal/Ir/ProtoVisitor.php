@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 use Prototype\Compiler\Internal\Parser;
 
 /**
@@ -41,11 +42,13 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
             $context->packageStatement(0)?->fullIdent()?->getText() ?: '', // @phpstan-ignore-line
         );
 
+        $types = TypeStorage::root($packageName);
+
         $definitions = [];
 
         foreach ($context->topLevelDef() ?: [] as $def) { // @phpstan-ignore-line
             if (null !== $def->messageDef()) {
-                $messageDefinitions = $def->messageDef()->accept(new MessageVisitor($packageName));
+                $messageDefinitions = $def->messageDef()->accept(new MessageVisitor($packageName, $types));
 
                 foreach ($messageDefinitions as $name => $messageDef) {
                     if (isset($definitions[$name])) {
@@ -58,7 +61,7 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 
             if (null !== $def->enumDef()) {
                 /** @var Enum $enum */
-                $enum = $def->enumDef()->accept(new EnumVisitor());
+                $enum = $def->enumDef()->accept(new EnumVisitor($types));
 
                 if (isset($definitions[$enum->name])) {
                     throw new \LogicException(\sprintf('Enum "%s" from package "%s" is duplicated.', $enum->name, $packageName));

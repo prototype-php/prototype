@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 use Prototype\Compiler\Internal\Parser;
 
 /**
@@ -36,16 +37,17 @@ use Prototype\Compiler\Internal\Parser;
 final class EnumVisitor extends Parser\Protobuf3BaseVisitor
 {
     public function __construct(
+        private readonly TypeStorage $types,
         private readonly string $parentMessageName = '',
     ) {}
 
     public function visitEnumDef(Parser\Context\EnumDefContext $context): Enum
     {
-        return new Enum(
+        $enum = new Enum(
             toNonEmptyString(
                 \sprintf('%s%s',
                     '' !== $this->parentMessageName ? $this->parentMessageName.'.' : '',
-                    $context->enumName()?->ident()?->IDENTIFIER()?->getText(), // @phpstan-ignore-line
+                    $ident = $context->enumName()?->ident()?->IDENTIFIER()?->getText(), // @phpstan-ignore-line
                 ),
             ),
             array_map(
@@ -53,6 +55,10 @@ final class EnumVisitor extends Parser\Protobuf3BaseVisitor
                 $context->enumBody()?->enumElement() ?: [],
             ),
         );
+
+        $this->types->fork($ident);
+
+        return $enum;
     }
 
     public function visitEnumElement(Parser\Context\EnumElementContext $context): EnumCase

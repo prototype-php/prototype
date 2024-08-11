@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Import;
+namespace Prototype\Compiler\Internal\Ir\Trace;
 
 /**
  * @internal

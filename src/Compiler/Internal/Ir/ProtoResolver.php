@@ -29,7 +29,7 @@ namespace Prototype\Compiler\Internal\Ir;
 
 use Antlr\Antlr4\Runtime\InputStream;
 use Prototype\Compiler\Import\ImportResolver;
-use Prototype\Compiler\Internal\Import\DependencyGraph;
+use Prototype\Compiler\Internal\Ir\Trace\DependencyGraph;
 use Prototype\Compiler\Internal\Parser as Generated;
 
 /**

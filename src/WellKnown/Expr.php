@@ -25,59 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
-
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+namespace Prototype\WellKnown;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, EnumCase>
+ * Represents a textual expression in the Common Expression Language (CEL)
+ * syntax. CEL is a C-like expression language. The syntax and semantics of CEL
+ * are documented at https://github.com/google/cel-spec.
+ *
+ * @api
  */
-final class Enum implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+final class Expr
 {
-    /**
-     * @param non-empty-string $name
-     * @param EnumCase[] $cases
-     */
     public function __construct(
-        public readonly string $name,
-        public readonly array $cases,
-    ) {
-        if (!\in_array(0, array_map(static fn (EnumCase $case): int => $case->value, $this->cases), true)) {
-            throw new \LogicException(\sprintf('The enum "%s" must has zero variant.', $this->name));
-        }
-    }
-
-    public function generate(DefinitionGenerator $generator): void
-    {
-        $generator->generateEnum($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function typeName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        yield from $this->cases;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->cases);
-    }
+        public readonly string $expression,
+        public readonly string $title,
+        public readonly string $description,
+        public readonly string $location,
+    ) {}
 }

@@ -29,7 +29,7 @@ namespace Prototype\Tests\Compiler;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Prototype\Compiler\Internal\Import\DependencyGraph;
+use Prototype\Compiler\Internal\Ir\Trace\DependencyGraph;
 
 #[CoversClass(DependencyGraph::class)]
 final class DependencyGraphTest extends TestCase
