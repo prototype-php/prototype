@@ -32,6 +32,9 @@ $config = (new Config())
     ->setFinder(
         Finder::create()
             ->in(__DIR__ . '/src')
+            ->exclude([
+                'Compiler/Internal/Parser',
+            ])
             ->append([__FILE__])
             ->append(
                 Finder::create()
@@ -77,6 +80,7 @@ $config = (new Config())
         'no_unset_on_property' => false,
         'no_extra_blank_lines' => false,
         'constant_case' => false,
+        'comment_to_phpdoc' => false,
     ])
 ;
 

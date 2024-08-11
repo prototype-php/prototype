@@ -8,12 +8,6 @@ This package can be installed as a [Composer](https://getcomposer.org/) dependen
 composer require prototype/grpc
 ```
 
-## Testing
-
-``` bash
-$ composer test
-```  
-
 ## License
 
 The MIT License (MIT). See [License File](../src/GRPC/LICENSE) for more information.

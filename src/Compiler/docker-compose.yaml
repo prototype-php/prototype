@@ -1,0 +1,7 @@
+services:
+  antlr:
+    build:
+      context: docker/antlr
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/work
