@@ -21,6 +21,7 @@ jobs:
           - { namespace: Byte, repo: byte-buffer }
           - { namespace: GRPC, repo: grpc }
           - { namespace: WellKnown, repo: well-known }
+          - { namespace: Compiler, repo: compiler }
     steps:
       - uses: actions/checkout@v4
         with:
