@@ -52,7 +52,15 @@ final class Message implements
         private readonly TypeStorage $types,
         array $fields = [],
     ) {
-        self::assertNoDuplicates($fields);
+        Assert::unique($fields,
+            static fn (Field $field): int => $field->number,
+            static function (Field $l, Field $r): never {
+                throw new \LogicException(
+                    \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
+                );
+            },
+        );
+
         $this->fields = $fields;
     }
 
@@ -83,24 +91,5 @@ final class Message implements
     public function count(): int
     {
         return \count($this->fields);
-    }
-
-    /**
-     * @param Field[] $fields
-     */
-    private static function assertNoDuplicates(array $fields): void
-    {
-        /** @var array<positive-int, Field> $unique */
-        $unique = [];
-
-        foreach ($fields as $field) {
-            if (isset($unique[$field->number])) {
-                throw new \LogicException(
-                    \sprintf('Fields "%s" and "%s" has the same order "%d".', $field->name, $unique[$field->number]->name, $field->number),
-                );
-            }
-
-            $unique[$field->number] = $field;
-        }
     }
 }
