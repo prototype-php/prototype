@@ -30,6 +30,7 @@ namespace Prototype\Compiler\Internal\Code;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PromotedParameter;
 use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Ir\Field;
 
 /**
  * @internal
@@ -76,6 +77,12 @@ final class DefinitionGenerator
             ->addComment('@api')
         ;
 
+        $numberExplicitly = self::shouldAddExplicitNumbering($message->fields);
+
+        if ($numberExplicitly) {
+            $this->namespace->addUse('Prototype\Serializer\Field');
+        }
+
         $method = $class
             ->addMethod('__construct')
         ;
@@ -98,12 +105,18 @@ final class DefinitionGenerator
 
             $fieldName = Naming\SnakeCase::toCamelCase($field->name);
 
-            $parameters[] = (new PromotedParameter($fieldName))
+            $parameter = (new PromotedParameter($fieldName))
                 ->setReadOnly()
                 ->setType($type->nativeType)
                 ->setNullable($type->nullable)
                 ->setDefaultValue($type->default)
             ;
+
+            if ($numberExplicitly) {
+                $parameter->addAttribute('Field', [$field->number]);
+            }
+
+            $parameters[] = $parameter;
 
             if ('' !== ($phpDoc = $type->toPhpDoc($fieldName))) {
                 $method->addComment($phpDoc);
@@ -113,5 +126,22 @@ final class DefinitionGenerator
         $method->setParameters($parameters);
 
         return $className;
+    }
+
+    /**
+     * @param Field[] $fields
+     */
+    private static function shouldAddExplicitNumbering(array $fields): bool
+    {
+        // Specifies whether to add an explicit number indication to the fields.
+        // Add field attribute when numbers are not monotonically increasing or have a gap greater than one.
+        for ($i = 0; $i < \count($fields) - 1; ++$i) {
+            if ($fields[$i]->number > $fields[$i+1]->number || ($fields[$i+1]->number - $fields[$i]->number) !== 1) {
+                return true;
+            }
+        }
+
+        // In the simplest case, when numbering does not start from one, we also add a number attribute to all fields.
+        return ($fields[0]->number ?? 1) !== 1;
     }
 }

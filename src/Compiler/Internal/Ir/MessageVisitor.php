@@ -58,11 +58,13 @@ final class MessageVisitor extends Parser\Protobuf3BaseVisitor
                 ),
             ),
             $types = $this->types->fork($messageName),
-            array_map(
-                static fn (Parser\Context\MessageElementContext $context): Field => $context->accept(new MessageFieldVisitor()),
-                array_filter(
-                    $context->messageBody()?->messageElement() ?: [],
-                    static fn (Parser\Context\MessageElementContext $context): bool => null === $context->messageDef() && null === $context->enumDef(),
+            array_values(
+                array_map(
+                    static fn (Parser\Context\MessageElementContext $context): Field => $context->accept(new MessageFieldVisitor()),
+                    array_filter(
+                        $context->messageBody()?->messageElement() ?: [],
+                        static fn (Parser\Context\MessageElementContext $context): bool => null === $context->messageDef() && null === $context->enumDef(),
+                    ),
                 ),
             ),
         );

@@ -52,13 +52,7 @@ final class Message implements
         private readonly TypeStorage $types,
         array $fields = [],
     ) {
-        uasort($fields, static fn (Field $l, Field $r): int => match (true) {
-            $l->number === $r->number => throw new \LogicException(
-                \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
-            ),
-            default => $l->number <=> $r->number,
-        });
-
+        self::assertNoDuplicates($fields);
         $this->fields = $fields;
     }
 
@@ -89,5 +83,24 @@ final class Message implements
     public function count(): int
     {
         return \count($this->fields);
+    }
+
+    /**
+     * @param Field[] $fields
+     */
+    private static function assertNoDuplicates(array $fields): void
+    {
+        /** @var array<positive-int, Field> $unique */
+        $unique = [];
+
+        foreach ($fields as $field) {
+            if (isset($unique[$field->number])) {
+                throw new \LogicException(
+                    \sprintf('Fields "%s" and "%s" has the same order "%d".', $field->name, $unique[$field->number]->name, $field->number),
+                );
+            }
+
+            $unique[$field->number] = $field;
+        }
     }
 }
