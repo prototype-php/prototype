@@ -52,12 +52,14 @@ final class Message implements
         private readonly TypeStorage $types,
         array $fields = [],
     ) {
-        uasort($fields, static fn (Field $l, Field $r): int => match (true) {
-            $l->number === $r->number => throw new \LogicException(
-                \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
-            ),
-            default => $l->number <=> $r->number,
-        });
+        Assert::unique($fields,
+            static fn (Field $field): int => $field->number,
+            static function (Field $l, Field $r): never {
+                throw new \LogicException(
+                    \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
+                );
+            },
+        );
 
         $this->fields = $fields;
     }
