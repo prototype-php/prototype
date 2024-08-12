@@ -42,11 +42,14 @@ final class DefinitionGenerator
         private readonly Ir\TypeVisitor $typeVisitor,
     ) {}
 
-    public function generateEnum(Ir\Enum $enum): void
+    /**
+     * @return non-empty-string
+     */
+    public function generateEnum(Ir\Enum $enum): string
     {
         $phpEnum = $this
             ->namespace
-            ->addEnum(self::fixClassLikeName($enum->name))
+            ->addEnum($enumName = Naming\ClassLike::name($enum->name))
             ->addComment('@api')
             ->setType('int')
         ;
@@ -57,13 +60,18 @@ final class DefinitionGenerator
                 $enumCase->value,
             );
         }
+
+        return $enumName;
     }
 
-    public function generateClass(Ir\Message $message): void
+    /**
+     * @return non-empty-string
+     */
+    public function generateClass(Ir\Message $message): string
     {
         $class = $this
             ->namespace
-            ->addClass(self::fixClassLikeName($message->name))
+            ->addClass($className = Naming\ClassLike::name($message->name))
             ->setFinal()
             ->addComment('@api')
         ;
@@ -88,11 +96,11 @@ final class DefinitionGenerator
                 $this->namespace->addUse($use);
             }
 
-            $fieldName = self::snakeCaseToCamelCase($field->name);
+            $fieldName = Naming\SnakeCase::toCamelCase($field->name);
 
             $parameters[] = (new PromotedParameter($fieldName))
                 ->setReadOnly()
-                ->setType(self::fixClassLikeName($type->nativeType))
+                ->setType($type->nativeType)
                 ->setNullable($type->nullable)
                 ->setDefaultValue($type->default)
             ;
@@ -103,31 +111,7 @@ final class DefinitionGenerator
         }
 
         $method->setParameters($parameters);
-    }
 
-    /**
-     * @param non-empty-string $name
-     * @return non-empty-string
-     */
-    private static function fixClassLikeName(string $name): string
-    {
-        /** @var non-empty-string */
-        return str_replace('.', '', $name);
-    }
-
-    /**
-     * @param non-empty-string $name
-     * @return non-empty-string
-     */
-    private static function snakeCaseToCamelCase(string $name): string
-    {
-        /** @var non-empty-string */
-        return lcfirst(
-            str_replace(' ', '',
-                ucwords(
-                    str_replace('_', ' ', $name),
-                ),
-            ),
-        );
+        return $className;
     }
 }

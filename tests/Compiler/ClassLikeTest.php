@@ -25,54 +25,54 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Tests\Compiler;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Prototype\Compiler\Internal\Code\Naming\ClassLike;
 
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, EnumCase>
- */
-final class Enum implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+#[CoversClass(ClassLike::class)]
+final class ClassLikeTest extends TestCase
 {
     /**
+     * @return iterable<array-key, array{non-empty-string, non-empty-string}>
+     */
+    public static function fixtures(): iterable
+    {
+        yield 'String_' => [
+            'string',
+            'String_',
+        ];
+
+        yield 'Class_' => [
+            'class',
+            'Class_',
+        ];
+
+        yield 'CALLABLE_' => [
+            'CALLABLE',
+            'CALLABLE_',
+        ];
+
+        yield 'RequireOnce' => [
+            'require_once',
+            'RequireOnce',
+        ];
+
+        yield '__FUNCTION__' => [
+            '__FUNCTION__',
+            'FUNCTION_',
+        ];
+    }
+
+    /**
      * @param non-empty-string $name
-     * @param EnumCase[] $cases
+     * @param non-empty-string $className
      */
-    public function __construct(
-        public readonly string $name,
-        public readonly array $cases,
-    ) {
-        if (!\in_array(0, array_map(static fn (EnumCase $case): int => $case->value, $this->cases), true)) {
-            throw new \LogicException(\sprintf('The enum "%s" must has zero variant.', $this->name));
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function generate(DefinitionGenerator $generator): string
+    #[DataProvider('fixtures')]
+    public function testClassName(string $name, string $className): void
     {
-        return $generator->generateEnum($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        yield from $this->cases;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->cases);
+        self::assertSame($className, ClassLike::name($name));
     }
 }

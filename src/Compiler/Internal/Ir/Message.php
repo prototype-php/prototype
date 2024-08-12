@@ -67,17 +67,12 @@ final class Message implements
         return clone $this->types;
     }
 
-    public function generate(DefinitionGenerator $generator): void
-    {
-        $generator->generateClass($this);
-    }
-
     /**
      * {@inheritdoc}
      */
-    public function typeName(): string
+    public function generate(DefinitionGenerator $generator): string
     {
-        return $this->name;
+        return $generator->generateClass($this);
     }
 
     /**

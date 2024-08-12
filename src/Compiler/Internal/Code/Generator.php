@@ -45,6 +45,7 @@ final class Generator
     }
 
     /**
+     * @param non-empty-string $phpNamespace
      * @return \Generator<non-empty-string, PhpFile>
      */
     public function generate(
@@ -54,21 +55,16 @@ final class Generator
         foreach ($proto->definitions as $definition) {
             $file = $this->files->newFile();
 
-            $definition->generate(
+            $typeName = $definition->generate(
                 new DefinitionGenerator(
                     $file->addNamespace(
-                        self::fixPhpNamespace($phpNamespace),
+                        Naming\NamespaceLike::name($phpNamespace),
                     ),
                     $this->typeVisitor,
                 ),
             );
 
-            yield str_replace('.', '', $definition->typeName()).'.php' => $file;
+            yield $typeName.'.php' => $file;
         }
-    }
-
-    private static function fixPhpNamespace(string $namespace): string
-    {
-        return str_replace('\\\\', '\\', $namespace);
     }
 }
