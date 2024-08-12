@@ -37,8 +37,7 @@ enum ClassLike
     private const builtin = [
         'string' => 1, 'int' => 1, 'float' => 1, 'bool' => 1, 'array' => 1, 'object' => 1,
         'callable' => 1, 'iterable' => 1, 'void' => 1, 'null' => 1, 'mixed' => 1, 'false' => 1,
-        'never' => 1, 'true' => 1,
-        'self' => 1, 'parent' => 1, 'static' => 1,
+        'never' => 1, 'true' => 1, 'self' => 1, 'parent' => 1, 'static' => 1,
         'include' => 1, 'include_once' => 1, 'eval' => 1, 'require' => 1, 'require_once' => 1, 'or' => 1, 'xor' => 1,
         'and' => 1, 'instanceof' => 1, 'new' => 1, 'clone' => 1, 'exit' => 1, 'if' => 1, 'elseif' => 1, 'else' => 1,
         'endif' => 1, 'echo' => 1, 'do' => 1, 'while' => 1, 'endwhile' => 1, 'for' => 1, 'endfor' => 1, 'foreach' => 1,
