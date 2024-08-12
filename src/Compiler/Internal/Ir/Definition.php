@@ -35,10 +35,8 @@ use Prototype\Compiler\Internal\Code\DefinitionGenerator;
  */
 interface Definition
 {
-    public function generate(DefinitionGenerator $generator): void;
-
     /**
      * @return non-empty-string
      */
-    public function typeName(): string;
+    public function generate(DefinitionGenerator $generator): string;
 }

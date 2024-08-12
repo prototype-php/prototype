@@ -25,54 +25,20 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
-
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+namespace Prototype\Compiler\Internal\Code\Naming;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, EnumCase>
  */
-final class Enum implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+enum NamespaceLike
 {
     /**
      * @param non-empty-string $name
-     * @param EnumCase[] $cases
+     * @return non-empty-string
      */
-    public function __construct(
-        public readonly string $name,
-        public readonly array $cases,
-    ) {
-        if (!\in_array(0, array_map(static fn (EnumCase $case): int => $case->value, $this->cases), true)) {
-            throw new \LogicException(\sprintf('The enum "%s" must has zero variant.', $this->name));
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function generate(DefinitionGenerator $generator): string
+    public static function name(string $name): string
     {
-        return $generator->generateEnum($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        yield from $this->cases;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->cases);
+        return str_replace('\\\\', '\\', $name);
     }
 }

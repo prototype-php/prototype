@@ -83,6 +83,7 @@ final class CompileCommand extends Command
         $paths = $input->getArgument('paths');
 
         [$writer, $verbose] = [new Output\StdOutWriter(), false];
+
         if (null !== ($outputDir = $input->getOption('output'))) {
             /**
              * @psalm-var non-empty-string $outputDir

@@ -69,7 +69,11 @@ final class PhpType
      */
     public static function class(string $class, ?string $use = null): self
     {
-        return new self($class, use: $use, nullable: true);
+        return new self(
+            Naming\ClassLike::name($class),
+            use: $use,
+            nullable: true,
+        );
     }
 
     /**
@@ -78,7 +82,11 @@ final class PhpType
      */
     public static function enum(string $enum, ?string $use = null): self
     {
-        return new self($enum, use: $use, nullable: true);
+        return new self(
+            Naming\ClassLike::name($enum),
+            use: $use,
+            nullable: true,
+        );
     }
 
     public static function list(self $type): self
