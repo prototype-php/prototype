@@ -31,6 +31,7 @@ use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PromotedParameter;
 use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Internal\Ir\Field;
+use Prototype\Compiler\Internal\Naming;
 
 /**
  * @internal
@@ -57,7 +58,7 @@ final class DefinitionGenerator
 
         foreach ($enum as $enumCase) {
             $phpEnum->addCase(
-                $enumCase->name,
+                Naming\EnumLike::case($enumCase->name),
                 $enumCase->value,
             );
         }

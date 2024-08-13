@@ -40,9 +40,6 @@ final class Message implements
     \IteratorAggregate,
     \Countable
 {
-    /** @var Field[] */
-    public readonly array $fields;
-
     /**
      * @param non-empty-string $name
      * @param Field[] $fields
@@ -50,19 +47,8 @@ final class Message implements
     public function __construct(
         public readonly string $name,
         private readonly TypeStorage $types,
-        array $fields = [],
-    ) {
-        Assert::unique($fields,
-            static fn (Field $field): int => $field->number,
-            static function (Field $l, Field $r): never {
-                throw new \LogicException(
-                    \sprintf('Fields "%s" and "%s" has the same order "%d".', $l->name, $r->name, $l->number),
-                );
-            },
-        );
-
-        $this->fields = $fields;
-    }
+        public readonly array $fields = [],
+    ) {}
 
     public function typeStorage(): TypeStorage
     {

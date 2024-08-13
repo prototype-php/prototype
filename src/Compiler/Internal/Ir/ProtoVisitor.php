@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Ir\Hook\Hooks;
 use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 use Prototype\Compiler\Internal\Parser;
 
@@ -36,6 +37,10 @@ use Prototype\Compiler\Internal\Parser;
  */
 final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 {
+    public function __construct(
+        private readonly Hooks $hooks,
+    ) {}
+
     public function visitProto(Parser\Context\ProtoContext $context): Proto // @phpstan-ignore-line
     {
         $packageName = toNonEmptyString(
@@ -50,12 +55,18 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
             if (null !== $def->messageDef()) {
                 $messageDefinitions = $def->messageDef()->accept(new MessageVisitor($packageName, $types));
 
-                foreach ($messageDefinitions as $name => $messageDef) {
+                foreach ($messageDefinitions as $name => $definition) {
                     if (isset($definitions[$name])) {
                         throw new \LogicException(\sprintf('Message "%s" from package "%s" is duplicated.', $name, $packageName));
                     }
 
-                    $definitions[$name] = $messageDef;
+                    if ($definition instanceof Message) {
+                        $this->hooks->afterMessageVisited($definition);
+                    } elseif ($definition instanceof Enum) {
+                        $this->hooks->afterEnumVisited($definition);
+                    }
+
+                    $definitions[$name] = $definition;
                 }
             }
 
@@ -66,6 +77,8 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
                 if (isset($definitions[$enum->name])) {
                     throw new \LogicException(\sprintf('Enum "%s" from package "%s" is duplicated.', $enum->name, $packageName));
                 }
+
+                $this->hooks->afterEnumVisited($enum);
 
                 $definitions[$enum->name] = $enum;
             }

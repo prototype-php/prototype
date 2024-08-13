@@ -25,47 +25,34 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir\Validate;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Ir\Field;
+use Prototype\Compiler\Internal\Ir\Hook\AfterMessageVisitedHook;
+use Prototype\Compiler\Internal\Ir\Message;
 use Prototype\Compiler\Internal\Naming;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class AllMessageFieldNamesAreUnique implements AfterMessageVisitedHook
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    public function afterMessageVisited(Message $message): void
+    {
+        /** @var array<non-empty-string, Field> $unique */
+        $unique = [];
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+        foreach ($message as $field) {
+            $fieldName = Naming\SnakeCase::toCamelCase($field->name);
 
-    /**
-     * @param non-empty-string $phpNamespace
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+            if (isset($unique[$fieldName])) {
+                throw new ConstraintViolated(
+                    \sprintf('Message "%s" has fields with the same name "%s".', $message->name, $fieldName),
+                );
+            }
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
+            $unique[$fieldName] = $field;
         }
     }
 }

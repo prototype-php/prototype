@@ -25,38 +25,12 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Ir\Validate;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-enum Assert
+final class ConstraintViolated extends \Exception
 {
-    /**
-     * @template T
-     * @template TKey of array-key
-     * @param iterable<T> $values
-     * @param callable(T): TKey $key
-     * @param callable(T, T): never $violated
-     * @throws \Throwable
-     */
-    public static function unique(
-        iterable $values,
-        callable $key,
-        callable $violated,
-    ): void {
-        /** @psalm-var array<TKey, T> $unique */
-        $unique = [];
-
-        foreach ($values as $value) {
-            $valueKey = $key($value);
-
-            if (isset($unique[$valueKey])) {
-                $violated($value, $unique[$valueKey]);
-            }
-
-            $unique[$valueKey] = $value;
-        }
-    }
 }

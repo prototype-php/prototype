@@ -25,47 +25,15 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir\Hook;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Internal\Ir\Enum;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+interface AfterEnumVisitedHook
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
-    /**
-     * @param non-empty-string $phpNamespace
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
-        }
-    }
+    public function afterEnumVisited(Enum $enum): void;
 }

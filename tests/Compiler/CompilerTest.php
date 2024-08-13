@@ -31,6 +31,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prototype\Compiler\Compiler;
+use Prototype\Compiler\Internal\Ir\Validate\ConstraintViolated;
 use Prototype\Compiler\Output\PhpFile;
 use Prototype\Compiler\Output\Writer;
 use Prototype\Compiler\ProtoFile;
@@ -41,7 +42,7 @@ final class CompilerTest extends TestCase
     /**
      * @return iterable<array-key, array{non-empty-string, PhpFile[]}>
      */
-    public static function fixtures(): iterable
+    public static function compileFixtures(): iterable
     {
         yield 'scalars' => [
             <<<'PROTO'
@@ -634,7 +635,7 @@ PHP,
      * @param non-empty-string $protobuf
      * @param non-empty-list<PhpFile> $phpFiles
      */
-    #[DataProvider('fixtures')]
+    #[DataProvider('compileFixtures')]
     public function testCompile(string $protobuf, array $phpFiles): void
     {
         $matcher = self::exactly(\count($phpFiles));
@@ -649,6 +650,117 @@ PHP,
         ;
 
         $compiler = Compiler::build($writer);
+        $compiler->compile(ProtoFile::fromString($protobuf));
+    }
+
+    /**
+     * @return iterable<array-key, array{non-empty-string, class-string<\Throwable>, non-empty-string}>
+     */
+    public static function notCompileFixtures(): iterable
+    {
+        yield 'enum without zero variant' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+enum Test {
+    A = 1;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'The enum "Test" must contains zero variant.',
+        ];
+
+        yield 'enum with the same variant names' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+enum Test {
+    A = 0;
+    A = 1;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Enum "Test" has variants with the same name "A".',
+        ];
+
+        yield 'enum with the same variant values' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+enum Test {
+    A = 0;
+    B = 1;
+    C = 1;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Variants "C" and "B" of enum "Test" has the same value "1".',
+        ];
+
+        yield 'message with the same field names' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Test {
+    string a = 1;
+    int A = 2;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Message "Test" has fields with the same name "a".',
+        ];
+
+        yield 'message with the same field numbers' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Test {
+    string a = 1;
+    int b = 1;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Fields "b" and "a" of message "Test" has the same order "1".',
+        ];
+    }
+
+    /**
+     * @param non-empty-string $protobuf
+     * @param class-string<\Throwable> $exception
+     * @param non-empty-string $exceptionMessage
+     */
+    #[DataProvider('notCompileFixtures')]
+    public function testDoesntCompile(string $protobuf, string $exception, string $exceptionMessage): void
+    {
+        self::expectException($exception);
+        self::expectExceptionMessage($exceptionMessage);
+
+        $compiler = Compiler::build();
         $compiler->compile(ProtoFile::fromString($protobuf));
     }
 }

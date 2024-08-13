@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code\Naming;
+namespace Prototype\Compiler\Internal\Naming;
 
 /**
  * @internal

@@ -25,47 +25,55 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir\Hook;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Internal\Ir\Enum;
+use Prototype\Compiler\Internal\Ir\Message;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class Hooks
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    /** @var list<AfterMessageVisitedHook> */
+    private array $afterMessageVisitedHooks = [];
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+    /** @var list<AfterEnumVisitedHook>  */
+    private array $afterEnumVisitedHooks = [];
 
     /**
-     * @param non-empty-string $phpNamespace
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param iterable<AfterMessageVisitedHook|AfterEnumVisitedHook> $hooks
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+    public function __construct(iterable $hooks = [])
+    {
+        foreach ($hooks as $hook) {
+            $this->addHook($hook);
+        }
+    }
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
+    public function afterMessageVisited(Message $message): void
+    {
+        foreach ($this->afterMessageVisitedHooks as $hook) {
+            $hook->afterMessageVisited($message);
+        }
+    }
 
-            yield $typeName.'.php' => $file;
+    public function afterEnumVisited(Enum $enum): void
+    {
+        foreach ($this->afterEnumVisitedHooks as $hook) {
+            $hook->afterEnumVisited($enum);
+        }
+    }
+
+    public function addHook(AfterMessageVisitedHook|AfterEnumVisitedHook $hook): void
+    {
+        if ($hook instanceof AfterMessageVisitedHook) {
+            $this->afterMessageVisitedHooks[] = $hook;
+        }
+
+        if ($hook instanceof AfterEnumVisitedHook) {
+            $this->afterEnumVisitedHooks[] = $hook;
         }
     }
 }

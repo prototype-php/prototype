@@ -25,20 +25,36 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code\Naming;
+namespace Prototype\Compiler\Internal\Ir\Validate;
+
+use Prototype\Compiler\Internal\Ir\Enum;
+use Prototype\Compiler\Internal\Ir\EnumCase;
+use Prototype\Compiler\Internal\Ir\Hook\AfterEnumVisitedHook;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-enum NamespaceLike
+final class AllEnumVariantValuesAreUnique implements AfterEnumVisitedHook
 {
-    /**
-     * @param non-empty-string $name
-     * @return non-empty-string
-     */
-    public static function name(string $name): string
+    public function afterEnumVisited(Enum $enum): void
     {
-        return str_replace('\\\\', '\\', $name);
+        /** @var array<int, EnumCase> $unique */
+        $unique = [];
+
+        foreach ($enum as $case) {
+            if (isset($unique[$case->value])) {
+                throw new ConstraintViolated(
+                    \sprintf('Variants "%s" and "%s" of enum "%s" has the same value "%d".',
+                        $case->name,
+                        $unique[$case->value]->name,
+                        $enum->name,
+                        $case->value,
+                    ),
+                );
+            }
+
+            $unique[$case->value] = $case;
+        }
     }
 }

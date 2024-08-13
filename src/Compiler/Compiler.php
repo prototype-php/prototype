@@ -33,6 +33,8 @@ use Prototype\Compiler\Exception;
 use Prototype\Compiler\Import;
 use Prototype\Compiler\Internal\Code;
 use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Ir\Hook\Hooks;
+use Prototype\Compiler\Internal\Ir\Validate;
 use Prototype\Compiler\Output;
 
 /**
@@ -57,9 +59,18 @@ final class Compiler
             ),
             $writer,
             (new PsrPrinter())->setTypeResolving(false),
-            Ir\ProtoResolver::build($imports ?: new Import\CombineImportResolver([
-                Import\VirtualImportResolver::build(),
-            ])),
+            Ir\ProtoResolver::build(
+                $imports ?: new Import\CombineImportResolver([
+                    Import\VirtualImportResolver::build(),
+                ]),
+                hooks: new Hooks([
+                    new Validate\EnumContainsZeroVariant(),
+                    new Validate\AllEnumVariantNamesAreUnique(),
+                    new Validate\AllEnumVariantValuesAreUnique(),
+                    new Validate\AllMessageFieldNamesAreUnique(),
+                    new Validate\AllMessageFieldNumbersAreUnique(),
+                ]),
+            ),
         );
     }
 

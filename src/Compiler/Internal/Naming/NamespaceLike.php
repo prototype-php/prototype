@@ -25,47 +25,20 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+namespace Prototype\Compiler\Internal\Naming;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+enum NamespaceLike
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
-
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
-
     /**
-     * @param non-empty-string $phpNamespace
-     * @return \Generator<non-empty-string, PhpFile>
+     * @param non-empty-string $name
+     * @return non-empty-string
      */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
-        }
+    public static function name(string $name): string
+    {
+        return str_replace('\\\\', '\\', $name);
     }
 }
