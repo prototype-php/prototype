@@ -712,6 +712,27 @@ PROTO,
             'Variants "C" and "B" of enum "Test" has the same value "1".',
         ];
 
+        yield 'nested enum with the same variant values' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {
+    enum Test {
+        A = 0;
+        B = 1;
+        C = 1;
+    }
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Variants "C" and "B" of enum "Request.Test" has the same value "1".',
+        ];
+
         yield 'message with the same field names' => [
             <<<'PROTO'
 syntax = "proto3";
@@ -746,6 +767,26 @@ message Test {
 PROTO,
             ConstraintViolated::class,
             'Fields "b" and "a" of message "Test" has the same order "1".',
+        ];
+
+        yield 'nested message with the same field names' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {
+    message Test {
+        string a = 1;
+        int A = 2;
+    }
+}
+
+PROTO,
+            ConstraintViolated::class,
+            'Message "Request.Test" has fields with the same name "a".',
         ];
     }
 
