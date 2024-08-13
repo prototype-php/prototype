@@ -25,47 +25,34 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Ir\Validate;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Ir\Enum;
+use Prototype\Compiler\Internal\Ir\EnumCase;
+use Prototype\Compiler\Internal\Ir\Hook\AfterEnumVisitedHook;
 use Prototype\Compiler\Internal\Naming;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Generator
+final class AllEnumVariantNamesAreUnique implements AfterEnumVisitedHook
 {
-    private readonly Ir\TypeVisitor $typeVisitor;
+    public function afterEnumVisited(Enum $enum): void
+    {
+        /** @var array<non-empty-string, EnumCase> $unique */
+        $unique = [];
 
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {
-        $this->typeVisitor = new ProtoTypeToPhpTypeVisitor();
-    }
+        foreach ($enum as $case) {
+            $caseName = Naming\EnumLike::case($case->name);
 
-    /**
-     * @param non-empty-string $phpNamespace
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+            if (isset($unique[$caseName])) {
+                throw new ConstraintViolated(
+                    \sprintf('Enum "%s" has variants with the same name "%s".', $enum->name, $caseName),
+                );
+            }
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $this->typeVisitor,
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
+            $unique[$caseName] = $case;
         }
     }
 }

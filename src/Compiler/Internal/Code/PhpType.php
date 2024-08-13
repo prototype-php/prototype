@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Code;
 
+use Prototype\Compiler\Internal\Naming;
+
 /**
  * @internal
  * @psalm-internal Prototype\Compiler

@@ -25,30 +25,36 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code\Naming;
+namespace Prototype\Compiler\Internal\Ir\Validate;
+
+use Prototype\Compiler\Internal\Ir\Field;
+use Prototype\Compiler\Internal\Ir\Hook\AfterMessageVisitedHook;
+use Prototype\Compiler\Internal\Ir\Message;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-enum SnakeCase
+final class AllMessageFieldNumbersAreUnique implements AfterMessageVisitedHook
 {
-    /**
-     * @param non-empty-string $name
-     * @return non-empty-string
-     */
-    public static function toCamelCase(string $name): string
+    public function afterMessageVisited(Message $message): void
     {
-        return lcfirst(self::toPascalCase($name));
-    }
+        /** @var array<positive-int, Field> $unique */
+        $unique = [];
 
-    /**
-     * @param non-empty-string $name
-     * @return non-empty-string
-     */
-    public static function toPascalCase(string $name): string
-    {
-        /** @var non-empty-string */
-        return str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+        foreach ($message as $field) {
+            if (isset($unique[$field->number])) {
+                throw new ConstraintViolated(
+                    \sprintf('Fields "%s" and "%s" of message "%s" has the same order "%d".',
+                        $field->name,
+                        $unique[$field->number]->name,
+                        $message->name,
+                        $field->number,
+                    ),
+                );
+            }
+
+            $unique[$field->number] = $field;
+        }
     }
 }

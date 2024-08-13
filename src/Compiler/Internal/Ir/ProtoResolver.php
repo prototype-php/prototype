@@ -29,6 +29,7 @@ namespace Prototype\Compiler\Internal\Ir;
 
 use Antlr\Antlr4\Runtime\InputStream;
 use Prototype\Compiler\Import\ImportResolver;
+use Prototype\Compiler\Internal\Ir\Hook\Hooks;
 use Prototype\Compiler\Internal\Ir\Trace\DependencyGraph;
 use Prototype\Compiler\Internal\Parser as Generated;
 
@@ -42,16 +43,19 @@ final class ProtoResolver
         private readonly Parser $parser,
         private readonly ImportResolver $imports,
         private readonly DependencyGraph $dependencies,
+        private readonly Hooks $hooks,
     ) {}
 
     public static function build(
         ImportResolver $imports,
         Parser $parser = new Parser(),
+        Hooks $hooks = new Hooks(),
     ): self {
         return new self(
             $parser,
             $imports,
             DependencyGraph::empty(),
+            $hooks,
         );
     }
 
@@ -77,7 +81,7 @@ final class ProtoResolver
             }
 
             /** @var Proto $proto */
-            $proto = $context->accept(new ProtoVisitor()); // @phpstan-ignore-line
+            $proto = $context->accept(new ProtoVisitor($this->hooks)); // @phpstan-ignore-line
 
             /** @var list<non-empty-string> $imports */
             $imports = [];

@@ -46,11 +46,7 @@ final class Enum implements
     public function __construct(
         public readonly string $name,
         public readonly array $cases,
-    ) {
-        if (!\in_array(0, array_map(static fn (EnumCase $case): int => $case->value, $this->cases), true)) {
-            throw new \LogicException(\sprintf('The enum "%s" must has zero variant.', $this->name));
-        }
-    }
+    ) {}
 
     /**
      * {@inheritdoc}
