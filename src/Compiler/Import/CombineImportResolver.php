@@ -27,6 +27,9 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Import;
 
+/**
+ * @api
+ */
 final class CombineImportResolver implements ImportResolver
 {
     /**

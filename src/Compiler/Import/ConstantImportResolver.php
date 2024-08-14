@@ -27,18 +27,16 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Import;
 
-use Antlr\Antlr4\Runtime\InputStream;
-
 /**
  * @api
  */
-final class FileImportResolver implements ImportResolver
+final class ConstantImportResolver implements ImportResolver
 {
     /**
-     * @param list<non-empty-string> $paths
+     * @param array<non-empty-string, ImportFile> $imports Key as relative path to import referenced in .proto files.
      */
     public function __construct(
-        private readonly array $paths,
+        private readonly array $imports,
     ) {}
 
     /**
@@ -46,13 +44,7 @@ final class FileImportResolver implements ImportResolver
      */
     public function canResolve(string $path): bool
     {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($this->imports[$path]);
     }
 
     /**
@@ -60,12 +52,8 @@ final class FileImportResolver implements ImportResolver
      */
     public function resolve(string $path): iterable
     {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($importPath = $absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return yield new ImportFile($importPath, InputStream::fromPath($importPath));
-            }
+        if (isset($this->imports[$path])) {
+            yield $this->imports[$path];
         }
-
-        throw new \LogicException(\sprintf('Import path "%s" not found.', $path));
     }
 }

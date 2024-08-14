@@ -25,47 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Import;
+namespace Prototype\Compiler\Internal\Ir\Hook;
 
-use Antlr\Antlr4\Runtime\InputStream;
+use Prototype\Compiler\Internal\Ir\Proto;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Compiler
  */
-final class FileImportResolver implements ImportResolver
+interface AfterProtoResolvedHook
 {
     /**
-     * @param list<non-empty-string> $paths
+     * @param iterable<non-empty-string, Proto> $files
      */
-    public function __construct(
-        private readonly array $paths,
-    ) {}
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canResolve(string $path): bool
-    {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function resolve(string $path): iterable
-    {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($importPath = $absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return yield new ImportFile($importPath, InputStream::fromPath($importPath));
-            }
-        }
-
-        throw new \LogicException(\sprintf('Import path "%s" not found.', $path));
-    }
+    public function afterProtoResolved(iterable $files): void;
 }

@@ -27,6 +27,9 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Import;
 
+/**
+ * @api
+ */
 interface ImportResolver
 {
     /**
@@ -36,7 +39,7 @@ interface ImportResolver
 
     /**
      * @param non-empty-string $path Relative path to the import.
-     * @return iterable<non-empty-string> Iterable of absolute paths.
+     * @return iterable<ImportFile>
      */
     public function resolve(string $path): iterable;
 }

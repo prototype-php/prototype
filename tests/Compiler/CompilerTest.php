@@ -27,10 +27,15 @@ declare(strict_types=1);
 
 namespace Prototype\Tests\Compiler;
 
+use Antlr\Antlr4\Runtime\InputStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prototype\Compiler\Compiler;
+use Prototype\Compiler\Import\CombineImportResolver;
+use Prototype\Compiler\Import\ConstantImportResolver;
+use Prototype\Compiler\Import\ImportFile;
+use Prototype\Compiler\Import\VirtualImportResolver;
 use Prototype\Compiler\Internal\Ir\Validate\ConstraintViolated;
 use Prototype\Compiler\Output\PhpFile;
 use Prototype\Compiler\Output\Writer;
@@ -654,7 +659,7 @@ PHP,
     }
 
     /**
-     * @return iterable<array-key, array{non-empty-string, class-string<\Throwable>, non-empty-string}>
+     * @return iterable<array-key, array{non-empty-string, class-string<\Throwable>, non-empty-string, array<non-empty-string, ImportFile>}>
      */
     public static function notCompileFixtures(): iterable
     {
@@ -673,6 +678,7 @@ enum Test {
 PROTO,
             ConstraintViolated::class,
             'The enum "Test" must contains zero variant.',
+            [],
         ];
 
         yield 'enum with the same variant names' => [
@@ -691,6 +697,7 @@ enum Test {
 PROTO,
             ConstraintViolated::class,
             'Enum "Test" has variants with the same name "A".',
+            [],
         ];
 
         yield 'enum with the same variant values' => [
@@ -710,6 +717,7 @@ enum Test {
 PROTO,
             ConstraintViolated::class,
             'Variants "C" and "B" of enum "Test" has the same value "1".',
+            [],
         ];
 
         yield 'nested enum with the same variant values' => [
@@ -731,6 +739,7 @@ message Request {
 PROTO,
             ConstraintViolated::class,
             'Variants "C" and "B" of enum "Request.Test" has the same value "1".',
+            [],
         ];
 
         yield 'message with the same field names' => [
@@ -749,6 +758,7 @@ message Test {
 PROTO,
             ConstraintViolated::class,
             'Message "Test" has fields with the same name "a".',
+            [],
         ];
 
         yield 'message with the same field numbers' => [
@@ -767,6 +777,7 @@ message Test {
 PROTO,
             ConstraintViolated::class,
             'Fields "b" and "a" of message "Test" has the same order "1".',
+            [],
         ];
 
         yield 'nested message with the same field names' => [
@@ -787,6 +798,145 @@ message Request {
 PROTO,
             ConstraintViolated::class,
             'Message "Request.Test" has fields with the same name "a".',
+            [],
+        ];
+
+        yield 'enum conflicts' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/options.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+enum Type {
+    UNSPECIFIED = 0;
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"api.v1.test.Type" is already defined in file "api/v1/options.proto".',
+            [
+                'api/v1/options.proto' => new ImportFile(
+                    '/api/v1/options.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+enum Type {
+    UNSPECIFIED = 0;
+    A = 1;
+}
+PROTO,
+                    ),
+                ),
+            ],
+        ];
+
+        yield 'message conflicts' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/options.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+
+PROTO,
+            ConstraintViolated::class,
+            '"api.v1.test.Request" is already defined in file "api/v1/options.proto".',
+            [
+                'api/v1/options.proto' => new ImportFile(
+                    '/api/v1/options.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+PROTO,
+                    ),
+                ),
+            ],
+        ];
+
+        yield 'proto imports self' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/request.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+
+PROTO,
+            \LogicException::class,
+            'File recursively imports itself: api/v1/request.proto -> api/v1/request.proto.',
+            [],
+        ];
+
+        yield 'proto imports recursive from third party' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/options.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+
+PROTO,
+            \LogicException::class,
+            'File recursively imports itself: api/v1/request.proto -> api/v1/options.proto -> api/v1/deps.proto -> api/v1/request.proto.',
+            [
+                'api/v1/options.proto' => new ImportFile(
+                    'api/v1/options.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/deps.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+PROTO,
+                    ),
+                ),
+                'api/v1/deps.proto' => new ImportFile(
+                    'api/v1/deps.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/request.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+PROTO,
+                    ),
+                ),
+            ],
         ];
     }
 
@@ -794,14 +944,20 @@ PROTO,
      * @param non-empty-string $protobuf
      * @param class-string<\Throwable> $exception
      * @param non-empty-string $exceptionMessage
+     * @param array<non-empty-string, ImportFile> $imports
      */
     #[DataProvider('notCompileFixtures')]
-    public function testDoesntCompile(string $protobuf, string $exception, string $exceptionMessage): void
+    public function testDoesntCompile(string $protobuf, string $exception, string $exceptionMessage, array $imports = []): void
     {
         self::expectException($exception);
         self::expectExceptionMessage($exceptionMessage);
 
-        $compiler = Compiler::build();
-        $compiler->compile(ProtoFile::fromString($protobuf));
+        $compiler = Compiler::build(
+            imports: new CombineImportResolver([
+                new ConstantImportResolver(array_merge($imports, ['api/v1/request.proto' => new ImportFile('api/v1/request.proto', InputStream::fromString($protobuf))])),
+                VirtualImportResolver::build(),
+            ]),
+        );
+        $compiler->compile(ProtoFile::fromString($protobuf, 'api/v1/request.proto'));
     }
 }

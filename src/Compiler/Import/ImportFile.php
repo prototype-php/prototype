@@ -32,40 +32,13 @@ use Antlr\Antlr4\Runtime\InputStream;
 /**
  * @api
  */
-final class FileImportResolver implements ImportResolver
+final class ImportFile
 {
     /**
-     * @param list<non-empty-string> $paths
+     * @param non-empty-string $path Absolute path to the import.
      */
     public function __construct(
-        private readonly array $paths,
+        public readonly string $path,
+        public readonly InputStream $stream,
     ) {}
-
-    /**
-     * {@inheritdoc}
-     */
-    public function canResolve(string $path): bool
-    {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function resolve(string $path): iterable
-    {
-        foreach ($this->paths as $absoluteImportPath) {
-            if (is_file($importPath = $absoluteImportPath.\DIRECTORY_SEPARATOR.$path)) {
-                return yield new ImportFile($importPath, InputStream::fromPath($importPath));
-            }
-        }
-
-        throw new \LogicException(\sprintf('Import path "%s" not found.', $path));
-    }
 }

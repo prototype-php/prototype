@@ -69,6 +69,7 @@ final class Compiler
                     new Validate\AllEnumVariantValuesAreUnique(),
                     new Validate\AllMessageFieldNamesAreUnique(),
                     new Validate\AllMessageFieldNumbersAreUnique(),
+                    new Validate\NoConflictTypes(),
                 ]),
             ),
         );

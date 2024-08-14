@@ -29,6 +29,9 @@ namespace Prototype\Compiler\Import;
 
 use Prototype\Compiler\Internal\Code\WellKnown;
 
+/**
+ * @api
+ */
 final class VirtualImportResolver implements ImportResolver
 {
     /**
