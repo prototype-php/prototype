@@ -10,10 +10,19 @@ parameters:
         - src/Serializer
         - src/Byte
         - src/GRPC
+        - src/Compiler/Internal/Code
+        - src/Compiler/Internal/Naming
+        - src/Compiler/Internal/Ir/Hook
+        - src/Compiler/Internal/Ir/Trace
+        - src/Compiler/Internal/Ir/Type
+        - src/Compiler/Internal/Ir/Validate
+        - src/Compiler/Console
+        - src/Compiler/bin
+        - src/Compiler/Output
         - tests/Serializer
     excludePaths:
     	- src/*/vendor/*
-    	- src/Compiler
+    	- src/Compiler/Internal/Parser
     tmpDir: var/phpstan
     ignoreErrors:
         - { identifier: missingType.generics }

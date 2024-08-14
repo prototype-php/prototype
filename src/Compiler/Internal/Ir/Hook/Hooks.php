@@ -29,6 +29,7 @@ namespace Prototype\Compiler\Internal\Ir\Hook;
 
 use Prototype\Compiler\Internal\Ir\Enum;
 use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\Proto;
 
 /**
  * @internal
@@ -42,8 +43,11 @@ final class Hooks
     /** @var list<AfterEnumVisitedHook>  */
     private array $afterEnumVisitedHooks = [];
 
+    /** @var list<AfterProtoResolvedHook> */
+    private array $afterProtoResolvedHooks = [];
+
     /**
-     * @param iterable<AfterMessageVisitedHook|AfterEnumVisitedHook> $hooks
+     * @param iterable<AfterMessageVisitedHook|AfterEnumVisitedHook|AfterProtoResolvedHook> $hooks
      */
     public function __construct(iterable $hooks = [])
     {
@@ -66,7 +70,17 @@ final class Hooks
         }
     }
 
-    public function addHook(AfterMessageVisitedHook|AfterEnumVisitedHook $hook): void
+    /**
+     * @param iterable<non-empty-string, Proto> $files
+     */
+    public function afterProtoResolved(iterable $files): void
+    {
+        foreach ($this->afterProtoResolvedHooks as $hook) {
+            $hook->afterProtoResolved($files);
+        }
+    }
+
+    public function addHook(AfterMessageVisitedHook|AfterEnumVisitedHook|AfterProtoResolvedHook $hook): void
     {
         if ($hook instanceof AfterMessageVisitedHook) {
             $this->afterMessageVisitedHooks[] = $hook;
@@ -74,6 +88,10 @@ final class Hooks
 
         if ($hook instanceof AfterEnumVisitedHook) {
             $this->afterEnumVisitedHooks[] = $hook;
+        }
+
+        if ($hook instanceof AfterProtoResolvedHook) {
+            $this->afterProtoResolvedHooks[] = $hook;
         }
     }
 }

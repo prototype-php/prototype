@@ -52,11 +52,12 @@ final class ProtoFile
 
     /**
      * @param non-empty-string $content
+     * @param ?non-empty-string $path
      */
-    public static function fromString(string $content): self
+    public static function fromString(string $content, ?string $path = null): self
     {
         $stream = InputStream::fromString($content);
 
-        return new self($stream, $stream->getSourceName() ?: 'unspecified');
+        return new self($stream, $path ?: ($stream->getSourceName() ?: 'unspecified'));
     }
 }

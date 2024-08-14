@@ -89,10 +89,10 @@ final class ProtoResolver
             /** @var Import $import */
             foreach ($context->accept(new ImportVisitor()) as $import) { // @phpstan-ignore-line
                 foreach ($this->imports->resolve($import->path) as $file) {
-                    $imports[] = $file;
+                    $imports[] = $file->path;
 
-                    $this->dependencies->trace($path, $file);
-                    $queue->enqueue([$file, $this->parser->parse(InputStream::fromPath($file))]);
+                    $this->dependencies->trace($path, $file->path);
+                    $queue->enqueue([$file->path, $this->parser->parse($file->stream)]);
                 }
             }
 
@@ -100,6 +100,8 @@ final class ProtoResolver
         }
 
         $this->dependencies->validate();
+
+        $this->hooks->afterProtoResolved($files);
 
         yield from $files;
     }
