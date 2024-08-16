@@ -44,12 +44,12 @@ final class ScalarTypeVisitor extends DefaultTypeVisitor
     public function scalar(ProtoType $type, Scalar $scalar): PhpType
     {
         return match ($scalar) {
-            Scalar::bool   => PhpType::scalar('bool', default: false),
-            Scalar::string => PhpType::scalar('string', default: ''),
-            Scalar::bytes  => PhpType::scalar('string', 'bytes', ''),
-            Scalar::double => PhpType::scalar('float', 'double', 0),
-            Scalar::float  => PhpType::scalar('float', default: 0),
-            default        => PhpType::scalar('int', $scalar->value, 0),
+            Scalar::bool   => PhpType::scalar('bool'),
+            Scalar::string => PhpType::scalar('string'),
+            Scalar::bytes  => PhpType::scalar('string', 'bytes'),
+            Scalar::double => PhpType::scalar('float', 'double'),
+            Scalar::float  => PhpType::scalar('float'),
+            default        => PhpType::scalar('int', $scalar->value),
         };
     }
 }

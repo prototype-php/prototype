@@ -62,7 +62,7 @@ final class PhpType
      */
     public static function scalar(string $nativeType, ?string $phpDocType = null, null|bool|string|int $default = null): self
     {
-        return new self($nativeType, $phpDocType, default: $default);
+        return new self($nativeType, $phpDocType, nullable: null === $default, default: $default);
     }
 
     /**
