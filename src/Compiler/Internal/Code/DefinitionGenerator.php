@@ -29,7 +29,6 @@ namespace Prototype\Compiler\Internal\Code;
 
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PromotedParameter;
-use Prototype\Compiler\Internal\Code\Type;
 use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Internal\Ir\Field;
 use Prototype\Compiler\Internal\Naming;
@@ -108,7 +107,7 @@ final class DefinitionGenerator
                 ),
             );
 
-            if (null !== ($use = $type->use)) {
+            foreach ($type->uses as $use) {
                 $this->namespace->addUse($use);
             }
 

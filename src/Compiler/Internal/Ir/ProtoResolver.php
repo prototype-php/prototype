@@ -61,10 +61,10 @@ final class ProtoResolver
 
     /**
      * @param non-empty-string $path
-     * @return iterable<non-empty-string, Proto>
+     * @return array<non-empty-string, Proto>
      * @throws \LogicException
      */
-    public function resolve(string $path, ?InputStream $stream = null): iterable
+    public function resolve(string $path, ?InputStream $stream = null): array
     {
         /** @psalm-var \SplQueue<array{non-empty-string, Generated\Context\ProtoContext}> $queue */
         $queue = new \SplQueue(); // @phpstan-ignore-line

@@ -40,7 +40,7 @@ use Prototype\Compiler\Internal\Ir\TypeVisitor;
  */
 final class CombinedTypeVisitor implements TypeVisitor
 {
-    /** @var iterable<TypeVisitor<PhpType>>  */
+    /** @var iterable<TypeVisitor<PhpType>> */
     private readonly iterable $visitors;
 
     /**

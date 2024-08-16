@@ -29,13 +29,10 @@ namespace Prototype\Compiler;
 
 use Nette\PhpGenerator\Printer;
 use Nette\PhpGenerator\PsrPrinter;
-use Prototype\Compiler\Exception;
-use Prototype\Compiler\Import;
 use Prototype\Compiler\Internal\Code;
 use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Internal\Ir\Hook\Hooks;
 use Prototype\Compiler\Internal\Ir\Validate;
-use Prototype\Compiler\Output;
 
 /**
  * @api
@@ -75,21 +72,17 @@ final class Compiler
         );
     }
 
-    /**
-     * @throws CompilerException
-     */
     public function compile(
         ProtoFile $file,
-        CompileOptions $options = new CompileOptions(),
+        CompileOptions $options = new CompileOptions(), // for future use.
     ): void {
         foreach (($files = $this->protoResolver->resolve($file->path, $file->stream)) as $proto) {
             foreach (
                 $this->generator->generate(
                     $proto,
                     $files,
-                    ($proto->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema($file->path),
-                )
-                as $fileName => $phpFile
+                    $proto->phpNamespace(),
+                ) as $fileName => $phpFile
             ) {
                 $this->writer->writePhpFile(
                     new Output\PhpFile(
@@ -103,7 +96,6 @@ final class Compiler
 
     /**
      * @param iterable<ProtoFile> $files
-     * @throws CompilerException
      */
     public function compileAll(
         iterable $files,

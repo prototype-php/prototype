@@ -32,6 +32,7 @@ use Prototype\Compiler\Internal\Code\ImportStorage;
 use Prototype\Compiler\Internal\Code\PhpType;
 use Prototype\Compiler\Internal\Ir\Proto;
 use Prototype\Compiler\Internal\Ir\ProtoType;
+use Prototype\Compiler\Internal\Naming\ClassLike;
 
 /**
  * @internal
@@ -59,7 +60,10 @@ final class ResolveImportReferenceTypeVisitor extends DefaultTypeVisitor
             }
 
             if (null !== ($type = $proto->resolveType($message))) {
-                return PhpType::class($type);
+                return PhpType::class(
+                    $type,
+                    $proto->phpNamespace() !== $this->proto->phpNamespace() ? (\sprintf('%s\%s', $proto->phpNamespace(), ClassLike::name($type))) : null,
+                );
             }
         }
 

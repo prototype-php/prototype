@@ -19,6 +19,7 @@ parameters:
         - src/Compiler/Console
         - src/Compiler/bin
         - src/Compiler/Output
+        - src/Compiler/Compiler.php
         - tests/Serializer
     excludePaths:
     	- src/*/vendor/*

@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Naming;
+
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
@@ -61,14 +63,17 @@ final class Proto
         );
     }
 
-    public function phpNamespace(): ?string
+    /**
+     * @return non-empty-string
+     */
+    public function phpNamespace(): string
     {
         $phpNamespaceOption = array_filter(
             $this->options,
             static fn (Option $option): bool => self::PHP_NAMESPACE === $option->name,
         );
 
-        return $phpNamespaceOption[0]->value ?? null;
+        return Naming\NamespaceLike::name($phpNamespaceOption[0]->value ?? $this->packageName);
     }
 
     /**
