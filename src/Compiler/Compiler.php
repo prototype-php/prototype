@@ -67,6 +67,8 @@ final class Compiler
                     new Validate\AllMessageFieldNamesAreUnique(),
                     new Validate\AllMessageFieldNumbersAreUnique(),
                     new Validate\NoConflictTypes(),
+                    new Validate\AllServiceRpcAreUnique(),
+                    new Validate\AllServicesUseValidTypes(),
                 ]),
             ),
         );

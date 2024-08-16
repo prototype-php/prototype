@@ -1996,11 +1996,12 @@ namespace Prototype\Compiler\Internal\Parser {
 		        switch ($this->getInterpreter()->adaptivePredict($this->input, 30, $this->ctx)) {
 		            case 1:
 		        	    $this->setState(381);
-		        	    $this->match(self::STREAM);
+		        	    $localContext->streamIn = $this->match(self::STREAM);
 		        	break;
 		        }
+
 		        $this->setState(384);
-		        $this->messageType();
+		        $localContext->messageTypeIn = $this->messageType();
 		        $this->setState(385);
 		        $this->match(self::RP);
 		        $this->setState(386);
@@ -2013,11 +2014,12 @@ namespace Prototype\Compiler\Internal\Parser {
 		        switch ($this->getInterpreter()->adaptivePredict($this->input, 31, $this->ctx)) {
 		            case 1:
 		        	    $this->setState(388);
-		        	    $this->match(self::STREAM);
+		        	    $localContext->streamOut = $this->match(self::STREAM);
 		        	break;
 		        }
+
 		        $this->setState(391);
-		        $this->messageType();
+		        $localContext->messageTypeOut = $this->messageType();
 		        $this->setState(392);
 		        $this->match(self::RP);
 		        $this->setState(403);
@@ -4511,6 +4513,26 @@ namespace Prototype\Compiler\Internal\Parser\Context {
 
 	class RpcContext extends ParserRuleContext
 	{
+		/**
+		 * @var Token|null $streamIn
+		 */
+		public $streamIn;
+
+		/**
+		 * @var Token|null $streamOut
+		 */
+		public $streamOut;
+
+		/**
+		 * @var MessageTypeContext|null $messageTypeIn
+		 */
+		public $messageTypeIn;
+
+		/**
+		 * @var MessageTypeContext|null $messageTypeOut
+		 */
+		public $messageTypeOut;
+
 		public function __construct(?ParserRuleContext $parent, ?int $invokingState = null)
 		{
 			parent::__construct($parent, $invokingState);
@@ -4544,18 +4566,6 @@ namespace Prototype\Compiler\Internal\Parser\Context {
 	    }
 
 	    /**
-	     * @return array<MessageTypeContext>|MessageTypeContext|null
-	     */
-	    public function messageType(?int $index = null)
-	    {
-	    	if ($index === null) {
-	    		return $this->getTypedRuleContexts(MessageTypeContext::class);
-	    	}
-
-	        return $this->getTypedRuleContext(MessageTypeContext::class, $index);
-	    }
-
-	    /**
 	     * @return array<TerminalNode>|TerminalNode|null
 	     */
 	    public function RP(?int $index = null)
@@ -4585,6 +4595,18 @@ namespace Prototype\Compiler\Internal\Parser\Context {
 	    public function SEMI(): ?TerminalNode
 	    {
 	        return $this->getToken(Protobuf3Parser::SEMI, 0);
+	    }
+
+	    /**
+	     * @return array<MessageTypeContext>|MessageTypeContext|null
+	     */
+	    public function messageType(?int $index = null)
+	    {
+	    	if ($index === null) {
+	    		return $this->getTypedRuleContexts(MessageTypeContext::class);
+	    	}
+
+	        return $this->getTypedRuleContext(MessageTypeContext::class, $index);
 	    }
 
 	    /**

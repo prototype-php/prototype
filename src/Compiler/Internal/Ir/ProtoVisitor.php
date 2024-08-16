@@ -50,6 +50,8 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
         $types = TypeStorage::root($packageName);
 
         $definitions = [];
+        /** @var Service[] $services */
+        $services = [];
 
         foreach ($context->topLevelDef() ?: [] as $def) { // @phpstan-ignore-line
             if (null !== $def->messageDef()) {
@@ -82,6 +84,14 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 
                 $definitions[$enum->name] = $enum;
             }
+
+            if (null !== $def->serviceDef()) {
+                $service = $def->serviceDef()->accept(new ServiceVisitor());
+
+                $this->hooks->afterServiceVisited($service);
+
+                $services[] = $service;
+            }
         }
 
         $options = array_map(
@@ -93,6 +103,7 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
             $packageName,
             $definitions,
             $options,
+            services: $services,
         );
     }
 }

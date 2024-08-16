@@ -226,7 +226,7 @@ serviceElement
     ;
 
 rpc
-    : RPC rpcName LP (STREAM)? messageType RP RETURNS LP (STREAM)? messageType RP (
+    : RPC rpcName LP (streamIn = STREAM)? (messageTypeIn = messageType) RP RETURNS LP (streamOut = STREAM)? (messageTypeOut = messageType) RP (
         LC ( optionStatement | emptyStatement_)* RC
         | SEMI
     )

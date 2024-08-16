@@ -42,12 +42,14 @@ final class Proto
      * @param array<non-empty-string, Definition> $definitions
      * @param Option[] $options
      * @param list<non-empty-string> $imports
+     * @param Service[] $services
      */
     public function __construct(
         public readonly string $packageName,
         public readonly array $definitions = [],
         public readonly array $options = [],
         public readonly array $imports = [],
+        public readonly array $services = [],
     ) {}
 
     /**
@@ -60,6 +62,7 @@ final class Proto
             $this->definitions,
             $this->options,
             $imports,
+            $this->services,
         );
     }
 
@@ -89,6 +92,20 @@ final class Proto
                     $definition instanceof Enum => $definition->name,
                     default => null,
                 };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param non-empty-string $type
+     */
+    public function resolveDefinition(string $type): ?Definition
+    {
+        foreach (explode('.', $type) as $part) {
+            if (null !== ($definition = $this->definitions[$part] ?? null)) {
+                return $definition;
             }
         }
 
