@@ -2,7 +2,7 @@
     "name": "prototype/compiler",
     "description": "A tool for compiling protobuf grammars into modern PHP code.",
     "license": "MIT",
-    "type": "project",
+    "type": "library",
     "authors": [
         {
             "name": "kafkiansky",

@@ -8,7 +8,7 @@ This package can be installed as a [Composer](https://getcomposer.org/) dependen
 composer require prototype/compiler
 ```
 
-## Usage
+## Manual usage
 
 ```php
 <?php
@@ -26,6 +26,12 @@ $compiler = Compiler::build(new FileWriter(__DIR__.'/build'));
 $compiler->compile(
     ProtoFile::fromPath(__DIR__.'/path/to/proto/file'),
 );
+```
+
+## Cli usage
+
+```shell
+composer prototype compile path/to/proto/files -o path/to/generated/files -i path/to/import/files
 ```
 
 ## License
