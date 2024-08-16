@@ -115,21 +115,21 @@ final class RequestWithScalarTypes
      * @param bytes $bytesField
      */
     public function __construct(
-        public readonly bool $boolField = false,
-        public readonly int $int32Field = 0,
-        public readonly int $int64Field = 0,
-        public readonly int $uint32Field = 0,
-        public readonly int $uint64Field = 0,
-        public readonly int $sint32Field = 0,
-        public readonly int $sint64Field = 0,
-        public readonly int $fixed32Field = 0,
-        public readonly int $fixed64Field = 0,
-        public readonly int $sfixed32Field = 0,
-        public readonly int $sfixed64Field = 0,
-        public readonly float $floatField = 0,
-        public readonly float $doubleField = 0,
-        public readonly string $stringField = '',
-        public readonly string $bytesField = '',
+        public readonly ?bool $boolField = null,
+        public readonly ?int $int32Field = null,
+        public readonly ?int $int64Field = null,
+        public readonly ?int $uint32Field = null,
+        public readonly ?int $uint64Field = null,
+        public readonly ?int $sint32Field = null,
+        public readonly ?int $sint64Field = null,
+        public readonly ?int $fixed32Field = null,
+        public readonly ?int $fixed64Field = null,
+        public readonly ?int $sfixed32Field = null,
+        public readonly ?int $sfixed64Field = null,
+        public readonly ?float $floatField = null,
+        public readonly ?float $doubleField = null,
+        public readonly ?string $stringField = null,
+        public readonly ?string $bytesField = null,
     ) {
     }
 }
@@ -160,7 +160,7 @@ final class SimpleResponse
      * @param int32 $status
      */
     public function __construct(
-        public readonly int $status = 0,
+        public readonly ?int $status = null,
     ) {
     }
 }
@@ -586,7 +586,7 @@ final class Request
         #[Field(1)]
         public readonly array $tasks = [],
         #[Field(3)]
-        public readonly string $id = '',
+        public readonly ?string $id = null,
     ) {
     }
 }
@@ -839,7 +839,7 @@ namespace App\V2\Deps;
 final class TaskPayloadLabel
 {
     public function __construct(
-        public readonly string $name = '',
+        public readonly ?string $name = null,
     ) {
     }
 }
