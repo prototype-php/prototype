@@ -29,6 +29,7 @@ namespace Prototype\Compiler\Internal\Code;
 
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PromotedParameter;
+use Prototype\Compiler\Internal\Code\Type;
 use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Internal\Ir\Field;
 use Prototype\Compiler\Internal\Naming;
@@ -41,7 +42,8 @@ final class DefinitionGenerator
 {
     public function __construct(
         private readonly PhpNamespace $namespace,
-        private readonly Ir\TypeVisitor $typeVisitor,
+        private readonly Ir\Proto $proto,
+        private readonly ImportStorage $imports,
     ) {}
 
     /**
@@ -94,9 +96,15 @@ final class DefinitionGenerator
         foreach ($message as $field) {
             /** @var PhpType $type */
             $type = $field->type->accept(
-                new ResolveReferenceTypeVisitor(
-                    $this->typeVisitor,
-                    $message->typeStorage(),
+                new Type\CombinedTypeVisitor(
+                    new Type\ApplyTypeVisitor(new Type\ScalarTypeVisitor()),
+                    new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+                    new Type\ApplyTypeVisitor(
+                        new Type\ResolveLocalReferenceTypeVisitor($message->typeStorage(), $this->proto),
+                    ),
+                    new Type\ApplyTypeVisitor(
+                        new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+                    ),
                 ),
             );
 

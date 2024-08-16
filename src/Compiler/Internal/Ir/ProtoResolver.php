@@ -103,6 +103,6 @@ final class ProtoResolver
 
         $this->hooks->afterProtoResolved($files);
 
-        yield from $files;
+        return $files;
     }
 }

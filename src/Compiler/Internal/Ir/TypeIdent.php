@@ -55,7 +55,7 @@ enum TypeIdent
             default => throw new \RuntimeException('Unreachable.'),
         };
 
-        if (null !== $context->field()->fieldLabel()?->REPEATED()) {
+        if (null !== $context->field()?->fieldLabel()?->REPEATED()) {
             $type = self::repeated($type);
         }
 
@@ -78,9 +78,9 @@ enum TypeIdent
     /**
      * @param non-empty-string $enum
      */
-    public static function enum(string $enum): Type\EnumType
+    public static function enum(string $enum): Type\MessageType
     {
-        return new Type\EnumType($enum);
+        return new Type\MessageType($enum);
     }
 
     public static function repeated(ProtoType $type): Type\RepeatedType

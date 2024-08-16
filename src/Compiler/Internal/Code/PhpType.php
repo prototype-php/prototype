@@ -78,19 +78,6 @@ final class PhpType
         );
     }
 
-    /**
-     * @param non-empty-string $enum
-     * @param ?non-empty-string $use
-     */
-    public static function enum(string $enum, ?string $use = null): self
-    {
-        return new self(
-            Naming\ClassLike::name($enum),
-            use: $use,
-            nullable: true,
-        );
-    }
-
     public static function list(self $type): self
     {
         return new self(

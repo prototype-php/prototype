@@ -82,10 +82,11 @@ final class Compiler
         ProtoFile $file,
         CompileOptions $options = new CompileOptions(),
     ): void {
-        foreach ($this->protoResolver->resolve($file->path, $file->stream) as $proto) {
+        foreach (($files = $this->protoResolver->resolve($file->path, $file->stream)) as $proto) {
             foreach (
                 $this->generator->generate(
                     $proto,
+                    $files,
                     ($proto->phpNamespace() ?: $options->phpNamespace) ?: throw Exception\NamespaceIsNotDefined::forSchema($file->path),
                 )
                 as $fileName => $phpFile

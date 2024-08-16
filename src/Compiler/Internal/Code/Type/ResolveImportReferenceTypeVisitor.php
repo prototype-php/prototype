@@ -25,46 +25,44 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Code\Type;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\ImportStorage;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Ir\Proto;
+use Prototype\Compiler\Internal\Ir\ProtoType;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class Generator
+final class ResolveImportReferenceTypeVisitor extends DefaultTypeVisitor
 {
     public function __construct(
-        private readonly PhpFileFactory $files,
+        private readonly Proto $proto,
+        private readonly ImportStorage $imports,
     ) {}
 
     /**
-     * @param non-empty-string $phpNamespace
-     * @param array<non-empty-string, Ir\Proto> $files
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        array $files,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+    public function message(ProtoType $type, string $message): PhpType
+    {
+        foreach ($this->proto->imports as $import) {
+            $proto = $this->imports->imports[$import];
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
+            if (str_starts_with($message, $proto->packageName)) {
+                /** @var non-empty-string $message */
+                $message = substr($message, \strlen($proto->packageName) + 1);
+            }
 
-            yield $typeName.'.php' => $file;
+            if (null !== ($type = $proto->resolveType($message))) {
+                return PhpType::class($type);
+            }
         }
+
+        throw new TypeNotFound($message);
     }
 }

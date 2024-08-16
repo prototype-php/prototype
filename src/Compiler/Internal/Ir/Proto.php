@@ -70,4 +70,23 @@ final class Proto
 
         return $phpNamespaceOption[0]->value ?? null;
     }
+
+    /**
+     * @param non-empty-string $type
+     * @return ?non-empty-string
+     */
+    public function resolveType(string $type): ?string
+    {
+        foreach (explode('.', $type) as $part) {
+            if (null !== ($definition = $this->definitions[$part] ?? null)) {
+                return match (true) {
+                    $definition instanceof Message => $definition->typeStorage()->resolveType($type),
+                    $definition instanceof Enum => $definition->name,
+                    default => null,
+                };
+            }
+        }
+
+        return null;
+    }
 }

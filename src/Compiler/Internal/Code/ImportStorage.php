@@ -27,44 +27,27 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Code;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Internal\Ir\Proto;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-implements \IteratorAggregate<non-empty-string, Proto>
  */
-final class Generator
+final class ImportStorage implements \IteratorAggregate
 {
+    /**
+     * @param array<non-empty-string, Proto> $imports
+     */
     public function __construct(
-        private readonly PhpFileFactory $files,
+        public readonly array $imports,
     ) {}
 
     /**
-     * @param non-empty-string $phpNamespace
-     * @param array<non-empty-string, Ir\Proto> $files
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        array $files,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
-        }
+    public function getIterator(): \Traversable
+    {
+        yield from $this->imports;
     }
 }

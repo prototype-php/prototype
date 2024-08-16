@@ -25,29 +25,19 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Code\Type;
 
-use Prototype\Compiler\Internal\Ir;
+use Prototype\Compiler\Internal\Code\PhpType;
 use Prototype\Compiler\Internal\Ir\ProtoType;
 use Prototype\Compiler\Internal\Ir\Scalar;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
- * @template-implements Ir\TypeVisitor<PhpType>
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
+final class ScalarTypeVisitor extends DefaultTypeVisitor
 {
-    /**
-     * @var array<non-empty-string, PhpType>
-     */
-    private readonly array $types;
-
-    public function __construct()
-    {
-        $this->types = [...WellKnown::typeToPhpType()];
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -61,53 +51,5 @@ final class ProtoTypeToPhpTypeVisitor implements Ir\TypeVisitor
             Scalar::float  => PhpType::scalar('float', default: 0),
             default        => PhpType::scalar('int', $scalar->value, 0),
         };
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function message(ProtoType $type, string $message): PhpType
-    {
-        return $this->types[$message] ?? PhpType::class($message);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function enum(ProtoType $type, string $enum): PhpType
-    {
-        return $this->types[$enum] ?? PhpType::enum($enum);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function repeated(ProtoType $type, ProtoType $elementType): PhpType
-    {
-        return PhpType::list($elementType->accept($this));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): PhpType
-    {
-        return PhpType::array(
-            $keyType->accept($this),
-            $valueType->accept($this),
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function oneof(ProtoType $type, array $variants): PhpType
-    {
-        return PhpType::union(
-            array_map(
-                fn (ProtoType $protoType): PhpType => $protoType->accept($this),
-                $variants,
-            ),
-        );
     }
 }
