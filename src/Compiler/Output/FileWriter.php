@@ -27,6 +27,8 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Output;
 
+use Psl\Filesystem;
+
 /**
  * @api
  */
@@ -41,8 +43,12 @@ final class FileWriter implements Writer
 
     public function writePhpFile(PhpFile $file): void
     {
+        Filesystem\create_directory(
+            $dir = rtrim($this->dir, \DIRECTORY_SEPARATOR).\DIRECTORY_SEPARATOR.str_replace('\\', \DIRECTORY_SEPARATOR, $file->namespace),
+        );
+
         file_put_contents(
-            implode(\DIRECTORY_SEPARATOR, [$this->dir, $file->name]),
+            implode(\DIRECTORY_SEPARATOR, [$dir, $file->name]),
             $file->content,
         );
     }

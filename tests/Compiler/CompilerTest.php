@@ -81,6 +81,7 @@ message SimpleResponse {
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestWithScalarTypes.php',
                     <<<'PHP'
 <?php
@@ -136,6 +137,7 @@ final class RequestWithScalarTypes
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'SimpleResponse.php',
                     <<<'PHP'
 <?php
@@ -211,6 +213,7 @@ message RequestWithWellKnownTypes {
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestWithWellKnownTypes.php',
                     <<<'PHP'
 <?php
@@ -306,6 +309,7 @@ message Response {
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'Request.php',
                     <<<'PHP'
 <?php
@@ -337,6 +341,7 @@ final class Request
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestTask.php',
                     <<<'PHP'
 <?php
@@ -365,6 +370,7 @@ final class RequestTask
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestTaskType.php',
                     <<<'PHP'
 <?php
@@ -391,6 +397,7 @@ enum RequestTaskType: int
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Type.php',
                     <<<'PHP'
 <?php
@@ -417,6 +424,7 @@ enum Type: int
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Response.php',
                     <<<'PHP'
 <?php
@@ -464,6 +472,7 @@ message Class {}
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'Namespace_.php',
                     <<<'PHP'
 <?php
@@ -494,6 +503,7 @@ final class Namespace_
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Class_.php',
                     <<<'PHP'
 <?php
@@ -548,6 +558,7 @@ message Request {
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'Request.php',
                     <<<'PHP'
 <?php
@@ -583,6 +594,7 @@ final class Request
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestTask.php',
                     <<<'PHP'
 <?php
@@ -613,6 +625,7 @@ final class RequestTask
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'RequestTaskType.php',
                     <<<'PHP'
 <?php
@@ -663,6 +676,7 @@ message Response {
 PROTO,
             [
                 new PhpFile(
+                    'App\V1\Test',
                     'Request.php',
                     <<<'PHP'
 <?php
@@ -697,6 +711,7 @@ final class Request
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Response.php',
                     <<<'PHP'
 <?php
@@ -724,6 +739,7 @@ final class Response
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Task.php',
                     <<<'PHP'
 <?php
@@ -751,6 +767,7 @@ final class Task
 PHP,
                 ),
                 new PhpFile(
+                    'App\V1\Test',
                     'Type.php',
                     <<<'PHP'
 <?php
@@ -775,6 +792,7 @@ enum Type: int
 PHP,
                 ),
                 new PhpFile(
+                    'App\V2\Deps',
                     'TaskPayload.php',
                     <<<'PHP'
 <?php
@@ -801,6 +819,7 @@ final class TaskPayload
 PHP,
                 ),
                 new PhpFile(
+                    'App\V2\Deps',
                     'TaskPayloadLabel.php',
                     <<<'PHP'
 <?php
