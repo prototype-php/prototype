@@ -1185,9 +1185,9 @@ PROTO,
     }
 
     /**
-     * @param non-empty-string                    $protobuf
-     * @param class-string<\Throwable>            $exception
-     * @param non-empty-string                    $exceptionMessage
+     * @param non-empty-string $protobuf
+     * @param class-string<\Throwable> $exception
+     * @param non-empty-string $exceptionMessage
      * @param array<non-empty-string, ImportFile> $imports
      */
     #[DataProvider('notCompileFixtures')]
