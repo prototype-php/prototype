@@ -25,29 +25,35 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir\Type;
+namespace Prototype\Compiler\Internal\Code\Type;
 
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Code\WellKnown;
 use Prototype\Compiler\Internal\Ir\ProtoType;
-use Prototype\Compiler\Internal\Ir\TypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class EnumType implements ProtoType
+final class WellKnownTypeVisitor extends DefaultTypeVisitor
 {
     /**
-     * @param non-empty-string $enum
+     * @var array<non-empty-string, PhpType>
      */
-    public function __construct(
-        private readonly string $enum,
-    ) {}
+    private readonly array $types;
+
+    public function __construct()
+    {
+        $this->types = [...WellKnown::typeToPhpType()];
+    }
 
     /**
      * {@inheritdoc}
      */
-    public function accept(TypeVisitor $visitor): mixed
+    public function message(ProtoType $type, string $message): PhpType
     {
-        return $visitor->enum($this, $this->enum);
+        return $this->types[$message] ?? throw new TypeNotFound($message);
     }
 }

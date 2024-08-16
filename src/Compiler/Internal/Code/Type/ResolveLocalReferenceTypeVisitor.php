@@ -25,46 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Code\Type;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Ir\Enum;
+use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\Proto;
+use Prototype\Compiler\Internal\Ir\ProtoType;
+use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class Generator
+final class ResolveLocalReferenceTypeVisitor extends DefaultTypeVisitor
 {
     public function __construct(
-        private readonly PhpFileFactory $files,
+        private readonly TypeStorage $types,
+        private readonly Proto $proto,
     ) {}
 
     /**
-     * @param non-empty-string $phpNamespace
-     * @param array<non-empty-string, Ir\Proto> $files
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        array $files,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
+    public function message(ProtoType $type, string $message): PhpType
+    {
+        if (null !== ($reference = $this->types->resolveType($message))) {
+            return PhpType::class($reference);
         }
+
+        if (null !== ($definition = $this->proto->definitions[$message] ?? null)) {
+            return match (true) {
+                $definition instanceof Message => PhpType::class($definition->typeStorage()->typeName()),
+                $definition instanceof Enum => PhpType::class($definition->name),
+                default => throw new TypeNotFound($message),
+            };
+        }
+
+        throw new TypeNotFound($message);
     }
 }

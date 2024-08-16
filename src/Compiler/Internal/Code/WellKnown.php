@@ -61,12 +61,12 @@ final class WellKnown
             'Prototype\WellKnown\Color',
         );
 
-        yield 'google.type.CalendarPeriod' => PhpType::enum(
+        yield 'google.type.CalendarPeriod' => PhpType::class(
             'CalendarPeriod',
             'Prototype\WellKnown\CalendarPeriod',
         );
 
-        yield 'google.type.DayOfWeek' => PhpType::enum(
+        yield 'google.type.DayOfWeek' => PhpType::class(
             'DayOfWeek',
             'Prototype\WellKnown\DayOfWeek',
         );
@@ -86,7 +86,7 @@ final class WellKnown
             'Prototype\WellKnown\Money',
         );
 
-        yield 'google.type.Month' => PhpType::enum(
+        yield 'google.type.Month' => PhpType::class(
             'Month',
             'Prototype\WellKnown\Month',
         );

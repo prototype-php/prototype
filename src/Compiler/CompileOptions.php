@@ -32,10 +32,5 @@ namespace Prototype\Compiler;
  */
 final class CompileOptions
 {
-    /**
-     * @param ?non-empty-string $phpNamespace
-     */
-    public function __construct(
-        public readonly ?string $phpNamespace = null,
-    ) {}
+    public function __construct() {}
 }

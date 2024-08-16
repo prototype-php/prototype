@@ -25,46 +25,66 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Code\Type;
 
 use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Ir\ProtoType;
+use Prototype\Compiler\Internal\Ir\Scalar;
+use Prototype\Compiler\Internal\Ir\TypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  * @template-covariant T
+ * @template-implements TypeVisitor<T>
  */
-interface TypeVisitor
+abstract class DefaultTypeVisitor implements TypeVisitor
 {
     /**
-     * @return T
-     * @throws TypeNotFound
+     * {@inheritdoc}
      */
-    public function scalar(ProtoType $type, Scalar $scalar): mixed;
+    public function scalar(ProtoType $type, Scalar $scalar): mixed
+    {
+        return $this->default($type);
+    }
 
     /**
-     * @param non-empty-string $message
-     * @return T
-     * @throws TypeNotFound
+     * {@inheritdoc}
      */
-    public function message(ProtoType $type, string $message): mixed;
+    public function message(ProtoType $type, string $message): mixed
+    {
+        return $this->default($type);
+    }
 
     /**
-     * @return T
-     * @throws TypeNotFound
+     * {@inheritdoc}
      */
-    public function repeated(ProtoType $type, ProtoType $elementType): mixed;
+    public function repeated(ProtoType $type, ProtoType $elementType): mixed
+    {
+        return $this->default($type);
+    }
 
     /**
-     * @return T
-     * @throws TypeNotFound
+     * {@inheritdoc}
      */
-    public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): mixed;
+    public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): mixed
+    {
+        return $this->default($type);
+    }
 
     /**
-     * @param ProtoType[] $variants
-     * @return T
+     * {@inheritdoc}
+     */
+    public function oneof(ProtoType $type, array $variants): mixed
+    {
+        return $this->default($type);
+    }
+
+    /**
      * @throws TypeNotFound
      */
-    public function oneof(ProtoType $type, array $variants): mixed;
+    final public function default(ProtoType $type): mixed
+    {
+        throw new TypeNotFound($type->accept(new StringifyTypeVisitor()));
+    }
 }

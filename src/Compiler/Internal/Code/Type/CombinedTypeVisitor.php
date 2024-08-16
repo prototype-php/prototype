@@ -25,11 +25,12 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Code\Type;
 
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\PhpType;
 use Prototype\Compiler\Internal\Ir\ProtoType;
 use Prototype\Compiler\Internal\Ir\Scalar;
-use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
 use Prototype\Compiler\Internal\Ir\TypeVisitor;
 
 /**
@@ -37,22 +38,29 @@ use Prototype\Compiler\Internal\Ir\TypeVisitor;
  * @psalm-internal Prototype\Compiler
  * @template-implements TypeVisitor<PhpType>
  */
-final class ResolveReferenceTypeVisitor implements TypeVisitor
+final class CombinedTypeVisitor implements TypeVisitor
 {
+    /** @var iterable<TypeVisitor<PhpType>> */
+    private readonly iterable $visitors;
+
     /**
-     * @param TypeVisitor<PhpType> $fallback
+     * @param TypeVisitor<PhpType> ...$visitors
      */
     public function __construct(
-        private readonly TypeVisitor $fallback,
-        private readonly TypeStorage $types,
-    ) {}
+        TypeVisitor ...$visitors,
+    ) {
+        $this->visitors = $visitors;
+    }
 
     /**
      * {@inheritdoc}
      */
     public function scalar(ProtoType $type, Scalar $scalar): PhpType
     {
-        return $this->fallback->scalar($type, $scalar);
+        return $this->apply(
+            static fn (TypeVisitor $visitor): PhpType => $visitor->scalar($type, $scalar),
+            $type,
+        );
     }
 
     /**
@@ -60,23 +68,10 @@ final class ResolveReferenceTypeVisitor implements TypeVisitor
      */
     public function message(ProtoType $type, string $message): PhpType
     {
-        if (null !== ($reference = $this->types->resolveType($message))) {
-            return PhpType::class($reference);
-        }
-
-        return $this->fallback->message($type, $message);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function enum(ProtoType $type, string $enum): PhpType
-    {
-        if (null !== ($reference = $this->types->resolveType($enum))) {
-            return PhpType::enum($reference);
-        }
-
-        return $this->fallback->enum($type, $enum);
+        return $this->apply(
+            static fn (TypeVisitor $visitor): PhpType => $visitor->message($type, $message),
+            $type,
+        );
     }
 
     /**
@@ -84,7 +79,12 @@ final class ResolveReferenceTypeVisitor implements TypeVisitor
      */
     public function repeated(ProtoType $type, ProtoType $elementType): PhpType
     {
-        return PhpType::list($elementType->accept($this));
+        return PhpType::list(
+            $this->apply(
+                static fn (TypeVisitor $visitor): PhpType => $elementType->accept($visitor),
+                $type,
+            ),
+        );
     }
 
     /**
@@ -93,8 +93,14 @@ final class ResolveReferenceTypeVisitor implements TypeVisitor
     public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): PhpType
     {
         return PhpType::array(
-            $keyType->accept($this),
-            $valueType->accept($this),
+            $this->apply(
+                static fn (TypeVisitor $visitor): PhpType => $keyType->accept($visitor),
+                $keyType,
+            ),
+            $this->apply(
+                static fn (TypeVisitor $visitor): PhpType => $valueType->accept($visitor),
+                $valueType,
+            ),
         );
     }
 
@@ -103,11 +109,24 @@ final class ResolveReferenceTypeVisitor implements TypeVisitor
      */
     public function oneof(ProtoType $type, array $variants): PhpType
     {
-        return PhpType::union(
-            array_map(
-                fn (ProtoType $protoType): PhpType => $protoType->accept($this),
-                $variants,
-            ),
+        return $this->apply(
+            static fn (TypeVisitor $visitor): PhpType => $visitor->oneof($type, $variants),
+            $type,
         );
+    }
+
+    /**
+     * @param callable(TypeVisitor<PhpType>): PhpType $apply
+     * @throws TypeNotFound
+     */
+    private function apply(callable $apply, ProtoType $type): PhpType
+    {
+        foreach ($this->visitors as $visitor) {
+            try {
+                return $apply($visitor);
+            } catch (TypeNotFound) {}
+        }
+
+        throw new TypeNotFound($type->accept(new StringifyTypeVisitor()));
     }
 }

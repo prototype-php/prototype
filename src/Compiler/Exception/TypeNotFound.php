@@ -25,46 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
-
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+namespace Prototype\Compiler\Exception;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Generator
+final class TypeNotFound extends \Exception
 {
     public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {}
-
-    /**
-     * @param non-empty-string $phpNamespace
-     * @param array<non-empty-string, Ir\Proto> $files
-     * @return \Generator<non-empty-string, PhpFile>
-     */
-    public function generate(
-        Ir\Proto $proto,
-        array $files,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
-
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
-
-            yield $typeName.'.php' => $file;
-        }
+        public readonly string $type,
+        int $code = 0,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct(\sprintf('Type "%s" is not found.', $this->type), $code, $previous);
     }
 }

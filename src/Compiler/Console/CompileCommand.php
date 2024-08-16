@@ -33,6 +33,7 @@ use Prototype\Compiler\Import\FileImportResolver;
 use Prototype\Compiler\Import\VirtualImportResolver;
 use Prototype\Compiler\Output;
 use Prototype\Compiler\RecursiveFilesLocator;
+use Psl\Type;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -41,7 +42,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Psl\Type;
 
 /**
  * @api
@@ -68,7 +68,6 @@ final class CompileCommand extends Command
             ->addArgument('paths', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Paths with proto files')
             ->addOption('imports', 'i', InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Import paths.')
             ->addOption('output', 'o', InputOption::VALUE_OPTIONAL, 'The directory where to save the generated PHP code.')
-            ->addOption('namespace', null, InputOption::VALUE_OPTIONAL, 'Optional PHP namespace for generated code.')
         ;
     }
 

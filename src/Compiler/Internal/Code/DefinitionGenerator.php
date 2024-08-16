@@ -41,7 +41,8 @@ final class DefinitionGenerator
 {
     public function __construct(
         private readonly PhpNamespace $namespace,
-        private readonly Ir\TypeVisitor $typeVisitor,
+        private readonly Ir\Proto $proto,
+        private readonly ImportStorage $imports,
     ) {}
 
     /**
@@ -94,13 +95,19 @@ final class DefinitionGenerator
         foreach ($message as $field) {
             /** @var PhpType $type */
             $type = $field->type->accept(
-                new ResolveReferenceTypeVisitor(
-                    $this->typeVisitor,
-                    $message->typeStorage(),
+                new Type\CombinedTypeVisitor(
+                    new Type\ApplyTypeVisitor(new Type\ScalarTypeVisitor()),
+                    new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+                    new Type\ApplyTypeVisitor(
+                        new Type\ResolveLocalReferenceTypeVisitor($message->typeStorage(), $this->proto),
+                    ),
+                    new Type\ApplyTypeVisitor(
+                        new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+                    ),
                 ),
             );
 
-            if (null !== ($use = $type->use)) {
+            foreach ($type->uses as $use) {
                 $this->namespace->addUse($use);
             }
 

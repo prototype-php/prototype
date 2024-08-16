@@ -25,46 +25,56 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Code;
+namespace Prototype\Compiler\Internal\Code\Type;
 
-use Nette\PhpGenerator\PhpFile;
-use Prototype\Compiler\Internal\Ir;
-use Prototype\Compiler\Internal\Naming;
+use Prototype\Compiler\Internal\Ir\ProtoType;
+use Prototype\Compiler\Internal\Ir\Scalar;
+use Prototype\Compiler\Internal\Ir\TypeVisitor;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
+ * @template-implements TypeVisitor<string>
  */
-final class Generator
+final class StringifyTypeVisitor implements TypeVisitor
 {
-    public function __construct(
-        private readonly PhpFileFactory $files,
-    ) {}
+    /**
+     * {@inheritdoc}
+     */
+    public function scalar(ProtoType $type, Scalar $scalar): string
+    {
+        return $scalar->value;
+    }
 
     /**
-     * @param non-empty-string $phpNamespace
-     * @param array<non-empty-string, Ir\Proto> $files
-     * @return \Generator<non-empty-string, PhpFile>
+     * {@inheritdoc}
      */
-    public function generate(
-        Ir\Proto $proto,
-        array $files,
-        string $phpNamespace,
-    ): \Generator {
-        foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+    public function message(ProtoType $type, string $message): string
+    {
+        return $message;
+    }
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
-                    ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
+    /**
+     * {@inheritdoc}
+     */
+    public function repeated(ProtoType $type, ProtoType $elementType): string
+    {
+        return \sprintf('repeated %s', $elementType->accept($this));
+    }
 
-            yield $typeName.'.php' => $file;
-        }
+    /**
+     * {@inheritdoc}
+     */
+    public function map(ProtoType $type, ProtoType $keyType, ProtoType $valueType): string
+    {
+        return \sprintf('map<%s, %s>', $keyType->accept($this), $valueType->accept($this));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function oneof(ProtoType $type, array $variants): string
+    {
+        return implode('|', array_map(fn (ProtoType $variant): string => $variant->accept($this), $variants));
     }
 }

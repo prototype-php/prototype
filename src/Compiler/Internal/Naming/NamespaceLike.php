@@ -39,6 +39,9 @@ enum NamespaceLike
      */
     public static function name(string $name): string
     {
-        return str_replace('\\\\', '\\', $name);
+        /** @var non-empty-string $name */
+        $name = str_replace('\\\\', '\\', str_replace('.', '\\\\', $name));
+
+        return implode('\\', array_map(static fn (string $part): string => SnakeCase::toPascalCase($part), explode('\\', $name))); // @phpstan-ignore-line
     }
 }

@@ -38,12 +38,12 @@ final class PhpType
     /**
      * @param non-empty-string $nativeType
      * @param ?non-empty-string $phpDocType
-     * @param ?non-empty-string $use
+     * @param non-empty-string[] $uses
      */
     private function __construct(
         public readonly string $nativeType,
         public readonly ?string $phpDocType = null,
-        public readonly ?string $use = null,
+        public readonly array $uses = [],
         public readonly bool $nullable = false,
         public readonly mixed $default = null,
     ) {}
@@ -73,20 +73,7 @@ final class PhpType
     {
         return new self(
             Naming\ClassLike::name($class),
-            use: $use,
-            nullable: true,
-        );
-    }
-
-    /**
-     * @param non-empty-string $enum
-     * @param ?non-empty-string $use
-     */
-    public static function enum(string $enum, ?string $use = null): self
-    {
-        return new self(
-            Naming\ClassLike::name($enum),
-            use: $use,
+            uses: null !== $use ? [$use] : [],
             nullable: true,
         );
     }
@@ -96,6 +83,7 @@ final class PhpType
         return new self(
             'array',
             'list<'.($type->phpDocType ?: $type->nativeType).'>',
+            uses: $type->uses,
             default: [],
         );
     }
@@ -105,6 +93,7 @@ final class PhpType
         return new self(
             'array',
             'array<'.($keyType->phpDocType ?: $keyType->nativeType).', '.($valueType->phpDocType ?: $valueType->nativeType).'>',
+            uses: [...$keyType->uses, ...$valueType->uses],
             default: [],
         );
     }
@@ -128,6 +117,12 @@ final class PhpType
         return new self(
             implode('|', array_map(static fn (self $type): string => $type->nativeType, $types)),
             $requirePhpDoc ? implode('|', array_map(static fn (self $type): string => $type->phpDocType ?: $type->nativeType, $types)) : null,
+            uses: array_merge(
+                ...array_map(
+                    static fn (self $type): array => $type->uses,
+                    $types,
+                ),
+            ),
         );
     }
 }
