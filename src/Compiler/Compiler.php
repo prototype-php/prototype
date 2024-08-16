@@ -77,15 +77,18 @@ final class Compiler
         CompileOptions $options = new CompileOptions(), // for future use.
     ): void {
         foreach (($files = $this->protoResolver->resolve($file->path, $file->stream)) as $proto) {
+            $phpNamespace = $proto->phpNamespace();
+
             foreach (
                 $this->generator->generate(
                     $proto,
                     $files,
-                    $proto->phpNamespace(),
+                    $phpNamespace,
                 ) as $fileName => $phpFile
             ) {
                 $this->writer->writePhpFile(
                     new Output\PhpFile(
+                        $phpNamespace,
                         $fileName,
                         $this->printer->printFile($phpFile),
                     ),

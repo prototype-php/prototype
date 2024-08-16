@@ -33,9 +33,11 @@ namespace Prototype\Compiler\Output;
 final class PhpFile
 {
     /**
+     * @param non-empty-string $namespace
      * @param non-empty-string $name
      */
     public function __construct(
+        public readonly string $namespace,
         public readonly string $name,
         public readonly string $content,
     ) {}
