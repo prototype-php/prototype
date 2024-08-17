@@ -52,19 +52,21 @@ final class Generator
         string $phpNamespace,
     ): \Generator {
         foreach ($proto->definitions as $definition) {
-            $file = $this->files->newFile();
+            foreach ($definition->generates() as $generate) {
+                $file = $this->files->newFile();
 
-            $typeName = $definition->generate(
-                new DefinitionGenerator(
-                    $file->addNamespace(
-                        Naming\NamespaceLike::name($phpNamespace),
+                $typeName = $generate(
+                    new DefinitionGenerator(
+                        $file->addNamespace(
+                            Naming\NamespaceLike::name($phpNamespace),
+                        ),
+                        $proto,
+                        new ImportStorage($files),
                     ),
-                    $proto,
-                    new ImportStorage($files),
-                ),
-            );
+                );
 
-            yield $typeName.'.php' => $file;
+                yield $typeName.'.php' => $file;
+            }
         }
     }
 }

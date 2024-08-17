@@ -25,29 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Compression;
 
 /**
  * @api
  */
-interface Compressor
+final class CompressionUnavailable extends \Exception implements CompressionException
 {
     /**
-     * @param non-empty-string $bytes
-     * @return non-empty-string
-     * @throws CompressionException
+     * @param non-empty-string $name
      */
-    public function compress(string $bytes): string;
-
-    /**
-     * @param non-empty-string $compressed
-     * @return non-empty-string
-     * @throws CompressionException
-     */
-    public function decompress(string $compressed): string;
-
-    /**
-     * @return non-empty-string
-     */
-    public function name(): string;
+    public static function forAlgorithm(string $name): self
+    {
+        return new self(\sprintf('Compression algorithm "%s" is unavailable.', $name));
+    }
 }

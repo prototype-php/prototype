@@ -25,51 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Client;
 
 /**
  * @api
  */
-final class GZIPCompressor implements Compressor
+final class ClientOptions
 {
     /**
-     * @throws CompressionException
+     * @param non-empty-string $uri
      */
     public function __construct(
-        private readonly int $level = -1,
-    ) {
-        if (!\extension_loaded('zlib')) {
-            throw CompressionUnavailable::forAlgorithm('gzip');
-        }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function compress(string $bytes): string
-    {
-        /** @var non-empty-string|false $compressed */
-        $compressed = gzencode($bytes, $this->level);
-
-        return $compressed ?: throw new CannotCompressData();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function decompress(string $compressed): string
-    {
-        /** @var non-empty-string|false $bytes */
-        $bytes = gzdecode($compressed);
-
-        return $bytes ?: throw new CannotDecompressData();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function name(): string
-    {
-        return 'gzip';
-    }
+        public readonly string $uri,
+    ) {}
 }

@@ -25,57 +25,34 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
-
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
-use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
+namespace Prototype\Grpc\Compression;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, Field>
+ * @api
  */
-final class Message implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+final class IdentityCompressor implements Compressor
 {
     /**
-     * @param non-empty-string $name
-     * @param Field[] $fields
+     * {@inheritdoc}
      */
-    public function __construct(
-        public readonly string $name,
-        private readonly TypeStorage $types,
-        public readonly array $fields = [],
-    ) {}
-
-    public function typeStorage(): TypeStorage
+    public function compress(string $bytes): string
     {
-        return clone $this->types;
+        return $bytes;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function generates(): iterable
+    public function decompress(string $compressed): string
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClass($this);
+        return $compressed;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): \Traversable
+    public function name(): string
     {
-        yield from $this->fields;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->fields);
+        return 'identity';
     }
 }

@@ -25,57 +25,36 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Compiler\Internal\Code\Type;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
-use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\Proto;
+use Prototype\Compiler\Internal\Ir\ProtoType;
 
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, Field>
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class Message implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+final class ResolveRpcTypeVisitor extends DefaultTypeVisitor
 {
-    /**
-     * @param non-empty-string $name
-     * @param Field[] $fields
-     */
     public function __construct(
-        public readonly string $name,
-        private readonly TypeStorage $types,
-        public readonly array $fields = [],
+        private readonly Proto $proto,
     ) {}
 
-    public function typeStorage(): TypeStorage
-    {
-        return clone $this->types;
-    }
-
     /**
      * {@inheritdoc}
      */
-    public function generates(): iterable
+    public function message(ProtoType $type, string $message): PhpType
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClass($this);
-    }
+        $definition = $this->proto->definitions[$message] ?? null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        yield from $this->fields;
-    }
+        if ($definition instanceof Message) {
+            return PhpType::class($definition->typeStorage()->typeName());
+        }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->fields);
+        throw new TypeNotFound($message);
     }
 }

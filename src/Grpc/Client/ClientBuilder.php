@@ -25,14 +25,14 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Client;
 
 use Amp\Http\Client\DelegateHttpClient;
 use Amp\Http\Client\HttpClientBuilder;
-use Prototype\GRPC\Compression\Compressor;
-use Prototype\GRPC\Compression\IdentityCompressor;
-use Prototype\GRPC\Internal\Wire\RequestFactory;
-use Prototype\GRPC\Internal\Wire\ResponseFactory;
+use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Compression\IdentityCompressor;
+use Prototype\Grpc\Internal\Wire\RequestFactory;
+use Prototype\Grpc\Internal\Wire\ResponseFactory;
 use Prototype\Serializer\Serializer;
 
 /**

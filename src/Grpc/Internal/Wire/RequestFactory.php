@@ -25,18 +25,18 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Internal\Wire;
+namespace Prototype\Grpc\Internal\Wire;
 
 use Amp\Http\Client\BufferedContent;
 use Amp\Http\Client\Request;
 use Kafkiansky\Binary\Buffer;
 use Kafkiansky\Binary\Endianness;
-use Prototype\GRPC\Compression\Compressor;
+use Prototype\Grpc\Compression\Compressor;
 use Prototype\Serializer\Serializer;
 
 /**
  * @internal
- * @psalm-internal Prototype\GRPC
+ * @psalm-internal Prototype\Grpc
  */
 final class RequestFactory
 {

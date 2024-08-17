@@ -25,15 +25,15 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Client;
 
-use Prototype\GRPC\StatusCode;
+use Prototype\Grpc\StatusCode;
 
 /**
  * @api
  * @template T of object
  */
-final class GRPCResponse
+final class GrpcResponse
 {
     /**
      * @param T $message

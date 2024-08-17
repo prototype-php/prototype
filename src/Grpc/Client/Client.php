@@ -25,18 +25,13 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Client;
 
 use Amp\Cancellation;
 use Amp\Http\Client\DelegateHttpClient;
-use Amp\Http\Client\HttpException;
 use Amp\NullCancellation;
-use Kafkiansky\Binary\BinaryException;
-use Prototype\Byte\ByteException;
-use Prototype\GRPC\Compression\CompressionException;
-use Prototype\GRPC\Internal\Wire\RequestFactory;
-use Prototype\GRPC\Internal\Wire\ResponseFactory;
-use Prototype\Serializer\PrototypeException;
+use Prototype\Grpc\Internal\Wire\RequestFactory;
+use Prototype\Grpc\Internal\Wire\ResponseFactory;
 
 /**
  * @api
@@ -45,7 +40,7 @@ final class Client
 {
     /**
      * @internal
-     * @psalm-internal Prototype\GRPC
+     * @psalm-internal Prototype\Grpc
      */
     public function __construct(
         private readonly ClientOptions $options,
@@ -56,28 +51,23 @@ final class Client
 
     /**
      * @template T of object
-     * @param GRPCRequest<T> $grpcRequest
-     * @return GRPCResponse<T>
-     * @throws BinaryException
-     * @throws ByteException
-     * @throws PrototypeException
-     * @throws \ReflectionException
-     * @throws HttpException
-     * @throws CompressionException
+     * @param GrpcRequest<T> $grpcRequest
+     * @return GrpcResponse<T>
+     * @throws \Throwable
      */
-    public function call(GRPCRequest $grpcRequest, Cancellation $cancellation = new NullCancellation()): GRPCResponse
+    public function invoke(GrpcRequest $grpcRequest, Cancellation $cancellation = new NullCancellation()): GrpcResponse
     {
         $request = $this->requestFactory->newRequest(
-            $grpcRequest,
-            \sprintf('%s/%s', $this->options->uri, $grpcRequest->rpc()),
+            $grpcRequest->payload,
+            \sprintf('%s/%s', $this->options->uri, ltrim($grpcRequest->path, '/')),
         );
 
         $response = $this->httpClient->request($request, $cancellation);
 
-        /** @var GRPCResponse<T> */
+        /** @var GrpcResponse<T> */
         return $this->responseFactory->fromHTTPResponse(
             $response,
-            $grpcRequest->responseType(),
+            $grpcRequest->responseType,
         );
     }
 }

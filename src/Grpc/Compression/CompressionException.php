@@ -25,17 +25,9 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Compression;
 
 /**
  * @api
  */
-final class ClientOptions
-{
-    /**
-     * @param non-empty-string $uri
-     */
-    public function __construct(
-        public readonly string $uri,
-    ) {}
-}
+interface CompressionException extends \Throwable {}

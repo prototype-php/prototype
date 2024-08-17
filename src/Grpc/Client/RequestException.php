@@ -25,18 +25,20 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Client;
+
+use Prototype\Grpc\StatusCode;
 
 /**
  * @api
  */
-final class CompressionUnavailable extends \Exception implements CompressionException
+final class RequestException extends \Exception
 {
-    /**
-     * @param non-empty-string $name
-     */
-    public static function forAlgorithm(string $name): self
-    {
-        return new self(\sprintf('Compression algorithm "%s" is unavailable.', $name));
+    public function __construct(
+        public readonly StatusCode $statusCode,
+        public readonly ?string $grpcMessage = null,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct(\sprintf('Request terminated with error: %s(%d).', $this->grpcMessage ?: $this->statusCode->name, $this->statusCode->value), previous: $previous);
     }
 }

@@ -25,34 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Client;
 
 /**
  * @api
+ * @template T of object
  */
-final class IdentityCompressor implements Compressor
+final class GrpcRequest
 {
     /**
-     * {@inheritdoc}
+     * @param non-empty-string $path
+     * @param class-string<T> $responseType
      */
-    public function compress(string $bytes): string
-    {
-        return $bytes;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function decompress(string $compressed): string
-    {
-        return $compressed;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function name(): string
-    {
-        return 'identity';
-    }
+    public function __construct(
+        public readonly string $path,
+        public readonly object $payload,
+        public readonly string $responseType,
+    ) {}
 }

@@ -51,9 +51,9 @@ final class Enum implements
     /**
      * {@inheritdoc}
      */
-    public function generate(DefinitionGenerator $generator): string
+    public function generates(): iterable
     {
-        return $generator->generateEnum($this);
+        yield fn (DefinitionGenerator $generator): string => $generator->generateEnum($this);
     }
 
     /**

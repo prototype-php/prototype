@@ -25,21 +25,29 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Compression;
 
 /**
  * @api
- * @template-covariant Response of object
  */
-interface GRPCRequest
+interface Compressor
 {
+    /**
+     * @param non-empty-string $bytes
+     * @return non-empty-string
+     * @throws CompressionException
+     */
+    public function compress(string $bytes): string;
+
+    /**
+     * @param non-empty-string $compressed
+     * @return non-empty-string
+     * @throws CompressionException
+     */
+    public function decompress(string $compressed): string;
+
     /**
      * @return non-empty-string
      */
-    public function rpc(): string;
-
-    /**
-     * @return class-string<Response>
-     */
-    public function responseType(): string;
+    public function name(): string;
 }

@@ -25,19 +25,19 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Internal\Wire;
+namespace Prototype\Grpc\Internal\Wire;
 
 use Amp\Http\Client\Response;
 use Kafkiansky\Binary;
-use Prototype\GRPC\Client\GRPCResponse;
-use Prototype\GRPC\Compression\Compressor;
-use Prototype\GRPC\StatusCode;
+use Prototype\Grpc\Client\GrpcResponse;
+use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\StatusCode;
 use Prototype\Serializer\Serializer;
 use Prototype\Byte;
 
 /**
  * @internal
- * @psalm-internal Prototype\GRPC
+ * @psalm-internal Prototype\Grpc
  */
 final class ResponseFactory
 {
@@ -53,16 +53,16 @@ final class ResponseFactory
     /**
      * @template T of object
      * @param class-string<T> $messageType
-     * @return GRPCResponse<T>
+     * @return GrpcResponse<T>
      */
-    public function fromHTTPResponse(Response $response, string $messageType): GRPCResponse
+    public function fromHTTPResponse(Response $response, string $messageType): GrpcResponse
     {
         /** @var ?numeric-string $grpcStatus */
         $grpcStatus = $response->getHeader('grpc-status');
         $statusCode = null !== $grpcStatus ? (StatusCode::tryFrom((int)$grpcStatus) ?: StatusCode::UNKNOWN) : StatusCode::OK;
 
         if ($statusCode !== StatusCode::OK) {
-            return GRPCResponse::error(
+            return GrpcResponse::error(
                 $statusCode,
                 $response->getHeaders(),
                 $response->getHeader('grpc-message'),
@@ -84,6 +84,6 @@ final class ResponseFactory
             $messageType,
         );
 
-        return GRPCResponse::ok(StatusCode::OK, $message, $response->getHeaders());
+        return GrpcResponse::ok(StatusCode::OK, $message, $response->getHeaders());
     }
 }
