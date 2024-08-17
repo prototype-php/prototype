@@ -1201,6 +1201,136 @@ PROTO,
                 ),
             ],
         ];
+
+        yield 'service reference unknown type' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+service Controller {
+    rpc Test(Request) returns (Response) {}
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"Request" is not defined in "api.v1.test.Controller".',
+            [],
+        ];
+
+        yield 'service reference unknown type with full path' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+service Controller {
+    rpc Test(api.v1.test.Request) returns (Response) {}
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"api.v1.test.Request" is not defined in "api.v1.test.Controller".',
+            [],
+        ];
+
+        yield 'service reference unknown type within imports' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v1/options.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+service Controller {
+    rpc Test(api.v1.test.Request) returns (Response) {}
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"Response" is not defined in "api.v1.test.Controller".',
+            [
+                'api/v1/options.proto' => new ImportFile(
+                    '/api/v1/options.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+PROTO,
+                    ),
+                ),
+            ],
+        ];
+
+        yield 'service reference unknown type within imports in other namespace' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+import "api/v2/options.proto";
+
+option php_namespace = "App\\V1\\Test";
+
+service Controller {
+    rpc Test(api.v2.test.Request) returns (Response) {}
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"Response" is not defined in "api.v1.test.Controller".',
+            [
+                'api/v2/options.proto' => new ImportFile(
+                    '/api/v2/options.proto',
+                    InputStream::fromString(
+                        <<<'PROTO'
+syntax = "proto3";
+
+package api.v2.test;
+
+option php_namespace = "App\\V1\\Test";
+
+message Request {}
+PROTO,
+                    ),
+                ),
+            ],
+        ];
+
+        yield 'service reference not a message type' => [
+            <<<'PROTO'
+syntax = "proto3";
+
+package api.v1.test;
+
+option php_namespace = "App\\V1\\Test";
+
+enum Request {
+    UNSPECIFIED = 0;
+}
+
+message Response {}
+
+service Controller {
+    rpc Test(Request) returns (Response) {}
+}
+
+PROTO,
+            ConstraintViolated::class,
+            '"Request" is not a message type.',
+            [],
+        ];
     }
 
     /**

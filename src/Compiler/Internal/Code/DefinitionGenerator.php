@@ -48,6 +48,14 @@ final class DefinitionGenerator
     /**
      * @return non-empty-string
      */
+    public function generateServiceClient(Ir\Service $service): string
+    {
+        return Naming\SnakeCase::toCamelCase($service->name).'Client';
+    }
+
+    /**
+     * @return non-empty-string
+     */
     public function generateEnum(Ir\Enum $enum): string
     {
         $phpEnum = $this

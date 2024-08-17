@@ -87,6 +87,7 @@ final class Proto
                 return match (true) {
                     $definition instanceof Message => $definition->typeStorage()->resolveType($type),
                     $definition instanceof Enum => $definition->name,
+                    $definition instanceof Service => throw new \LogicException(\sprintf('"%s" is not a message or enum type.', $definition->name)),
                     default => null,
                 };
             }

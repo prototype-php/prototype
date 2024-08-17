@@ -57,7 +57,7 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 
                 foreach ($messageDefinitions as $name => $definition) {
                     if (isset($definitions[$name])) {
-                        throw new \LogicException(\sprintf('Message "%s" from package "%s" is duplicated.', $name, $packageName));
+                        throw new \LogicException(\sprintf('"%s" is already defined in "%s".', $name, $packageName));
                     }
 
                     if ($definition instanceof Message) {
@@ -75,12 +75,25 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
                 $enum = $def->enumDef()->accept(new EnumVisitor($types));
 
                 if (isset($definitions[$enum->name])) {
-                    throw new \LogicException(\sprintf('Enum "%s" from package "%s" is duplicated.', $enum->name, $packageName));
+                    throw new \LogicException(\sprintf('"%s" is already defined in "%s".', $enum->name, $packageName));
                 }
 
                 $this->hooks->afterEnumVisited($enum);
 
                 $definitions[$enum->name] = $enum;
+            }
+
+            if (null !== $def->serviceDef()) {
+                /** @var Service $service */
+                $service = $def->serviceDef()->accept(new ServiceVisitor());
+
+                if (isset($definitions[$service->name])) {
+                    throw new \LogicException(\sprintf('"%s" is already defined in "%s".', $service->name, $packageName));
+                }
+
+                $this->hooks->afterServiceVisited($service);
+
+                $definitions[$service->name] = $service;
             }
         }
 
