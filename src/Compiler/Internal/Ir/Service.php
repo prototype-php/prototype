@@ -27,11 +27,13 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Ir;
 
+use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+
 /**
  * @internal
  * @psalm-internal Prototype\Compiler
  */
-final class Service
+final class Service implements Definition
 {
     /**
      * @param non-empty-string $name
@@ -41,4 +43,12 @@ final class Service
         public readonly string $name,
         public readonly array $rpc = [],
     ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function generate(DefinitionGenerator $generator): string
+    {
+        return $generator->generateServiceClient($this);
+    }
 }

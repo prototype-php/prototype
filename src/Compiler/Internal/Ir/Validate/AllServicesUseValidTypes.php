@@ -31,6 +31,7 @@ use Prototype\Compiler\Internal\Ir\Hook\AfterProtoResolvedHook;
 use Prototype\Compiler\Internal\Ir\Message;
 use Prototype\Compiler\Internal\Ir\Proto;
 use Prototype\Compiler\Internal\Ir\RpcType;
+use Prototype\Compiler\Internal\Ir\Service;
 
 /**
  * @internal
@@ -43,23 +44,17 @@ final class AllServicesUseValidTypes implements AfterProtoResolvedHook
      */
     public function afterProtoResolved(iterable $files): void
     {
-        $fileIdx = -1;
         foreach ($files as $file) {
-            ++$fileIdx;
+            foreach ($file->definitions as $definition) {
+                if ($definition instanceof Service) {
+                    foreach ($definition->rpc as $rpc) {
+                        if (!self::validateType($rpc->inType, $file, [...$files])) {
+                            throw new ConstraintViolated(\sprintf('"%s" is not defined in "%s.%s".', $rpc->inType->name, $file->packageName, $definition->name));
+                        }
 
-            foreach ($file->services as $service) {
-                foreach ($service->rpc as $rpc) {
-                    $imports = [
-                        ...\array_slice([...$files], 0, $fileIdx),
-                        ...\array_slice([...$files], $fileIdx + 1),
-                    ];
-
-                    if (!self::validateType($rpc->inType, $file, $imports)) {
-                        throw new ConstraintViolated(\sprintf('"%s" is not defined in "%s.%s".', $rpc->inType->name, $file->packageName, $service->name));
-                    }
-
-                    if (!self::validateType($rpc->outType, $file, $imports)) {
-                        throw new ConstraintViolated(\sprintf('"%s" is not defined in "%s.%s".', $rpc->outType->name, $file->packageName, $service->name));
+                        if (!self::validateType($rpc->outType, $file, [...$files])) {
+                            throw new ConstraintViolated(\sprintf('"%s" is not defined in "%s.%s".', $rpc->outType->name, $file->packageName, $definition->name));
+                        }
                     }
                 }
             }
@@ -79,7 +74,7 @@ final class AllServicesUseValidTypes implements AfterProtoResolvedHook
                 $typeName = substr($typeName, \strlen($file->packageName) + 1);
             }
 
-            if (null !== ($definition = $file->resolveDefinition($typeName))) {
+            if (null !== ($definition = $file->definitions[$typeName] ?? null)) {
                 if (!$definition instanceof Message) {
                     throw new ConstraintViolated(\sprintf('"%s" is not a message type.', $typeName));
                 }
@@ -95,6 +90,14 @@ final class AllServicesUseValidTypes implements AfterProtoResolvedHook
         }
 
         foreach ($file->imports as $import) {
+            $proto = $files[$import];
+
+            if ($file->packageName !== $proto->packageName) {
+                if (!str_starts_with($type->name, $proto->packageName)) {
+                    return false;
+                }
+            }
+
             if ($validate($type, $files[$import])) {
                 return true;
             }

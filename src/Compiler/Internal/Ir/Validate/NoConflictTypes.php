@@ -30,6 +30,7 @@ namespace Prototype\Compiler\Internal\Ir\Validate;
 use Prototype\Compiler\Internal\Ir\Enum;
 use Prototype\Compiler\Internal\Ir\Hook\AfterProtoResolvedHook;
 use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\Service;
 
 /**
  * @internal
@@ -56,6 +57,7 @@ final class NoConflictTypes implements AfterProtoResolvedHook
                 $name = match (true) {
                     $definition instanceof Enum => $definition->name,
                     $definition instanceof Message => $definition->name,
+                    $definition instanceof Service => $definition->name,
                     default => throw new \LogicException(
                         \sprintf('Unknown definition of type "%s" found.', $definition::class),
                     ),
