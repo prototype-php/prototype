@@ -85,7 +85,7 @@ final class ProtoVisitor extends Parser\Protobuf3BaseVisitor
 
             if (null !== $def->serviceDef()) {
                 /** @var Service $service */
-                $service = $def->serviceDef()->accept(new ServiceVisitor());
+                $service = $def->serviceDef()->accept(new ServiceVisitor($packageName));
 
                 if (isset($definitions[$service->name])) {
                     throw new \LogicException(\sprintf('"%s" is already defined in "%s".', $service->name, $packageName));

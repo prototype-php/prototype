@@ -10,4 +10,4 @@ composer require prototype/grpc
 
 ## License
 
-The MIT License (MIT). See [License File](../src/GRPC/LICENSE) for more information.
+The MIT License (MIT). See [License File](../src/Grpc/LICENSE) for more information.

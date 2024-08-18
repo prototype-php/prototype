@@ -36,7 +36,7 @@ use Prototype\Compiler\Internal\Code\DefinitionGenerator;
 interface Definition
 {
     /**
-     * @return non-empty-string
+     * @return iterable<callable(DefinitionGenerator): non-empty-string>
      */
-    public function generate(DefinitionGenerator $generator): string;
+    public function generates(): iterable;
 }

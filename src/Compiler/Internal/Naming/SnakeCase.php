@@ -49,6 +49,6 @@ enum SnakeCase
     public static function toPascalCase(string $name): string
     {
         /** @var non-empty-string */
-        return str_replace(' ', '', ucwords(str_replace('_', ' ', $name)));
+        return str_replace(' ', '', ucwords(str_replace('_', ' ', str_replace('.', '', $name))));
     }
 }

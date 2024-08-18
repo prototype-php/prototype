@@ -37,11 +37,19 @@ use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
 final class ServiceVisitor extends Protobuf3BaseVisitor
 {
     /**
+     * @param non-empty-string $packageName
+     */
+    public function __construct(
+        private readonly string $packageName,
+    ) {}
+
+    /**
      * {@inheritdoc}
      */
     public function visitServiceDef(Context\ServiceDefContext $context): Service
     {
         return new Service(
+            $this->packageName,
             toNonEmptyString($context->serviceName()?->ident()?->getText()),
             array_map(
                 fn (Context\ServiceElementContext $context): Rpc => $context->accept($this),

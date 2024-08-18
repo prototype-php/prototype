@@ -27,8 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Compiler\Internal\Code;
 
+use Nette\PhpGenerator\Literal;
+use Nette\PhpGenerator\Parameter;
 use Nette\PhpGenerator\PhpNamespace;
 use Nette\PhpGenerator\PromotedParameter;
+use Prototype\Compiler\Internal\Code\Type\CombinedTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\ResolveRpcTypeVisitor;
 use Prototype\Compiler\Internal\Ir;
 use Prototype\Compiler\Internal\Ir\Field;
 use Prototype\Compiler\Internal\Naming;
@@ -48,9 +52,116 @@ final class DefinitionGenerator
     /**
      * @return non-empty-string
      */
-    public function generateServiceClient(Ir\Service $service): string
+    public function generateClient(Ir\Service $service): string
     {
-        return Naming\SnakeCase::toCamelCase($service->name).'Client';
+        $client = $this
+            ->namespace
+            ->addUse('Amp\Cancellation')
+            ->addUse('Amp\NullCancellation')
+            ->addUse('Prototype\Grpc\Client\GrpcRequest')
+            ->addUse('Prototype\Grpc\Client\Client')
+            ->addUse('Prototype\Grpc\Client\RequestException')
+            ->addUse('Prototype\Grpc\StatusCode')
+            ->addClass($clientName = \sprintf('%sClient', Naming\ClassLike::name($service->name)))
+            ->setFinal()
+            ->addComment('@api')
+        ;
+
+        $constructor = $client
+            ->addMethod('__construct')
+        ;
+
+        $constructor->setParameters([
+            (new PromotedParameter('client'))
+                ->setType('Client')
+                ->setPrivate()
+                ->setReadOnly(),
+        ]);
+
+        $rpcTypeVisitor = new CombinedTypeVisitor(
+            new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+            new Type\ApplyTypeVisitor(new ResolveRpcTypeVisitor($this->proto)),
+            new Type\ApplyTypeVisitor(
+                new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+            ),
+        );
+
+        foreach ($service->rpc as $rpc) {
+            $method = $client
+                ->addMethod(Naming\SnakeCase::toCamelCase($rpc->name))
+            ;
+
+            $phpParameterType = Ir\TypeIdent::message($rpc->inType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpParameterType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->addComment('@throws RequestException')
+                ->setParameters([
+                    (new Parameter('request'))
+                        ->setType($phpParameterType->nativeType),
+                    (new Parameter('cancellation'))
+                        ->setType('Cancellation')
+                        ->setDefaultValue(Literal::new('NullCancellation')),
+                ])
+            ;
+
+            $phpReturnType = Ir\TypeIdent::message($rpc->outType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpReturnType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->setReturnType($phpReturnType->nativeType)
+            ;
+
+            $method
+                ->addBody(
+                    <<<'PHP'
+$response = $this->client->invoke(
+    new GrpcRequest(?, ?, ?),
+    ?,
+);
+
+if (StatusCode::OK !== $response->statusCode) {
+    throw new RequestException($response->statusCode, $response->grpcMessage);
+}
+
+return $response->message;
+PHP,
+                    [
+                        \sprintf('/%s.%s/%s', $service->packageName, $service->name, $rpc->name),
+                        new Literal('$request'),
+                        new Literal(\sprintf('%s::class', Naming\ClassLike::name($phpReturnType->nativeType))),
+                        new Literal('$cancellation'),
+                    ],
+                )
+            ;
+        }
+
+        return $clientName;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function generateServer(Ir\Service $service): string
+    {
+        $server = $this
+            ->namespace
+            ->addClass($serverName = \sprintf('%sServer', Naming\ClassLike::name($service->name)))
+            ->setFinal()
+            ->addComment('@api')
+        ;
+
+        foreach ($service->rpc as $rpc) {
+            $server->addMethod(Naming\SnakeCase::toCamelCase($rpc->name));
+        }
+
+        return $serverName;
     }
 
     /**

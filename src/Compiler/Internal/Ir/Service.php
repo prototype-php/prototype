@@ -36,10 +36,12 @@ use Prototype\Compiler\Internal\Code\DefinitionGenerator;
 final class Service implements Definition
 {
     /**
+     * @param non-empty-string $packageName
      * @param non-empty-string $name
      * @param Rpc[] $rpc
      */
     public function __construct(
+        public readonly string $packageName,
         public readonly string $name,
         public readonly array $rpc = [],
     ) {}
@@ -47,8 +49,8 @@ final class Service implements Definition
     /**
      * {@inheritdoc}
      */
-    public function generate(DefinitionGenerator $generator): string
+    public function generates(): iterable
     {
-        return $generator->generateServiceClient($this);
+        yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
     }
 }

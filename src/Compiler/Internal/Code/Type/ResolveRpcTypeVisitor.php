@@ -25,17 +25,41 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Compiler\Internal\Code\Type;
+
+use Prototype\Compiler\Exception\TypeNotFound;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\Proto;
+use Prototype\Compiler\Internal\Ir\ProtoType;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Compiler
+ * @template-extends DefaultTypeVisitor<PhpType>
  */
-final class ClientOptions
+final class ResolveRpcTypeVisitor extends DefaultTypeVisitor
 {
-    /**
-     * @param non-empty-string $uri
-     */
     public function __construct(
-        public readonly string $uri,
+        private readonly Proto $proto,
     ) {}
+
+    /**
+     * {@inheritdoc}
+     */
+    public function message(ProtoType $type, string $message): PhpType
+    {
+        if (str_starts_with($message, $this->proto->packageName)) {
+            /** @var non-empty-string $message */
+            $message = substr($message, \strlen($this->proto->packageName) + 1);
+        }
+
+        $definition = $this->proto->definitions[$message] ?? null;
+
+        if ($definition instanceof Message) {
+            return PhpType::class($definition->typeStorage()->typeName());
+        }
+
+        throw new TypeNotFound($message);
+    }
 }

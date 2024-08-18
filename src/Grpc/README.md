@@ -1,4 +1,4 @@
-# Prototype GRPC
+# Prototype Grpc
 
 Readonly Prototype monorepo subsplit.
 Open pull requests and issues only in the [main repository](https://github.com/prototype-php/prototype).

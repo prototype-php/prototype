@@ -25,21 +25,20 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Client;
+namespace Prototype\Grpc\Client;
+
+use Prototype\Grpc\StatusCode;
 
 /**
  * @api
- * @template-covariant Response of object
  */
-interface GRPCRequest
+final class RequestException extends \Exception
 {
-    /**
-     * @return non-empty-string
-     */
-    public function rpc(): string;
-
-    /**
-     * @return class-string<Response>
-     */
-    public function responseType(): string;
+    public function __construct(
+        public readonly StatusCode $statusCode,
+        public readonly ?string $grpcMessage = null,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct(\sprintf('Request terminated with error: %s(%d).', $this->grpcMessage ?: $this->statusCode->name, $this->statusCode->value), previous: $previous);
+    }
 }

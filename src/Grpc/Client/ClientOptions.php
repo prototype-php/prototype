@@ -25,57 +25,17 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
-
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
-use Prototype\Compiler\Internal\Ir\Trace\TypeStorage;
+namespace Prototype\Grpc\Client;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @template-implements \IteratorAggregate<array-key, Field>
+ * @api
  */
-final class Message implements
-    Definition,
-    \IteratorAggregate,
-    \Countable
+final class ClientOptions
 {
     /**
-     * @param non-empty-string $name
-     * @param Field[] $fields
+     * @param non-empty-string $uri
      */
     public function __construct(
-        public readonly string $name,
-        private readonly TypeStorage $types,
-        public readonly array $fields = [],
+        public readonly string $uri,
     ) {}
-
-    public function typeStorage(): TypeStorage
-    {
-        return clone $this->types;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function generates(): iterable
-    {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClass($this);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getIterator(): \Traversable
-    {
-        yield from $this->fields;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function count(): int
-    {
-        return \count($this->fields);
-    }
 }

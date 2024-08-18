@@ -25,9 +25,11 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Compression;
 
 /**
  * @api
  */
-interface CompressionException extends \Throwable {}
+final class CannotDecompressData extends \Exception implements CompressionException
+{
+}

@@ -9,7 +9,7 @@ parameters:
         - src/PHPStan
         - src/Serializer
         - src/Byte
-        - src/GRPC
+        - src/Grpc
         - src/Compiler/Internal/Code
         - src/Compiler/Internal/Naming
         - src/Compiler/Internal/Ir/Hook

@@ -25,29 +25,9 @@
 
 declare(strict_types=1);
 
-namespace Prototype\GRPC\Compression;
+namespace Prototype\Grpc\Compression;
 
 /**
  * @api
  */
-interface Compressor
-{
-    /**
-     * @param non-empty-string $bytes
-     * @return non-empty-string
-     * @throws CompressionException
-     */
-    public function compress(string $bytes): string;
-
-    /**
-     * @param non-empty-string $compressed
-     * @return non-empty-string
-     * @throws CompressionException
-     */
-    public function decompress(string $compressed): string;
-
-    /**
-     * @return non-empty-string
-     */
-    public function name(): string;
-}
+interface CompressionException extends \Throwable {}
