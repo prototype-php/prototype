@@ -100,7 +100,7 @@ final class DefinitionGenerator
             $method
                 ->addComment('@throws RequestException')
                 ->setParameters([
-                    (new Parameter($parameterName = Naming\SnakeCase::toCamelCase($rpc->inType->name)))
+                    (new Parameter('request'))
                         ->setType($phpParameterType->nativeType),
                     (new Parameter('cancellation'))
                         ->setType('Cancellation')
@@ -134,7 +134,7 @@ return $response->message;
 PHP,
                     [
                         \sprintf('/%s.%s/%s', $service->packageName, $service->name, $rpc->name),
-                        new Literal(\sprintf('$%s', $parameterName)),
+                        new Literal('$request'),
                         new Literal(\sprintf('%s::class', Naming\ClassLike::name($phpReturnType->nativeType))),
                         new Literal('$cancellation'),
                     ],

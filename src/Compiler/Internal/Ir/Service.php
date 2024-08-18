@@ -52,6 +52,5 @@ final class Service implements Definition
     public function generates(): iterable
     {
         yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServer($this);
     }
 }

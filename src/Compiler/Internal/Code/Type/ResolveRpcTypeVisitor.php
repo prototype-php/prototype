@@ -49,6 +49,11 @@ final class ResolveRpcTypeVisitor extends DefaultTypeVisitor
      */
     public function message(ProtoType $type, string $message): PhpType
     {
+        if (str_starts_with($message, $this->proto->packageName)) {
+            /** @var non-empty-string $message */
+            $message = substr($message, \strlen($this->proto->packageName) + 1);
+        }
+
         $definition = $this->proto->definitions[$message] ?? null;
 
         if ($definition instanceof Message) {
