@@ -148,17 +148,126 @@ PHP,
     /**
      * @return non-empty-string
      */
-    public function generateServer(Ir\Service $service): string
+    public function generateServerInterface(Ir\Service $service): string
     {
-        $server = $this
+        $interface = $this
             ->namespace
-            ->addClass($serverName = \sprintf('%sServer', Naming\ClassLike::name($service->name)))
-            ->setFinal()
+            ->addUse('Amp\Cancellation')
+            ->addUse('Amp\NullCancellation')
+            ->addInterface($serverName = \sprintf('%sServer', Naming\ClassLike::name($service->name)))
             ->addComment('@api')
         ;
 
+        $rpcTypeVisitor = new CombinedTypeVisitor(
+            new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+            new Type\ApplyTypeVisitor(new ResolveRpcTypeVisitor($this->proto)),
+            new Type\ApplyTypeVisitor(
+                new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+            ),
+        );
+
         foreach ($service->rpc as $rpc) {
-            $server->addMethod(Naming\SnakeCase::toCamelCase($rpc->name));
+            $method = $interface
+                ->addMethod(Naming\SnakeCase::toCamelCase($rpc->name))
+                ->setPublic()
+            ;
+
+            $phpParameterType = Ir\TypeIdent::message($rpc->inType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpParameterType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->setParameters([
+                    (new Parameter('request'))
+                        ->setType($phpParameterType->nativeType),
+                    (new Parameter('cancellation'))
+                        ->setType('Cancellation')
+                        ->setDefaultValue(Literal::new('NullCancellation')),
+                ])
+            ;
+
+            $phpReturnType = Ir\TypeIdent::message($rpc->outType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpReturnType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->setReturnType($phpReturnType->nativeType)
+            ;
+        }
+
+        return $serverName;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function generateServerStub(Ir\Service $service): string
+    {
+        $server = $this
+            ->namespace
+            ->addUse('Amp\Cancellation')
+            ->addUse('Amp\NullCancellation')
+            ->addUse('Prototype\Grpc\Server\MethodNotImplemented')
+            ->addClass($serverName = \sprintf('%sDefaultServer', Naming\ClassLike::name($service->name)))
+            ->addImplement(\sprintf('%sServer', Naming\ClassLike::name($service->name)))
+            ->setAbstract()
+            ->addComment('@api')
+        ;
+
+        $rpcTypeVisitor = new CombinedTypeVisitor(
+            new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+            new Type\ApplyTypeVisitor(new ResolveRpcTypeVisitor($this->proto)),
+            new Type\ApplyTypeVisitor(
+                new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+            ),
+        );
+
+        foreach ($service->rpc as $rpc) {
+            $method = $server
+                ->addMethod(Naming\SnakeCase::toCamelCase($rpc->name))
+                ->setPublic()
+            ;
+
+            $phpParameterType = Ir\TypeIdent::message($rpc->inType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpParameterType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->setParameters([
+                    (new Parameter('request'))
+                        ->setType($phpParameterType->nativeType),
+                    (new Parameter('cancellation'))
+                        ->setType('Cancellation')
+                        ->setDefaultValue(Literal::new('NullCancellation')),
+                ])
+            ;
+
+            $phpReturnType = Ir\TypeIdent::message($rpc->outType->name)->accept($rpcTypeVisitor);
+
+            foreach ($phpReturnType->uses as $use) {
+                $this->namespace->addUse($use);
+            }
+
+            $method
+                ->setReturnType($phpReturnType->nativeType)
+            ;
+
+            $method
+                ->addBody(
+                    <<<'PHP'
+throw new MethodNotImplemented(?);
+PHP,
+                    [
+                        \sprintf('/%s.%s/%s', $service->packageName, $service->name, $rpc->name),
+                    ],
+                )
+            ;
         }
 
         return $serverName;
