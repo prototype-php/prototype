@@ -277,9 +277,9 @@ final class TaskControllerServerServiceRegistrar implements ServiceRegistrar
     ) {
     }
 
-    public function register(ServiceRegistry $registry): void
+    public function register(ServiceRegistry $registry): ServiceRegistry
     {
-        $registry->addService(
+        return $registry->addService(
             new ServiceDescriptor(
                 'scheduler.api.v1.TaskController',
                 [
