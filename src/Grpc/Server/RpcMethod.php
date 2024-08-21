@@ -25,35 +25,37 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Grpc\Server;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Amp\Cancellation;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Service implements Definition
+final class RpcMethod
 {
     /**
-     * @param non-empty-string $packageName
+     * @template TReq of object
+     * @template TResp of object
      * @param non-empty-string $name
-     * @param Rpc[] $rpc
+     * @param \Closure(callable(class-string<TReq>): TReq, Cancellation): TResp $handler
      */
     public function __construct(
-        public readonly string $packageName,
         public readonly string $name,
-        public readonly array $rpc = [],
+        public readonly \Closure $handler,
     ) {}
 
     /**
-     * {@inheritdoc}
+     * @template TReq of object
+     * @template TResp of object
+     * @param \Closure(TReq, Cancellation): TResp $handler
+     * @param class-string<TReq> $requestType
+     * @psalm-return \Closure(callable(class-string<TReq>): TReq, Cancellation)
      */
-    public function generates(): iterable
+    public static function createHandler(\Closure $handler, string $requestType): \Closure
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerInterface($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerStub($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServiceRegistrar($this);
+        return static function (callable $deserialize, Cancellation $cancellation) use ($handler, $requestType): object {
+            return $handler($deserialize($requestType), $cancellation);
+        };
     }
 }

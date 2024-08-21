@@ -25,35 +25,29 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Grpc\Server\Internal\Cancellation;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Amp\Cancellation;
+use Amp\NullCancellation;
+use Amp\TimeoutCancellation;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Service implements Definition
+final class CancellationFactory
 {
     /**
-     * @param non-empty-string $packageName
-     * @param non-empty-string $name
-     * @param Rpc[] $rpc
+     * @param ?float $requestTimeout
      */
     public function __construct(
-        public readonly string $packageName,
-        public readonly string $name,
-        public readonly array $rpc = [],
+        private readonly ?float $requestTimeout = null,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
-    public function generates(): iterable
+    public function createCancellation(): Cancellation
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerInterface($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerStub($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServiceRegistrar($this);
+        return null !== $this->requestTimeout
+            ? new TimeoutCancellation($this->requestTimeout)
+            : new NullCancellation()
+            ;
     }
 }

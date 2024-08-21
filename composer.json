@@ -13,6 +13,7 @@
         "php": "^8.1",
         "ext-bcmath": "*",
         "amphp/http-client": "^5.1",
+        "amphp/http-server": "^3.3",
         "antlr/antlr4-php-runtime": "^0.9.1",
         "azjezz/psl": "^2.9",
         "kafkiansky/binary": "^0.4.4",
@@ -69,7 +70,7 @@
             "@composer normalize --diff src/PHPStan/composer.json",
             "@composer normalize --diff src/Serializer/composer.json",
             "@composer normalize --diff src/Byte/composer.json",
-            "@composer normalize --diff src/GRPC/composer.json",
+            "@composer normalize --diff src/Grpc/composer.json",
             "@composer normalize --diff src/WellKnown/composer.json",
             "@composer normalize --diff src/Compiler/composer.json"
         ],

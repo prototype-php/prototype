@@ -25,35 +25,36 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Grpc\Server;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Amp\Http\Server\HttpServer;
+use Amp\Http\Server\RequestHandler;
+use Prototype\Grpc\Server\Internal\Http\GrpcErrorHandler;
 
 /**
- * @internal
- * @psalm-internal Prototype\Compiler
+ * @api
  */
-final class Service implements Definition
+final class Server
 {
     /**
-     * @param non-empty-string $packageName
-     * @param non-empty-string $name
-     * @param Rpc[] $rpc
+     * @internal
+     * @psalm-internal Prototype\Grpc\Server
      */
     public function __construct(
-        public readonly string $packageName,
-        public readonly string $name,
-        public readonly array $rpc = [],
+        private readonly HttpServer $http,
+        private readonly RequestHandler $requestHandler,
     ) {}
 
-    /**
-     * {@inheritdoc}
-     */
-    public function generates(): iterable
+    public function serve(): void
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerInterface($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerStub($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServiceRegistrar($this);
+        $this->http->start(
+            $this->requestHandler,
+            new GrpcErrorHandler(),
+        );
+    }
+
+    public function shutdown(): void
+    {
+        $this->http->stop();
     }
 }

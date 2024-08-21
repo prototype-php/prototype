@@ -212,7 +212,7 @@ PHP,
             ->addUse('Amp\Cancellation')
             ->addUse('Amp\NullCancellation')
             ->addUse('Prototype\Grpc\Server\MethodNotImplemented')
-            ->addClass($serverName = \sprintf('%sDefaultServer', Naming\ClassLike::name($service->name)))
+            ->addClass($serverName = \sprintf('Default%sServer', Naming\ClassLike::name($service->name)))
             ->addImplement(\sprintf('%sServer', Naming\ClassLike::name($service->name)))
             ->setAbstract()
             ->addComment('@api')
@@ -271,6 +271,100 @@ PHP,
         }
 
         return $serverName;
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    public function generateServiceRegistrar(Ir\Service $service): string
+    {
+        $registry = $this
+            ->namespace
+            ->addUse('Prototype\Grpc\Server\ServiceRegistrar')
+            ->addUse('Prototype\Grpc\Server\ServiceRegistry')
+            ->addUse('Prototype\Grpc\Server\ServiceDescriptor')
+            ->addUse('Prototype\Grpc\Server\RpcMethod')
+            ->addClass($registryName = \sprintf('%sServerServiceRegistrar', Naming\ClassLike::name($service->name)))
+            ->addImplement('ServiceRegistrar')
+            ->setFinal()
+            ->addComment('@api')
+        ;
+
+        $registry
+            ->addMethod('__construct')
+            ->setParameters([
+                (new PromotedParameter('server'))
+                    ->setReadOnly()
+                    ->setPrivate()
+                    ->setType(\sprintf('%sServer', Naming\ClassLike::name($service->name))),
+            ])
+        ;
+
+        $rpcTypeVisitor = new CombinedTypeVisitor(
+            new Type\ApplyTypeVisitor(new Type\WellKnownTypeVisitor()),
+            new Type\ApplyTypeVisitor(new ResolveRpcTypeVisitor($this->proto)),
+            new Type\ApplyTypeVisitor(
+                new Type\ResolveImportReferenceTypeVisitor($this->proto, $this->imports),
+            ),
+        );
+
+        $registry
+            ->addMethod('register')
+            ->setReturnType('ServiceRegistry')
+            ->setParameters([
+                (new Parameter('registry'))
+                    ->setType('ServiceRegistry'),
+            ])
+            ->setComment('{@inheritdoc}')
+            ->setBody(
+                \sprintf(
+                    <<<'PHP'
+return $registry->addService(
+    new ServiceDescriptor(
+        ?,
+        [
+            %s,
+        ],
+    ),
+);
+PHP,
+                    implode(",\n\t\t\t", array_fill(0, \count($service->rpc), '?')),
+                ),
+                [
+                    \sprintf('%s.%s', $service->packageName, $service->name),
+                    ...array_map(
+                        fn (Ir\Rpc $rpc): Literal => new Literal(
+                            <<<'PHP'
+new RpcMethod(?, ?)
+PHP,
+                            [
+                                $rpc->name,
+                                new Literal(
+                                    <<<'PHP'
+RpcMethod::createHandler($this->server->?(...), ?::class)
+PHP,
+                                    [
+                                        Naming\SnakeCase::toCamelCase($rpc->name),
+                                        (function () use ($rpc, $rpcTypeVisitor): Literal {
+                                            $type = Ir\TypeIdent::message($rpc->inType->name)->accept($rpcTypeVisitor);
+
+                                            foreach ($type->uses as $use) {
+                                                $this->namespace->addUse($use);
+                                            }
+
+                                            return new Literal($type->nativeType);
+                                        })(),
+                                    ],
+                                ),
+                            ],
+                        ),
+                        $service->rpc,
+                    ),
+                ],
+            )
+        ;
+
+        return $registryName;
     }
 
     /**
