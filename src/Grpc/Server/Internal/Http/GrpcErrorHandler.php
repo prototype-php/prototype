@@ -25,35 +25,37 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Grpc\Server\Internal\Http;
 
-use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Amp\DeferredFuture;
+use Amp\Http\Server\ErrorHandler;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
+use Amp\Http\Server\Trailers;
+use Prototype\Grpc\StatusCode;
 
 /**
  * @internal
- * @psalm-internal Prototype\Compiler
+ * @psalm-internal Prototype\Grpc\Server
  */
-final class Service implements Definition
+final class GrpcErrorHandler implements ErrorHandler
 {
-    /**
-     * @param non-empty-string $packageName
-     * @param non-empty-string $name
-     * @param Rpc[] $rpc
-     */
-    public function __construct(
-        public readonly string $packageName,
-        public readonly string $name,
-        public readonly array $rpc = [],
-    ) {}
-
     /**
      * {@inheritdoc}
      */
-    public function generates(): iterable
+    public function handleError(int $status, ?string $reason = null, ?Request $request = null): Response
     {
-        yield fn (DefinitionGenerator $generator): string => $generator->generateClient($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerInterface($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServerStub($this);
-        yield fn (DefinitionGenerator $generator): string => $generator->generateServiceRegistrar($this);
+        $response = new Response($status, ['Content-Type' => 'application/grpc+proto']);
+
+        /** @psalm-var DeferredFuture<array<non-empty-string, string|array<string>>> $deferred */
+        $deferred = new DeferredFuture();
+        $deferred->complete([
+            'grpc-status' => (string)StatusCode::INTERNAL->value,
+            'grpc-message' => $reason ?: StatusCode::INTERNAL->name,
+        ]);
+
+        $response->setTrailers(new Trailers($deferred->getFuture()));
+
+        return $response;
     }
 }
