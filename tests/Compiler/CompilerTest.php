@@ -1290,9 +1290,12 @@ final class AdminControllerServerServiceRegistrar implements ServiceRegistrar
     ) {
     }
 
-    public function register(ServiceRegistry $registry): void
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ServiceRegistry $registry): ServiceRegistry
     {
-        $registry->addService(
+        return $registry->addService(
             new ServiceDescriptor(
                 'test.api.v1.AdminController',
                 [
@@ -1479,9 +1482,12 @@ final class AdminControllerServerServiceRegistrar implements ServiceRegistrar
     ) {
     }
 
-    public function register(ServiceRegistry $registry): void
+    /**
+     * {@inheritdoc}
+     */
+    public function register(ServiceRegistry $registry): ServiceRegistry
     {
-        $registry->addService(
+        return $registry->addService(
             new ServiceDescriptor(
                 'test.api.v1.AdminController',
                 [

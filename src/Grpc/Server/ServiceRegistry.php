@@ -32,5 +32,5 @@ namespace Prototype\Grpc\Server;
  */
 interface ServiceRegistry
 {
-    public function addService(ServiceDescriptor $descriptor): void;
+    public function addService(ServiceDescriptor $descriptor): static;
 }

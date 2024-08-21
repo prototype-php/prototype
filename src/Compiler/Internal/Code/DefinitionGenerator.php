@@ -310,15 +310,16 @@ PHP,
 
         $registry
             ->addMethod('register')
-            ->setReturnType('void')
+            ->setReturnType('ServiceRegistry')
             ->setParameters([
                 (new Parameter('registry'))
                     ->setType('ServiceRegistry'),
             ])
+            ->setComment('{@inheritdoc}')
             ->setBody(
                 \sprintf(
                     <<<'PHP'
-$registry->addService(
+return $registry->addService(
     new ServiceDescriptor(
         ?,
         [

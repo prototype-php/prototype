@@ -25,33 +25,29 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Http;
+namespace Prototype\Grpc\Server\Internal\Cancellation;
 
-use Amp\DeferredFuture;
-use Amp\Http\HttpStatus;
-use Amp\Http\Server\Request;
-use Amp\Http\Server\RequestHandler;
-use Amp\Http\Server\Response;
-use Amp\Http\Server\Trailers;
-use Prototype\Grpc\StatusCode;
+use Amp\Cancellation;
+use Amp\NullCancellation;
+use Amp\TimeoutCancellation;
 
 /**
- * @internal
- * @psalm-internal Prototype\Grpc\Server
+ * @api
  */
-final class UnimplementedRequestHandler implements RequestHandler
+final class CancellationFactory
 {
-    public function handleRequest(Request $request): Response
+    /**
+     * @param ?float $requestTimeout
+     */
+    public function __construct(
+        private readonly ?float $requestTimeout = null,
+    ) {}
+
+    public function createCancellation(): Cancellation
     {
-        $response = new Response(HttpStatus::OK);
-
-        /** @psalm-var DeferredFuture<array<non-empty-string, string|array<string>>> $deferred */
-        $deferred = new DeferredFuture();
-        $deferred->complete(StatusCode::UNIMPLEMENTED->asHeaders());
-
-        $response->setHeader('Content-Type', 'application/grpc+proto');
-        $response->setTrailers(new Trailers($deferred->getFuture()));
-
-        return $response;
+        return null !== $this->requestTimeout
+            ? new TimeoutCancellation($this->requestTimeout)
+            : new NullCancellation()
+            ;
     }
 }

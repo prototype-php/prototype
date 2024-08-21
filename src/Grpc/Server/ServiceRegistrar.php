@@ -32,5 +32,10 @@ namespace Prototype\Grpc\Server;
  */
 interface ServiceRegistrar
 {
-    public function register(ServiceRegistry $registry): void;
+    /**
+     * @template T of ServiceRegistry
+     * @param T $registry
+     * @return T
+     */
+    public function register(ServiceRegistry $registry): ServiceRegistry;
 }

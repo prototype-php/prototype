@@ -27,12 +27,14 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc\Server;
 
-use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\SocketHttpServer;
 use Amp\Socket\BindContext;
 use Amp\Socket\SocketAddress;
+use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Prototype\Grpc\Server\Internal\Handler\GrpcRequestHandler;
 use Prototype\Grpc\Server\Internal\Http\OnlyHttp2DriverFactory;
-use Prototype\Grpc\Server\Internal\Http\UnimplementedRequestHandler;
+use Prototype\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
@@ -57,9 +59,18 @@ final class ServerBuilder implements ServiceRegistry
     /** @var positive-int */
     private int $connectionLimitPerIp = 10;
 
+    /** @var ?float */
+    private ?float $requestTimeout = null;
+
     private ?ProxyOptions $proxy = null;
 
-    private ?RequestHandler $requestHandler = null;
+    private ?Serializer $serializer = null;
+
+    /** @var array<non-empty-string, array<non-empty-string, RpcMethod>> */
+    private array $services = [];
+
+    /** @var list<Compressor> */
+    private array $compressors = [];
 
     public function withLogger(LoggerInterface $logger): self
     {
@@ -75,7 +86,7 @@ final class ServerBuilder implements ServiceRegistry
     public function withAddress(SocketAddress|string $address): self
     {
         $builder = clone $this;
-        $builder->addresses = array_merge($builder->addresses, [$address]);
+        $builder->addresses[] = $address;
 
         return $builder;
     }
@@ -137,30 +148,56 @@ final class ServerBuilder implements ServiceRegistry
         return $builder;
     }
 
-    public function withRequestHandler(RequestHandler $requestHandler): self
+    public function withSerializer(Serializer $serializer): self
     {
         $builder = clone $this;
-        $builder->requestHandler = $requestHandler;
+        $builder->serializer = $serializer;
 
         return $builder;
     }
 
-    public function addService(ServiceDescriptor $descriptor): void
+    public function withCompressor(Compressor $compressor): self
     {
-        //
+        $builder = clone $this;
+        $builder->compressors[] = $compressor;
+
+        return $builder;
     }
 
-    public function registerFromService(ServiceRegistrar $registrar): void
+    public function addService(ServiceDescriptor $descriptor): static
     {
-        $registrar->register($this);
+        if (isset($this->services[$descriptor->name])) {
+            throw new \LogicException(\sprintf('Service "%s" is already registered.', $descriptor->name));
+        }
+
+        $builder = clone $this;
+        $builder->services[$descriptor->name] = array_merge(
+            ...array_map(
+                static fn (RpcMethod $method): array => [$method->name => $method],
+                $descriptor->unaryRpcMethods,
+            ),
+        );
+
+        return $builder;
+    }
+
+    public function registerFromService(ServiceRegistrar $registrar): self
+    {
+        return $registrar->register($this);
     }
 
     /**
      * @throws \Amp\Socket\SocketException
      */
-    public static function buildDefault(): Server
+    public static function buildDefault(ServiceRegistrar ...$registrars): Server
     {
-        return (new self())->build();
+        $builder = new self();
+
+        foreach ($registrars as $registrar) {
+            $builder = $registrar->register($builder);
+        }
+
+        return $builder->build();
     }
 
     /**
@@ -193,7 +230,17 @@ final class ServerBuilder implements ServiceRegistry
 
         return new Server(
             $socketServer,
-            $this->requestHandler ?: new UnimplementedRequestHandler(),
+            new GrpcRequestHandler(
+                $this->serializer ?: new Serializer(),
+                new CancellationFactory($this->requestTimeout),
+                $this->services,
+                array_merge(
+                    ...array_map(
+                        static fn (Compressor $compressor): array => [$compressor->name() => $compressor],
+                        $this->compressors,
+                    ),
+                ),
+            ),
         );
     }
 }

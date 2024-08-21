@@ -45,7 +45,7 @@ final class GrpcErrorHandler implements ErrorHandler
      */
     public function handleError(int $status, ?string $reason = null, ?Request $request = null): Response
     {
-        $response = new Response($status, ['Content-Type' => 'application/grpc+proto']);
+        $response = new Response($status, ['Content-Type' => 'application/grpc']);
 
         /** @psalm-var DeferredFuture<array<non-empty-string, string|array<string>>> $deferred */
         $deferred = new DeferredFuture();
