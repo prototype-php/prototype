@@ -18,7 +18,7 @@ jobs:
           php-version: ${{ matrix.php }}
           ini-file: development
           tools: composer:v2
-          coverage: none
+          coverage: ${{ matrix.php == '8.1' && matrix.dependency-versions == 'lowest' && 'pcov' || '' }}
       - uses: ramsey/composer-install@v3
         with:
           composer-options: --optimize-autoloader
