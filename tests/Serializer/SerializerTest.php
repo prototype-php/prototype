@@ -34,8 +34,13 @@ use PHPUnit\Framework\TestCase;
 use Prototype\Byte\Buffer;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
+use Prototype\Serializer\Exception\PropertyNumberIsInvalid;
+use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Exception\TypeIsUnknown;
+use Prototype\Serializer\Exception\TypeWasNotExpected;
+use Prototype\Serializer\Exception\ValueIsNotSerializable;
+use Prototype\Serializer\Field;
 use Prototype\Serializer\Internal\Label\LabelDefault;
 use Prototype\Serializer\Internal\Label\LabelIsEmpty;
 use Prototype\Serializer\Internal\Label\LabelPacked;
@@ -137,6 +142,15 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 #[CoversClass(LabelPacked::class)]
 #[CoversClass(LabelSerializeTag::class)]
 #[CoversClass(Labels::class)]
+#[CoversClass(Field::class)]
+#[CoversClass(EnumDoesNotContainVariant::class)]
+#[CoversClass(EnumDoesNotContainZeroVariant::class)]
+#[CoversClass(PropertyNumberIsInvalid::class)]
+#[CoversClass(PropertyValueIsInvalid::class)]
+#[CoversClass(TypeIsNotSupported::class)]
+#[CoversClass(TypeIsUnknown::class)]
+#[CoversClass(TypeWasNotExpected::class)]
+#[CoversClass(ValueIsNotSerializable::class)]
 #[CoversFunction('\Prototype\Serializer\Internal\Reflection\isClassOf')]
 #[CoversFunction('\Prototype\Serializer\Internal\Reflection\instanceOfDateTime')]
 #[CoversFunction('\Prototype\Serializer\Internal\Wire\discard')]
