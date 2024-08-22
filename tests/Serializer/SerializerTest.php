@@ -68,12 +68,14 @@ use Prototype\Serializer\Internal\Type\DurationType;
 use Prototype\Serializer\Internal\Type\Fixed32Type;
 use Prototype\Serializer\Internal\Type\Fixed64Type;
 use Prototype\Serializer\Internal\Type\FloatType;
+use Prototype\Serializer\Internal\Type\ProtobufType;
 use Prototype\Serializer\Internal\Type\SFixed32Type;
 use Prototype\Serializer\Internal\Type\SFixed64Type;
 use Prototype\Serializer\Internal\Type\SInt32Type;
 use Prototype\Serializer\Internal\Type\SInt64Type;
 use Prototype\Serializer\Internal\Type\StringType;
 use Prototype\Serializer\Internal\Type\TimestampType;
+use Prototype\Serializer\Internal\Type\ValueType;
 use Prototype\Serializer\Internal\Type\VarintType;
 use Prototype\Serializer\Internal\TypeConverter\ClassResolver;
 use Prototype\Serializer\Internal\TypeConverter\IsBool;
@@ -135,6 +137,7 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 #[CoversClass(SInt64Type::class)]
 #[CoversClass(StringType::class)]
 #[CoversClass(VarintType::class)]
+#[CoversClass(ValueType::class)]
 #[CoversClass(DurationType::class)]
 #[CoversClass(TimestampType::class)]
 #[CoversClass(LabelDefault::class)]
@@ -151,6 +154,8 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 #[CoversClass(TypeIsUnknown::class)]
 #[CoversClass(TypeWasNotExpected::class)]
 #[CoversClass(ValueIsNotSerializable::class)]
+#[CoversClass(ProtobufType::class)]
+#[CoversClass(Buffer::class)]
 #[CoversFunction('\Prototype\Serializer\Internal\Reflection\isClassOf')]
 #[CoversFunction('\Prototype\Serializer\Internal\Reflection\instanceOfDateTime')]
 #[CoversFunction('\Prototype\Serializer\Internal\Wire\discard')]

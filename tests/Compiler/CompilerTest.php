@@ -31,17 +31,68 @@ use Antlr\Antlr4\Runtime\InputStream;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Prototype\Compiler\CompileOptions;
 use Prototype\Compiler\Compiler;
+use Prototype\Compiler\CompilerVersion;
 use Prototype\Compiler\Import\CombineImportResolver;
 use Prototype\Compiler\Import\ConstantImportResolver;
+use Prototype\Compiler\Import\FileImportResolver;
 use Prototype\Compiler\Import\ImportFile;
 use Prototype\Compiler\Import\VirtualImportResolver;
+use Prototype\Compiler\Internal\Code\DefinitionGenerator;
+use Prototype\Compiler\Internal\Code\Generator;
+use Prototype\Compiler\Internal\Code\PhpFileFactory;
+use Prototype\Compiler\Internal\Code\PhpType;
+use Prototype\Compiler\Internal\Code\Type\ApplyTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\CombinedTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\DefaultTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\ResolveImportReferenceTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\ResolveLocalReferenceTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\ResolveRpcTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\ScalarTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\StringifyTypeVisitor;
+use Prototype\Compiler\Internal\Code\Type\WellKnownTypeVisitor;
+use Prototype\Compiler\Internal\Code\WellKnown;
+use Prototype\Compiler\Internal\Ir\Hook\Hooks;
+use Prototype\Compiler\Internal\Ir\ProtoResolver;
+use Prototype\Compiler\Internal\Ir\ProtoVisitor;
 use Prototype\Compiler\Internal\Ir\Validate\ConstraintViolated;
+use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
+use Prototype\Compiler\Internal\Parser\Protobuf3Lexer;
+use Prototype\Compiler\Internal\Parser\Protobuf3Parser;
 use Prototype\Compiler\Output\PhpFile;
+use Prototype\Compiler\Output\StdOutWriter;
 use Prototype\Compiler\Output\Writer;
 use Prototype\Compiler\ProtoFile;
 
 #[CoversClass(Compiler::class)]
+#[CoversClass(CompileOptions::class)]
+#[CoversClass(CompilerVersion::class)]
+#[CoversClass(StdOutWriter::class)]
+#[CoversClass(Protobuf3BaseVisitor::class)]
+#[CoversClass(Protobuf3Parser::class)]
+#[CoversClass(Protobuf3Lexer::class)]
+#[CoversClass(DefinitionGenerator::class)]
+#[CoversClass(Generator::class)]
+#[CoversClass(PhpFileFactory::class)]
+#[CoversClass(PhpType::class)]
+#[CoversClass(WellKnown::class)]
+#[CoversClass(ApplyTypeVisitor::class)]
+#[CoversClass(CombinedTypeVisitor::class)]
+#[CoversClass(DefaultTypeVisitor::class)]
+#[CoversClass(ResolveImportReferenceTypeVisitor::class)]
+#[CoversClass(ResolveLocalReferenceTypeVisitor::class)]
+#[CoversClass(ResolveRpcTypeVisitor::class)]
+#[CoversClass(ScalarTypeVisitor::class)]
+#[CoversClass(StringifyTypeVisitor::class)]
+#[CoversClass(WellKnownTypeVisitor::class)]
+#[CoversClass(CombineImportResolver::class)]
+#[CoversClass(ConstantImportResolver::class)]
+#[CoversClass(FileImportResolver::class)]
+#[CoversClass(VirtualImportResolver::class)]
+#[CoversClass(ProtoVisitor::class)]
+#[CoversClass(ProtoResolver::class)]
+#[CoversClass(Hooks::class)]
 final class CompilerTest extends TestCase
 {
     /**

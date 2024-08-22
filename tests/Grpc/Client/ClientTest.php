@@ -37,6 +37,10 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Prototype\Grpc\Client\Client;
 use Prototype\Grpc\Client\ClientBuilder;
 use Prototype\Grpc\Client\ClientOptions;
+use Prototype\Grpc\Client\GrpcRequest;
+use Prototype\Grpc\Client\GrpcResponse;
+use Prototype\Grpc\Client\Internal\Wire\RequestFactory;
+use Prototype\Grpc\Client\Internal\Wire\ResponseFactory;
 use Prototype\Grpc\Client\RequestException;
 use Prototype\Grpc\Compression\GZIPCompressor;
 use Prototype\Grpc\StatusCode;
@@ -44,6 +48,12 @@ use Prototype\Serializer\Serializer;
 use Prototype\Tests\Grpc\GrpcTestCase;
 
 #[CoversClass(Client::class)]
+#[CoversClass(ClientBuilder::class)]
+#[CoversClass(GrpcRequest::class)]
+#[CoversClass(GrpcResponse::class)]
+#[CoversClass(ClientOptions::class)]
+#[CoversClass(RequestFactory::class)]
+#[CoversClass(ResponseFactory::class)]
 final class ClientTest extends GrpcTestCase
 {
     private Serializer $serializer;
