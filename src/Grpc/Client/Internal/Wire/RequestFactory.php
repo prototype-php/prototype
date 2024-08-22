@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Internal\Wire;
+namespace Prototype\Grpc\Client\Internal\Wire;
 
 use Amp\Http\Client\BufferedContent;
 use Amp\Http\Client\Request;
@@ -36,7 +36,7 @@ use Prototype\Serializer\Serializer;
 
 /**
  * @internal
- * @psalm-internal Prototype\Grpc
+ * @psalm-internal Prototype\Grpc\Client
  */
 final class RequestFactory
 {

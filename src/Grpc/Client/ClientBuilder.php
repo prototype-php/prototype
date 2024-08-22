@@ -29,10 +29,10 @@ namespace Prototype\Grpc\Client;
 
 use Amp\Http\Client\DelegateHttpClient;
 use Amp\Http\Client\HttpClientBuilder;
+use Prototype\Grpc\Client\Internal\Wire\RequestFactory;
+use Prototype\Grpc\Client\Internal\Wire\ResponseFactory;
 use Prototype\Grpc\Compression\Compressor;
 use Prototype\Grpc\Compression\IdentityCompressor;
-use Prototype\Grpc\Internal\Wire\RequestFactory;
-use Prototype\Grpc\Internal\Wire\ResponseFactory;
 use Prototype\Serializer\Serializer;
 
 /**
