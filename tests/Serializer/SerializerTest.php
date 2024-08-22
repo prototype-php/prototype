@@ -28,13 +28,67 @@ declare(strict_types=1);
 namespace Prototype\Tests\Serializer;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProviderExternal;
 use PHPUnit\Framework\TestCase;
 use Prototype\Byte\Buffer;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
+use Prototype\Serializer\Exception\PropertyNumberIsInvalid;
+use Prototype\Serializer\Exception\PropertyValueIsInvalid;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Exception\TypeIsUnknown;
+use Prototype\Serializer\Exception\TypeWasNotExpected;
+use Prototype\Serializer\Exception\ValueIsNotSerializable;
+use Prototype\Serializer\Field;
+use Prototype\Serializer\Internal\Label\LabelDefault;
+use Prototype\Serializer\Internal\Label\LabelIsEmpty;
+use Prototype\Serializer\Internal\Label\LabelPacked;
+use Prototype\Serializer\Internal\Label\Labels;
+use Prototype\Serializer\Internal\Label\LabelSerializeTag;
+use Prototype\Serializer\Internal\Reflection\ArrayPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ArrayShapePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ConstantEnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateIntervalPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateTimePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\Deserializer;
+use Prototype\Serializer\Internal\Reflection\EnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\HashTablePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ObjectPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertyDeserializeDescriptor;
+use Prototype\Serializer\Internal\Reflection\PropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertySerializeDescriptor;
+use Prototype\Serializer\Internal\Reflection\ProtobufReflector;
+use Prototype\Serializer\Internal\Reflection\ScalarPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\StructPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\UnionPropertyMarshaller;
+use Prototype\Serializer\Internal\Type\BoolType;
+use Prototype\Serializer\Internal\Type\DoubleType;
+use Prototype\Serializer\Internal\Type\DurationType;
+use Prototype\Serializer\Internal\Type\Fixed32Type;
+use Prototype\Serializer\Internal\Type\Fixed64Type;
+use Prototype\Serializer\Internal\Type\FloatType;
+use Prototype\Serializer\Internal\Type\ProtobufType;
+use Prototype\Serializer\Internal\Type\SFixed32Type;
+use Prototype\Serializer\Internal\Type\SFixed64Type;
+use Prototype\Serializer\Internal\Type\SInt32Type;
+use Prototype\Serializer\Internal\Type\SInt64Type;
+use Prototype\Serializer\Internal\Type\StringType;
+use Prototype\Serializer\Internal\Type\TimestampType;
+use Prototype\Serializer\Internal\Type\ValueType;
+use Prototype\Serializer\Internal\Type\VarintType;
+use Prototype\Serializer\Internal\TypeConverter\ClassResolver;
+use Prototype\Serializer\Internal\TypeConverter\IsBool;
+use Prototype\Serializer\Internal\TypeConverter\IsConstantEnum;
+use Prototype\Serializer\Internal\TypeConverter\IsMixed;
+use Prototype\Serializer\Internal\TypeConverter\IsNull;
+use Prototype\Serializer\Internal\TypeConverter\IsString;
+use Prototype\Serializer\Internal\TypeConverter\NativeTypeToPropertyMarshallerConverter;
+use Prototype\Serializer\Internal\TypeConverter\NativeTypeToProtobufTypeConverter;
+use Prototype\Serializer\Internal\TypeConverter\ToFloatValue;
+use Prototype\Serializer\Internal\TypeConverter\ToIntValue;
+use Prototype\Serializer\Internal\Wire\ProtobufMarshaller;
+use Prototype\Serializer\Internal\Wire\ValueContext;
 use Prototype\Serializer\Serializer;
 use Prototype\Tests\Serializer\Fixtures\EmptyMessage;
 use Prototype\Tests\Serializer\Fixtures\InvalidMessage;
@@ -43,6 +97,68 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithLiteralEnum;
 use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 
 #[CoversClass(Serializer::class)]
+#[CoversClass(ProtobufReflector::class)]
+#[CoversClass(ArrayPropertyMarshaller::class)]
+#[CoversClass(ArrayShapePropertyMarshaller::class)]
+#[CoversClass(ConstantEnumPropertyMarshaller::class)]
+#[CoversClass(DateIntervalPropertyMarshaller::class)]
+#[CoversClass(DateTimePropertyMarshaller::class)]
+#[CoversClass(Deserializer::class)]
+#[CoversClass(EnumPropertyMarshaller::class)]
+#[CoversClass(HashTablePropertyMarshaller::class)]
+#[CoversClass(ObjectPropertyMarshaller::class)]
+#[CoversClass(PropertyDeserializeDescriptor::class)]
+#[CoversClass(PropertyMarshaller::class)]
+#[CoversClass(PropertySerializeDescriptor::class)]
+#[CoversClass(ScalarPropertyMarshaller::class)]
+#[CoversClass(\Prototype\Serializer\Internal\Reflection\Serializer::class)]
+#[CoversClass(StructPropertyMarshaller::class)]
+#[CoversClass(UnionPropertyMarshaller::class)]
+#[CoversClass(ClassResolver::class)]
+#[CoversClass(ToFloatValue::class)]
+#[CoversClass(ToIntValue::class)]
+#[CoversClass(IsBool::class)]
+#[CoversClass(IsConstantEnum::class)]
+#[CoversClass(IsMixed::class)]
+#[CoversClass(IsNull::class)]
+#[CoversClass(IsString::class)]
+#[CoversClass(NativeTypeToPropertyMarshallerConverter::class)]
+#[CoversClass(NativeTypeToProtobufTypeConverter::class)]
+#[CoversClass(ProtobufMarshaller::class)]
+#[CoversClass(ValueContext::class)]
+#[CoversClass(BoolType::class)]
+#[CoversClass(FloatType::class)]
+#[CoversClass(DoubleType::class)]
+#[CoversClass(Fixed32Type::class)]
+#[CoversClass(Fixed64Type::class)]
+#[CoversClass(SFixed32Type::class)]
+#[CoversClass(SFixed64Type::class)]
+#[CoversClass(SInt32Type::class)]
+#[CoversClass(SInt64Type::class)]
+#[CoversClass(StringType::class)]
+#[CoversClass(VarintType::class)]
+#[CoversClass(ValueType::class)]
+#[CoversClass(DurationType::class)]
+#[CoversClass(TimestampType::class)]
+#[CoversClass(LabelDefault::class)]
+#[CoversClass(LabelIsEmpty::class)]
+#[CoversClass(LabelPacked::class)]
+#[CoversClass(LabelSerializeTag::class)]
+#[CoversClass(Labels::class)]
+#[CoversClass(Field::class)]
+#[CoversClass(EnumDoesNotContainVariant::class)]
+#[CoversClass(EnumDoesNotContainZeroVariant::class)]
+#[CoversClass(PropertyNumberIsInvalid::class)]
+#[CoversClass(PropertyValueIsInvalid::class)]
+#[CoversClass(TypeIsNotSupported::class)]
+#[CoversClass(TypeIsUnknown::class)]
+#[CoversClass(TypeWasNotExpected::class)]
+#[CoversClass(ValueIsNotSerializable::class)]
+#[CoversClass(ProtobufType::class)]
+#[CoversClass(Buffer::class)]
+#[CoversFunction('\Prototype\Serializer\Internal\Reflection\isClassOf')]
+#[CoversFunction('\Prototype\Serializer\Internal\Reflection\instanceOfDateTime')]
+#[CoversFunction('\Prototype\Serializer\Internal\Wire\discard')]
 final class SerializerTest extends TestCase
 {
     #[DataProviderExternal(FixtureProvider::class, 'messages')]

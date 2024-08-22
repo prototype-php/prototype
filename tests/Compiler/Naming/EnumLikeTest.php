@@ -25,37 +25,39 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Tests\Compiler\Naming;
 
-use Psl\Type;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Prototype\Compiler\Internal\Naming\EnumLike;
 
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @param ?non-empty-string $value
- * @psalm-return ($value is null ? null : non-empty-string)
- */
-function trimString(?string $value): ?string
+#[CoversClass(EnumLike::class)]
+final class EnumLikeTest extends TestCase
 {
-    if (null !== $value) {
-        $value = toNonEmptyString(trim($value, '"\''));
+    /**
+     * @return iterable<array-key, array{non-empty-string, non-empty-string}>
+     */
+    public static function fixtures(): iterable
+    {
+        yield 'abc' => [
+            'abc',
+            'ABC',
+        ];
+
+        yield 'XYZ' => [
+            'XYZ',
+            'XYZ',
+        ];
     }
 
-    return $value;
-}
-
-/**
- * @return non-empty-string
- */
-function toNonEmptyString(?string $value): string
-{
-    return Type\non_empty_string()->coerce($value);
-}
-
-/**
- * @return positive-int
- */
-function toPositiveInt(null|int|string $value): int
-{
-    return Type\positive_int()->coerce($value);
+    /**
+     * @param non-empty-string $case
+     * @param non-empty-string $expected
+     */
+    #[DataProvider('fixtures')]
+    public function testEnumCase(string $case, string $expected): void
+    {
+        self::assertSame($expected, EnumLike::case($case));
+    }
 }

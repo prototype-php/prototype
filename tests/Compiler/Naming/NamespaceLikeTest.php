@@ -25,54 +25,39 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Tests\Compiler;
+namespace Prototype\Tests\Compiler\Naming;
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Prototype\Compiler\Internal\Naming\ClassLike;
+use Prototype\Compiler\Internal\Naming\NamespaceLike;
 
-#[CoversClass(ClassLike::class)]
-final class ClassLikeTest extends TestCase
+#[CoversClass(NamespaceLike::class)]
+final class NamespaceLikeTest extends TestCase
 {
     /**
      * @return iterable<array-key, array{non-empty-string, non-empty-string}>
      */
     public static function fixtures(): iterable
     {
-        yield 'String_' => [
-            'string',
-            'String_',
+        yield 'test.api.v1' => [
+            'test.api.v1',
+            'Test\\Api\\V1',
         ];
 
-        yield 'Class_' => [
-            'class',
-            'Class_',
-        ];
-
-        yield 'CALLABLE_' => [
-            'CALLABLE',
-            'CALLABLE_',
-        ];
-
-        yield 'RequireOnce' => [
-            'require_once',
-            'RequireOnce',
-        ];
-
-        yield '__FUNCTION__' => [
-            '__FUNCTION__',
-            'FUNCTION_',
+        yield 'Test\\\\Api\\\\V1' => [
+            'Test\\\\Api\\\\V1',
+            'Test\\Api\\V1',
         ];
     }
 
     /**
      * @param non-empty-string $name
-     * @param non-empty-string $className
+     * @param non-empty-string $expected
      */
     #[DataProvider('fixtures')]
-    public function testClassName(string $name, string $className): void
+    public function testNamespaceName(string $name, string $expected): void
     {
-        self::assertSame($className, ClassLike::name($name));
+        self::assertSame($expected, NamespaceLike::name($name));
     }
 }

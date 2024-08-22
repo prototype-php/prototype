@@ -25,37 +25,31 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Compiler\Internal\Ir;
+namespace Prototype\Tests\Grpc\Compression;
 
-use Psl\Type;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Compression\GZIPCompressor;
+use Prototype\Grpc\Compression\IdentityCompressor;
 
-/**
- * @internal
- * @psalm-internal Prototype\Compiler
- * @param ?non-empty-string $value
- * @psalm-return ($value is null ? null : non-empty-string)
- */
-function trimString(?string $value): ?string
+#[CoversClass(IdentityCompressor::class)]
+#[CoversClass(GZIPCompressor::class)]
+final class CompressorTest extends TestCase
 {
-    if (null !== $value) {
-        $value = toNonEmptyString(trim($value, '"\''));
+    /**
+     * @return iterable<array-key, array{Compressor}>
+     */
+    public static function fixtures(): iterable
+    {
+        yield 'identity' => [new IdentityCompressor()];
+        yield 'gzip' => [new GZIPCompressor()];
     }
 
-    return $value;
-}
-
-/**
- * @return non-empty-string
- */
-function toNonEmptyString(?string $value): string
-{
-    return Type\non_empty_string()->coerce($value);
-}
-
-/**
- * @return positive-int
- */
-function toPositiveInt(null|int|string $value): int
-{
-    return Type\positive_int()->coerce($value);
+    #[DataProvider('fixtures')]
+    public function testCompressDecompress(Compressor $compressor): void
+    {
+        self::assertEquals('test', $compressor->decompress($compressor->compress('test')));
+    }
 }
