@@ -36,7 +36,21 @@ use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Exception\TypeIsUnknown;
 use Prototype\Serializer\Internal\Reflection\ArrayPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ArrayShapePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ConstantEnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateIntervalPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\DateTimePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\Deserializer;
+use Prototype\Serializer\Internal\Reflection\EnumPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\HashTablePropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ObjectPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertyDeserializeDescriptor;
+use Prototype\Serializer\Internal\Reflection\PropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\PropertySerializeDescriptor;
 use Prototype\Serializer\Internal\Reflection\ProtobufReflector;
+use Prototype\Serializer\Internal\Reflection\ScalarPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\StructPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\UnionPropertyMarshaller;
 use Prototype\Serializer\Serializer;
 use Prototype\Tests\Serializer\Fixtures\EmptyMessage;
 use Prototype\Tests\Serializer\Fixtures\InvalidMessage;
@@ -47,6 +61,21 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 #[CoversClass(Serializer::class)]
 #[CoversClass(ProtobufReflector::class)]
 #[CoversClass(ArrayPropertyMarshaller::class)]
+#[CoversClass(ArrayShapePropertyMarshaller::class)]
+#[CoversClass(ConstantEnumPropertyMarshaller::class)]
+#[CoversClass(DateIntervalPropertyMarshaller::class)]
+#[CoversClass(DateTimePropertyMarshaller::class)]
+#[CoversClass(Deserializer::class)]
+#[CoversClass(EnumPropertyMarshaller::class)]
+#[CoversClass(HashTablePropertyMarshaller::class)]
+#[CoversClass(ObjectPropertyMarshaller::class)]
+#[CoversClass(PropertyDeserializeDescriptor::class)]
+#[CoversClass(PropertyMarshaller::class)]
+#[CoversClass(PropertySerializeDescriptor::class)]
+#[CoversClass(ScalarPropertyMarshaller::class)]
+#[CoversClass(\Prototype\Serializer\Internal\Reflection\Serializer::class)]
+#[CoversClass(StructPropertyMarshaller::class)]
+#[CoversClass(UnionPropertyMarshaller::class)]
 final class SerializerTest extends TestCase
 {
     #[DataProviderExternal(FixtureProvider::class, 'messages')]
