@@ -39,6 +39,6 @@ final class RequestException extends \Exception
         public readonly ?string $grpcMessage = null,
         ?\Throwable $previous = null,
     ) {
-        parent::__construct(\sprintf('Request terminated with error: %s(%d).', $this->grpcMessage ?: $this->statusCode->name, $this->statusCode->value), previous: $previous);
+        parent::__construct(\sprintf('Request terminated with error: %s (%d).', $this->grpcMessage ?: $this->statusCode->name, $this->statusCode->value), previous: $previous);
     }
 }

@@ -25,19 +25,19 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Internal\Wire;
+namespace Prototype\Grpc\Client\Internal\Wire;
 
 use Amp\Http\Client\Response;
 use Kafkiansky\Binary;
+use Prototype\Byte;
 use Prototype\Grpc\Client\GrpcResponse;
 use Prototype\Grpc\Compression\Compressor;
 use Prototype\Grpc\StatusCode;
 use Prototype\Serializer\Serializer;
-use Prototype\Byte;
 
 /**
  * @internal
- * @psalm-internal Prototype\Grpc
+ * @psalm-internal Prototype\Grpc\Client
  */
 final class ResponseFactory
 {

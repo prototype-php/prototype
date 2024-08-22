@@ -30,8 +30,8 @@ namespace Prototype\Grpc\Client;
 use Amp\Cancellation;
 use Amp\Http\Client\DelegateHttpClient;
 use Amp\NullCancellation;
-use Prototype\Grpc\Internal\Wire\RequestFactory;
-use Prototype\Grpc\Internal\Wire\ResponseFactory;
+use Prototype\Grpc\Client\Internal\Wire\RequestFactory;
+use Prototype\Grpc\Client\Internal\Wire\ResponseFactory;
 
 /**
  * @api
