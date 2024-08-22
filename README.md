@@ -1,5 +1,8 @@
 # Prototype
 
+[![PHP Version Requirement](https://img.shields.io/packagist/dependency-v/prototype/serializer/php)](https://packagist.org/packages/prototype/serializer)
+[![GitHub Release](https://img.shields.io/github/v/release/prototype-php/prototype)](https://github.com/prototype-php/prototype/releases)
+
 A modern strictly typed full-featured library for protobuf serialization and asynchronous grpc for PHP.
 
 ## Components
