@@ -46,7 +46,7 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Prototype\Grpc\Compression\GZIPCompressor;
 use Prototype\Grpc\Server\ServerBuilder;
-use Scheduler\Api\V1\DefaultTaskControllerServer;
+use Scheduler\Api\V1\TaskControllerServer;
 use Scheduler\Api\V1\Request;
 use Scheduler\Api\V1\Response;
 use Scheduler\Api\V1\ResponseType;
@@ -58,7 +58,7 @@ require_once __DIR__.'/../vendor/autoload.php';
 /**
  * @api
  */
-final class TaskControllerServer extends DefaultTaskControllerServer
+final class DefaultTaskControllerServer extends TaskControllerServer
 {
     public function launch(Request $request, Cancellation $cancellation = new NullCancellation()): Response
     {
@@ -72,7 +72,7 @@ $server = (new ServerBuilder())
     ->withLogger(new Logger('grpc', [new StreamHandler(\STDOUT)]))
     ->withCompressor(new GZIPCompressor())
     ->registerFromService(
-        new TaskControllerServerServiceRegistrar(new TaskControllerServer()),
+        new TaskControllerServerServiceRegistrar(new DefaultTaskControllerServer()),
     )
     ->build()
 ;
