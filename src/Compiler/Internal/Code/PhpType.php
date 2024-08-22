@@ -62,6 +62,10 @@ final class PhpType
      */
     public static function scalar(string $nativeType, ?string $phpDocType = null, null|bool|string|int $default = null): self
     {
+        if (null !== $phpDocType) {
+            $phpDocType = \sprintf('?%s', $phpDocType);
+        }
+
         return new self($nativeType, $phpDocType, nullable: null === $default, default: $default);
     }
 

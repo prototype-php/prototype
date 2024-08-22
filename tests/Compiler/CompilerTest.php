@@ -101,18 +101,18 @@ namespace App\V1\Test;
 final class RequestWithScalarTypes
 {
     /**
-     * @param int32 $int32Field
-     * @param int64 $int64Field
-     * @param uint32 $uint32Field
-     * @param uint64 $uint64Field
-     * @param sint32 $sint32Field
-     * @param sint64 $sint64Field
-     * @param fixed32 $fixed32Field
-     * @param fixed64 $fixed64Field
-     * @param sfixed32 $sfixed32Field
-     * @param sfixed64 $sfixed64Field
-     * @param double $doubleField
-     * @param bytes $bytesField
+     * @param ?int32 $int32Field
+     * @param ?int64 $int64Field
+     * @param ?uint32 $uint32Field
+     * @param ?uint64 $uint64Field
+     * @param ?sint32 $sint32Field
+     * @param ?sint64 $sint64Field
+     * @param ?fixed32 $fixed32Field
+     * @param ?fixed64 $fixed64Field
+     * @param ?sfixed32 $sfixed32Field
+     * @param ?sfixed64 $sfixed64Field
+     * @param ?double $doubleField
+     * @param ?bytes $bytesField
      */
     public function __construct(
         public readonly ?bool $boolField = null,
@@ -157,7 +157,7 @@ namespace App\V1\Test;
 final class SimpleResponse
 {
     /**
-     * @param int32 $status
+     * @param ?int32 $status
      */
     public function __construct(
         public readonly ?int $status = null,
@@ -958,7 +958,7 @@ namespace Test\Api\V1;
 final class AddTaskRequest
 {
     /**
-     * @param fixed32 $id
+     * @param ?fixed32 $id
      */
     public function __construct(
         public readonly ?int $id = null,
@@ -1045,7 +1045,7 @@ namespace Test\Api\V1;
 final class DeleteTaskRequest
 {
     /**
-     * @param fixed32 $id
+     * @param ?fixed32 $id
      */
     public function __construct(
         public readonly ?int $id = null,
@@ -1453,7 +1453,7 @@ namespace Test\Api\V1;
 final class AddTaskRequest
 {
     /**
-     * @param fixed32 $id
+     * @param ?fixed32 $id
      */
     public function __construct(
         public readonly ?int $id = null,
