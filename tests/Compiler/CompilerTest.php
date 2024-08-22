@@ -29,6 +29,7 @@ namespace Prototype\Tests\Compiler;
 
 use Antlr\Antlr4\Runtime\InputStream;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Prototype\Compiler\CompileOptions;
@@ -53,9 +54,31 @@ use Prototype\Compiler\Internal\Code\Type\ScalarTypeVisitor;
 use Prototype\Compiler\Internal\Code\Type\StringifyTypeVisitor;
 use Prototype\Compiler\Internal\Code\Type\WellKnownTypeVisitor;
 use Prototype\Compiler\Internal\Code\WellKnown;
+use Prototype\Compiler\Internal\Ir\Enum;
+use Prototype\Compiler\Internal\Ir\EnumCase;
+use Prototype\Compiler\Internal\Ir\EnumVisitor;
 use Prototype\Compiler\Internal\Ir\Hook\Hooks;
+use Prototype\Compiler\Internal\Ir\Import;
+use Prototype\Compiler\Internal\Ir\ImportVisitor;
+use Prototype\Compiler\Internal\Ir\Message;
+use Prototype\Compiler\Internal\Ir\MessageVisitor;
+use Prototype\Compiler\Internal\Ir\Option;
+use Prototype\Compiler\Internal\Ir\OptionVisitor;
+use Prototype\Compiler\Internal\Ir\PackageVisitor;
+use Prototype\Compiler\Internal\Ir\Parser;
 use Prototype\Compiler\Internal\Ir\ProtoResolver;
 use Prototype\Compiler\Internal\Ir\ProtoVisitor;
+use Prototype\Compiler\Internal\Ir\Rpc;
+use Prototype\Compiler\Internal\Ir\RpcType;
+use Prototype\Compiler\Internal\Ir\Scalar;
+use Prototype\Compiler\Internal\Ir\Service;
+use Prototype\Compiler\Internal\Ir\ServiceVisitor;
+use Prototype\Compiler\Internal\Ir\Type\MapType;
+use Prototype\Compiler\Internal\Ir\Type\MessageType;
+use Prototype\Compiler\Internal\Ir\Type\OneOfType;
+use Prototype\Compiler\Internal\Ir\Type\RepeatedType;
+use Prototype\Compiler\Internal\Ir\Type\ScalarType;
+use Prototype\Compiler\Internal\Ir\TypeIdent;
 use Prototype\Compiler\Internal\Ir\Validate\ConstraintViolated;
 use Prototype\Compiler\Internal\Parser\Protobuf3BaseVisitor;
 use Prototype\Compiler\Internal\Parser\Protobuf3Lexer;
@@ -93,6 +116,31 @@ use Prototype\Compiler\ProtoFile;
 #[CoversClass(ProtoVisitor::class)]
 #[CoversClass(ProtoResolver::class)]
 #[CoversClass(Hooks::class)]
+#[CoversClass(TypeIdent::class)]
+#[CoversClass(ServiceVisitor::class)]
+#[CoversClass(Service::class)]
+#[CoversClass(Parser::class)]
+#[CoversClass(PackageVisitor::class)]
+#[CoversClass(OptionVisitor::class)]
+#[CoversClass(Option::class)]
+#[CoversClass(MessageVisitor::class)]
+#[CoversClass(ImportVisitor::class)]
+#[CoversClass(EnumVisitor::class)]
+#[CoversClass(Enum::class)]
+#[CoversClass(EnumCase::class)]
+#[CoversClass(Import::class)]
+#[CoversClass(Message::class)]
+#[CoversClass(Rpc::class)]
+#[CoversClass(RpcType::class)]
+#[CoversClass(MapType::class)]
+#[CoversClass(MessageType::class)]
+#[CoversClass(OneOfType::class)]
+#[CoversClass(RepeatedType::class)]
+#[CoversClass(ScalarType::class)]
+#[CoversClass(Scalar::class)]
+#[CoversFunction('\Prototype\Compiler\Internal\Ir\trimString')]
+#[CoversFunction('\Prototype\Compiler\Internal\Ir\toNonEmptyString')]
+#[CoversFunction('\Prototype\Compiler\Internal\Ir\toPositiveInt')]
 final class CompilerTest extends TestCase
 {
     /**
