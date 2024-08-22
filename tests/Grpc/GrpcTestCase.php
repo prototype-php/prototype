@@ -33,6 +33,7 @@ use Prototype\Compiler\Import\CombineImportResolver;
 use Prototype\Compiler\Import\VirtualImportResolver;
 use Prototype\Compiler\Output\FileWriter;
 use Prototype\Compiler\ProtoFile;
+use Prototype\Compiler\RecursiveFilesLocator;
 
 abstract class GrpcTestCase extends TestCase
 {
@@ -44,39 +45,26 @@ abstract class GrpcTestCase extends TestCase
         parent::setUp();
 
         mkdir(self::$baseDir);
+
+        self::compile(self::$baseDir, [...RecursiveFilesLocator::files([__DIR__.'/proto'])]);
+        self::requireAll(self::$baseDir, [
+            'Test/Api/V1/TestControllerClient.php',
+            'Test/Api/V1/TestControllerServer.php',
+            'Test/Api/V1/TestControllerServerRegistrar.php',
+            'Test/Api/V1/AddTaskRequest.php',
+            'Test/Api/V1/AddTaskResponse.php',
+            'Test/Api/V1/AddTaskResponseErrorType.php',
+        ]);
     }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $cleanDirectory = static function (string ...$paths): void {
-            foreach ($paths as $path) {
-                /** @var \SplFileInfo $file */
-                foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST) as $file) {
-                    $op = match (true) {
-                        $file->isDir() => rmdir(...),
-                        default => unlink(...),
-                    };
-
-                    $op($file->getRealPath());
-                }
-
-                rmdir($path);
-            }
-        };
-
-        $cleanDirectory(self::$baseDir);
-    }
-
 
     /**
+     * @param non-empty-string $baseDir
      * @param iterable<non-empty-string> $paths
      */
-    final protected static function requireAll(iterable $paths): void
+    private static function requireAll(string $baseDir, iterable $paths): void
     {
         foreach ($paths as $path) {
-            if (!is_file($path = self::$baseDir.\DIRECTORY_SEPARATOR.$path)) {
+            if (!is_file($path = $baseDir.\DIRECTORY_SEPARATOR.$path)) {
                 throw new \LogicException(\sprintf('"%s" is not a file.', $path));
             }
 
@@ -85,12 +73,13 @@ abstract class GrpcTestCase extends TestCase
     }
 
     /**
-     * @param non-empty-string $proto
+     * @param non-empty-string $dir
+     * @param iterable<ProtoFile> $files
      */
-    final protected static function compile(string $proto): void
+    private static function compile(string $dir, iterable $files): void
     {
-        Compiler::build(new FileWriter(self::$baseDir), imports: new CombineImportResolver([VirtualImportResolver::build()]))
-            ->compile(ProtoFile::fromString($proto))
+        Compiler::build(new FileWriter($dir), imports: new CombineImportResolver([VirtualImportResolver::build()]))
+            ->compileAll($files)
         ;
     }
 }

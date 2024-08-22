@@ -245,7 +245,7 @@ use Prototype\Grpc\Server\ServiceRegistry;
 /**
  * @api
  */
-final class TaskControllerServerServiceRegistrar implements ServiceRegistrar
+final class TaskControllerServerRegistrar implements ServiceRegistrar
 {
     public function __construct(
         private readonly TaskControllerServer $server,
