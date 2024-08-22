@@ -226,7 +226,7 @@ PHP,
             ->addUse('Prototype\Grpc\Server\ServiceRegistry')
             ->addUse('Prototype\Grpc\Server\ServiceDescriptor')
             ->addUse('Prototype\Grpc\Server\RpcMethod')
-            ->addClass($registryName = \sprintf('%sServerServiceRegistrar', Naming\ClassLike::name($service->name)))
+            ->addClass($registryName = \sprintf('%sServerRegistrar', Naming\ClassLike::name($service->name)))
             ->addImplement('ServiceRegistrar')
             ->setFinal()
             ->addComment('@api')

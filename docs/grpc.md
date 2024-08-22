@@ -50,7 +50,7 @@ use Scheduler\Api\V1\TaskControllerServer;
 use Scheduler\Api\V1\Request;
 use Scheduler\Api\V1\Response;
 use Scheduler\Api\V1\ResponseType;
-use Scheduler\Api\V1\TaskControllerServerServiceRegistrar;
+use Scheduler\Api\V1\TaskControllerServerRegistrar;
 use function Amp\trapSignal;
 
 require_once __DIR__.'/../vendor/autoload.php';
@@ -72,7 +72,7 @@ $server = (new ServerBuilder())
     ->withLogger(new Logger('grpc', [new StreamHandler(\STDOUT)]))
     ->withCompressor(new GZIPCompressor())
     ->registerFromService(
-        new TaskControllerServerServiceRegistrar(new DefaultTaskControllerServer()),
+        new TaskControllerServerRegistrar(new DefaultTaskControllerServer()),
     )
     ->build()
 ;

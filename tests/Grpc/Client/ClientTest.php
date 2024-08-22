@@ -46,6 +46,10 @@ use Prototype\Grpc\Compression\GZIPCompressor;
 use Prototype\Grpc\StatusCode;
 use Prototype\Serializer\Serializer;
 use Prototype\Tests\Grpc\GrpcTestCase;
+use Test\Api\V1\AddTaskRequest;
+use Test\Api\V1\AddTaskResponse;
+use Test\Api\V1\AddTaskResponseErrorType;
+use Test\Api\V1\TestControllerClient;
 
 #[CoversClass(Client::class)]
 #[CoversClass(ClientBuilder::class)]
@@ -58,33 +62,6 @@ final class ClientTest extends GrpcTestCase
 {
     private Serializer $serializer;
 
-    /** @var non-empty-string */
-    private static string $proto = <<<'PROTO'
-syntax = "proto3";
-
-package test.api.v1;
-
-message AddTaskRequest {
-    string name = 1;
-    repeated string tags = 2;
-}
-
-message AddTaskResponse {
-    enum ErrorType {
-        UNSPECIFIED = 0;
-        BAD_REQUEST = 1;
-        INTERNAL = 2;
-    }
-
-    ErrorType error_type = 1;
-}
-
-service TestController {
-    rpc AddTask(AddTaskRequest) returns (AddTaskResponse) {}
-}
-PROTO;
-
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -94,15 +71,6 @@ PROTO;
 
     public function testGeneratedClient(): void
     {
-        self::compile(self::$proto);
-
-        self::requireAll([
-            'Test/Api/V1/TestControllerClient.php',
-            'Test/Api/V1/AddTaskRequest.php',
-            'Test/Api/V1/AddTaskResponse.php',
-            'Test/Api/V1/AddTaskResponseErrorType.php',
-        ]);
-
         $http2Client = $this->createMock(DelegateHttpClient::class);
         $http2Client
             ->expects(self::once())
@@ -134,7 +102,7 @@ PROTO;
                     ],
                     body: Buffer::empty(Endianness::network())
                         ->writeInt8(0)
-                        ->writeUint32(\strlen($out = $this->serializer->serialize($response = new \Test\Api\V1\AddTaskResponse(\Test\Api\V1\AddTaskResponseErrorType::BAD_REQUEST))->reset()))
+                        ->writeUint32(\strlen($out = $this->serializer->serialize($response = new AddTaskResponse(14, AddTaskResponseErrorType::BAD_REQUEST))->reset()))
                         ->write($out)
                         ->reset(),
                     request: new Request('/test.api.v1.TestController/AddTask'),
@@ -148,21 +116,12 @@ PROTO;
             )
         ;
 
-        $client = new \Test\Api\V1\TestControllerClient($grpcClient);
-        self::assertEquals($response, $client->addTask(new \Test\Api\V1\AddTaskRequest('test', ['recurrent'])));
+        $client = new TestControllerClient($grpcClient);
+        self::assertEquals($response, $client->addTask(new AddTaskRequest(14,'test', ['recurrent'])));
     }
 
     public function testGeneratedClientWithCompression(): void
     {
-        self::compile(self::$proto);
-
-        self::requireAll([
-            'Test/Api/V1/TestControllerClient.php',
-            'Test/Api/V1/AddTaskRequest.php',
-            'Test/Api/V1/AddTaskResponse.php',
-            'Test/Api/V1/AddTaskResponseErrorType.php',
-        ]);
-
         $compressor = new GZIPCompressor();
 
         $http2Client = $this->createMock(DelegateHttpClient::class);
@@ -196,7 +155,7 @@ PROTO;
                     ],
                     body: Buffer::empty(Endianness::network())
                         ->writeInt8(1)
-                        ->writeUint32(\strlen($out = $compressor->compress($this->serializer->serialize($response = new \Test\Api\V1\AddTaskResponse(\Test\Api\V1\AddTaskResponseErrorType::BAD_REQUEST))->reset())))
+                        ->writeUint32(\strlen($out = $compressor->compress($this->serializer->serialize($response = new AddTaskResponse(errorType: AddTaskResponseErrorType::BAD_REQUEST))->reset())))
                         ->write($out)
                         ->reset(),
                     request: new Request('/test.api.v1.TestController/AddTask'),
@@ -211,21 +170,12 @@ PROTO;
             )
         ;
 
-        $client = new \Test\Api\V1\TestControllerClient($grpcClient);
-        self::assertEquals($response, $client->addTask(new \Test\Api\V1\AddTaskRequest('test', ['recurrent'])));
+        $client = new TestControllerClient($grpcClient);
+        self::assertEquals($response, $client->addTask(new AddTaskRequest(14, 'test', ['recurrent'])));
     }
 
     public function testGeneratedClientWithError(): void
     {
-        self::compile(self::$proto);
-
-        self::requireAll([
-            'Test/Api/V1/TestControllerClient.php',
-            'Test/Api/V1/AddTaskRequest.php',
-            'Test/Api/V1/AddTaskResponse.php',
-            'Test/Api/V1/AddTaskResponseErrorType.php',
-        ]);
-
         $http2Client = $this->createMock(DelegateHttpClient::class);
         $http2Client
             ->expects(self::once())
@@ -267,9 +217,9 @@ PROTO;
             )
         ;
 
-        $client = new \Test\Api\V1\TestControllerClient($grpcClient);
+        $client = new TestControllerClient($grpcClient);
         self::expectException(RequestException::class);
         self::expectExceptionMessage('Request terminated with error: UNIMPLEMENTED (12).');
-        $client->addTask(new \Test\Api\V1\AddTaskRequest('test', ['recurrent']));
+        $client->addTask(new AddTaskRequest(14, 'test', ['recurrent']));
     }
 }

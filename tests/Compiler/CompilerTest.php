@@ -1325,7 +1325,7 @@ PHP,
                 ),
                 new PhpFile(
                     'Test\Api\V1',
-                    'AdminControllerServerServiceRegistrar.php',
+                    'AdminControllerServerRegistrar.php',
                     <<<'PHP'
 <?php
 
@@ -1346,7 +1346,7 @@ use Prototype\Grpc\Server\ServiceRegistry;
 /**
  * @api
  */
-final class AdminControllerServerServiceRegistrar implements ServiceRegistrar
+final class AdminControllerServerRegistrar implements ServiceRegistrar
 {
     public function __construct(
         private readonly AdminControllerServer $server,
@@ -1485,7 +1485,7 @@ PHP,
                 ),
                 new PhpFile(
                     'Test\Api\V1',
-                    'AdminControllerServerServiceRegistrar.php',
+                    'AdminControllerServerRegistrar.php',
                     <<<'PHP'
 <?php
 
@@ -1506,7 +1506,7 @@ use Prototype\Grpc\Server\ServiceRegistry;
 /**
  * @api
  */
-final class AdminControllerServerServiceRegistrar implements ServiceRegistrar
+final class AdminControllerServerRegistrar implements ServiceRegistrar
 {
     public function __construct(
         private readonly AdminControllerServer $server,

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package test.api.v1;
+
+message AddTaskRequest {
+  int32 id = 1;
+  string name = 2;
+  repeated string tags = 3;
+}
+
+message AddTaskResponse {
+  enum ErrorType {
+    UNSPECIFIED = 0;
+    BAD_REQUEST = 1;
+    INTERNAL = 2;
+  }
+
+  int32 id = 1;
+  ErrorType error_type = 2;
+}
+
+service TestController {
+  rpc AddTask(AddTaskRequest) returns (AddTaskResponse) {}
+}
