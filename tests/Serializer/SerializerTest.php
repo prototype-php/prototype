@@ -35,6 +35,8 @@ use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
 use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Exception\TypeIsNotSupported;
 use Prototype\Serializer\Exception\TypeIsUnknown;
+use Prototype\Serializer\Internal\Reflection\ArrayPropertyMarshaller;
+use Prototype\Serializer\Internal\Reflection\ProtobufReflector;
 use Prototype\Serializer\Serializer;
 use Prototype\Tests\Serializer\Fixtures\EmptyMessage;
 use Prototype\Tests\Serializer\Fixtures\InvalidMessage;
@@ -43,6 +45,8 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithLiteralEnum;
 use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 
 #[CoversClass(Serializer::class)]
+#[CoversClass(ProtobufReflector::class)]
+#[CoversClass(ArrayPropertyMarshaller::class)]
 final class SerializerTest extends TestCase
 {
     #[DataProviderExternal(FixtureProvider::class, 'messages')]
