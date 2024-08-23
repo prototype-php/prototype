@@ -31,9 +31,12 @@ use Amp\Http\Server\SocketHttpServer;
 use Amp\Socket\BindContext;
 use Amp\Socket\SocketAddress;
 use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Compression\IdentityCompressor;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
-use Prototype\Grpc\Server\Internal\Handler\GrpcRequestHandler;
-use Prototype\Grpc\Server\Internal\Http\OnlyHttp2DriverFactory;
+use Prototype\Grpc\Server\Internal\Handler\InterceptedGrpcRequestHandler;
+use Prototype\Grpc\Server\Internal\Handler\MessageDispatcher;
+use Prototype\Grpc\Server\Internal\Handler\MessageCompressor;
+use Prototype\Grpc\Server\Internal\Transport\OnlyHttp2DriverFactory;
 use Prototype\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -228,19 +231,26 @@ final class ServerBuilder implements ServiceRegistry
             $socketServer->expose($address, $this->bindContext);
         }
 
+        $compressors = array_merge(
+            ...array_map(
+                static fn (Compressor $compressor): array => [$compressor->name() => $compressor],
+                [...$this->compressors, ...[new IdentityCompressor()]],
+            ),
+        );
+
         return new Server(
             $socketServer,
-            new GrpcRequestHandler(
-                $this->serializer ?: new Serializer(),
-                new CancellationFactory($this->requestTimeout),
-                $this->services,
-                array_merge(
-                    ...array_map(
-                        static fn (Compressor $compressor): array => [$compressor->name() => $compressor],
-                        $this->compressors,
-                    ),
+            new InterceptedGrpcRequestHandler(
+                new MessageDispatcher(
+                    $this->services,
+                    $this->serializer ?: new Serializer(),
                 ),
+                new MessageCompressor($compressors),
             ),
+            new CancellationFactory($this->requestTimeout),
+            [
+                'grpc-accept-encoding' => implode(',', array_keys($compressors)),
+            ],
         );
     }
 }

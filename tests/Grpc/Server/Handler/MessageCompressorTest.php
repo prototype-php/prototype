@@ -25,43 +25,37 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Tests\Grpc\Server\Handler;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+use Prototype\Grpc\Compression\GZIPCompressor;
+use Prototype\Grpc\Compression\IdentityCompressor;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\Server\Internal\Handler\MessageCompressor;
 
-/**
- * @api
- */
-final class Server
+#[CoversClass(MessageCompressor::class)]
+final class MessageCompressorTest extends TestCase
 {
-    /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
-     */
-    public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
-    ) {}
-
-    public function serve(): void
+    public function testMessageCompressed(): void
     {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
+        $compressor = new MessageCompressor([
+            'identity' => new IdentityCompressor(),
+            'gzip' => new GZIPCompressor(),
+        ]);
+
+        self::assertSame('test', $compressor->decompress($compressor->compress('test', 'gzip'), 'gzip'));
     }
 
-    public function shutdown(): void
+    public function testCompressorNotFound(): void
     {
-        $this->http->stop();
+        self::expectException(ServerException::class);
+        self::expectExceptionMessage('Unexpected error "Encoding mechanism "gzip" is not supported." occurred.');
+
+        $compressor = new MessageCompressor([
+            'identity' => new IdentityCompressor(),
+        ]);
+
+        $compressor->compress('test', 'gzip');
     }
 }

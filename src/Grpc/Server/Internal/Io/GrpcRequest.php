@@ -25,43 +25,30 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Io;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\RequestBody;
+use Prototype\Grpc\Internal\Net\Endpoint;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+final class GrpcRequest
 {
-    /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
-     */
     public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
+        public readonly Endpoint $endpoint,
+        public readonly RequestBody $body,
+        public readonly ?string $encoding = null,
     ) {}
 
-    public function serve(): void
+    public static function fromServerRequest(Request $request): self
     {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
+        return new self(
+            Endpoint::parse($request->getUri()->getPath()),
+            $request->getBody(),
+            $request->getHeader('grpc-encoding'),
         );
-    }
-
-    public function shutdown(): void
-    {
-        $this->http->stop();
     }
 }

@@ -25,43 +25,24 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Adapter;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Amp\Http\Server\ErrorHandler;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\Response;
+use Prototype\Grpc\Server\Internal\Io\GrpcResponse;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc\Server
  */
-final class Server
+final class GrpcErrorHandler implements ErrorHandler
 {
     /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
+     * {@inheritdoc}
      */
-    public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
-    ) {}
-
-    public function serve(): void
+    public function handleError(int $status, ?string $reason = null, ?Request $request = null): Response
     {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
-
-    public function shutdown(): void
-    {
-        $this->http->stop();
+        return GrpcResponse::error(message: $reason)->toServerResponse();
     }
 }

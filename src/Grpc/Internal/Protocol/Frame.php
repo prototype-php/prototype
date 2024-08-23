@@ -25,43 +25,16 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
-
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+namespace Prototype\Grpc\Internal\Protocol;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+final class Frame
 {
-    /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
-     */
     public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
+        public readonly string $payload,
+        public readonly bool $compressed = false,
     ) {}
-
-    public function serve(): void
-    {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
-
-    public function shutdown(): void
-    {
-        $this->http->stop();
-    }
 }

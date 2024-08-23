@@ -25,43 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Adapter;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Amp\Cancellation;
+use Amp\NullCancellation;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\Server\Internal\Io;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+interface GrpcRequestHandler
 {
     /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
+     * @throws ServerException
      */
-    public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
-    ) {}
-
-    public function serve(): void
-    {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
-
-    public function shutdown(): void
-    {
-        $this->http->stop();
-    }
+    public function handle(Io\GrpcRequest $request, Cancellation $cancellation = new NullCancellation()): Io\GrpcResponse;
 }

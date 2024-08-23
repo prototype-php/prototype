@@ -58,13 +58,15 @@ final class Buffer implements
     }
 
     /**
-     * @param non-empty-string $bytes
      * @throws ByteException
      */
     public static function fromString(string $bytes): self
     {
         try {
-            return new self(Binary\Buffer::fromString($bytes, Binary\Endianness::little()));
+            return '' !== $bytes
+                ? new self(Binary\Buffer::fromString($bytes, Binary\Endianness::little()))
+                : self::default()
+                ;
         } catch (Binary\BinaryException $e) {
             throw PlatformCannotBeIdentified::fromException($e);
         }

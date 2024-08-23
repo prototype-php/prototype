@@ -25,37 +25,15 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Http;
-
-use Amp\DeferredFuture;
-use Amp\Http\Server\ErrorHandler;
-use Amp\Http\Server\Request;
-use Amp\Http\Server\Response;
-use Amp\Http\Server\Trailers;
-use Prototype\Grpc\StatusCode;
+namespace Prototype\Grpc\Server\Internal\Handler;
 
 /**
  * @internal
- * @psalm-internal Prototype\Grpc\Server
+ * @psalm-internal Prototype\Grpc
  */
-final class GrpcErrorHandler implements ErrorHandler
+final class Message
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function handleError(int $status, ?string $reason = null, ?Request $request = null): Response
-    {
-        $response = new Response($status, ['Content-Type' => 'application/grpc']);
-
-        /** @psalm-var DeferredFuture<array<non-empty-string, string|array<string>>> $deferred */
-        $deferred = new DeferredFuture();
-        $deferred->complete([
-            'grpc-status' => (string)StatusCode::INTERNAL->value,
-            'grpc-message' => $reason ?: StatusCode::INTERNAL->name,
-        ]);
-
-        $response->setTrailers(new Trailers($deferred->getFuture()));
-
-        return $response;
-    }
+    public function __construct(
+        public readonly ?string $body = null,
+    ) {}
 }

@@ -25,43 +25,45 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Handler;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Amp\Cancellation;
+use Amp\NullCancellation;
+use Prototype\Byte\Buffer;
+use Prototype\Grpc\Internal\Net\Endpoint;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\Server\RpcMethod;
+use Prototype\Serializer\Serializer;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+final class MessageDispatcher
 {
     /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
+     * @param array<non-empty-string, array<non-empty-string, RpcMethod>> $services
      */
     public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
+        private readonly array $services,
+        private readonly Serializer $serializer = new Serializer(),
     ) {}
 
-    public function serve(): void
-    {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
+    public function dispatch(
+        Endpoint $endpoint,
+        Message $message,
+        Cancellation $cancellation = new NullCancellation(),
+    ): Message {
+        $rpc = $this->services[$endpoint->serviceName][$endpoint->rpc] ?? throw new ServerException(errorMessage: \sprintf('No handler found for endpoint "%s".', $endpoint->path));
 
-    public function shutdown(): void
-    {
-        $this->http->stop();
+        $out = ($rpc->handler)(
+            fn (string $requestType): object => $this->serializer->deserialize(
+                Buffer::fromString($message->body ?: ''),
+                $requestType,
+            ),
+            $cancellation,
+        );
+
+        return new Message($this->serializer->serialize($out)->reset());
     }
 }
