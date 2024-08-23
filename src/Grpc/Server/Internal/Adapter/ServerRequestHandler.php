@@ -25,43 +25,48 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Adapter;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
+use Amp\Http\Server\Request;
+use Amp\Http\Server\RequestHandler;
+use Amp\Http\Server\Response;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\Server\Internal\Io\GrpcRequest;
+use Prototype\Grpc\Server\Internal\Io\GrpcResponse;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+final class ServerRequestHandler implements RequestHandler
 {
     /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
      * @param array<non-empty-string, non-empty-string> $headers
      */
     public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
+        private readonly GrpcRequestHandler $requestHandler,
         private readonly CancellationFactory $cancellations,
         private readonly array $headers = [],
     ) {}
 
-    public function serve(): void
+    public function handleRequest(Request $request): Response
     {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
+        try {
+            $response = $this->requestHandler
+                ->handle(
+                    GrpcRequest::fromServerRequest($request),
+                    $this->cancellations->createCancellation(),
+                );
+        } catch (ServerException $e) {
+            $response = GrpcResponse::error($e->status, $e->errorMessage);
+        } catch (\Throwable) {
+            $response = GrpcResponse::error();
+        }
 
-    public function shutdown(): void
-    {
-        $this->http->stop();
+        return $response
+            ->withHeaders($this->headers)
+            ->toServerResponse()
+            ;
     }
 }

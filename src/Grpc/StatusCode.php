@@ -147,15 +147,4 @@ enum StatusCode: int
     // Unauthenticated indicates the request does not have valid
     // authentication credentials for the operation.
     case UNAUTHENTICATED = 16;
-
-    /**
-     * @return array<non-empty-string, non-empty-string>
-     */
-    public function asHeaders(): array
-    {
-        return [
-            'grpc-status' => (string)$this->value,
-            'grpc-message' => $this->name,
-        ];
-    }
 }

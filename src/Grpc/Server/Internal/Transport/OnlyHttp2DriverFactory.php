@@ -25,7 +25,7 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Http;
+namespace Prototype\Grpc\Server\Internal\Transport;
 
 use Amp\Http\Server\Driver\Client;
 use Amp\Http\Server\Driver\Http2Driver;
@@ -38,7 +38,7 @@ use Psr\Log\NullLogger;
 
 /**
  * @internal
- * @psalm-internal Prototype\Grpc\Server
+ * @psalm-internal Prototype\Grpc
  */
 final class OnlyHttp2DriverFactory implements HttpDriverFactory
 {

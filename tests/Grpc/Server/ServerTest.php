@@ -33,9 +33,10 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use Prototype\Grpc\Client\ClientBuilder;
 use Prototype\Grpc\Client\ClientOptions;
 use Prototype\Grpc\Compression\GZIPCompressor;
+use Prototype\Grpc\Server\Internal\Adapter\ServerRequestHandler;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
-use Prototype\Grpc\Server\Internal\Handler\GrpcRequestHandler;
-use Prototype\Grpc\Server\Internal\Http\OnlyHttp2DriverFactory;
+use Prototype\Grpc\Server\Internal\Handler\InterceptedGrpcRequestHandler;
+use Prototype\Grpc\Server\Internal\Transport\OnlyHttp2DriverFactory;
 use Prototype\Grpc\Server\RpcMethod;
 use Prototype\Grpc\Server\Server;
 use Prototype\Grpc\Server\ServerBuilder;
@@ -51,7 +52,8 @@ use Test\Api\V1\TestControllerServerRegistrar;
 #[CoversClass(Server::class)]
 #[CoversClass(ServerBuilder::class)]
 #[CoversClass(OnlyHttp2DriverFactory::class)]
-#[CoversClass(GrpcRequestHandler::class)]
+#[CoversClass(InterceptedGrpcRequestHandler::class)]
+#[CoversClass(ServerRequestHandler::class)]
 #[CoversClass(CancellationFactory::class)]
 #[CoversClass(RpcMethod::class)]
 #[CoversClass(ServiceDescriptor::class)]

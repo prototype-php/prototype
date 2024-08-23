@@ -25,43 +25,34 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Tests\Grpc\Protocol;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\TestCase;
+use Prototype\Grpc\Internal\Protocol\Codec;
+use Prototype\Grpc\Internal\Protocol\Frame;
 
-/**
- * @api
- */
-final class Server
+#[CoversClass(Codec::class)]
+final class CodecTest extends TestCase
 {
     /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
+     * @return iterable<array-key, array{Frame}>
      */
-    public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
-    ) {}
-
-    public function serve(): void
+    public static function fixtures(): iterable
     {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
+        yield 'compressed' => [
+            new Frame('test', true),
+        ];
+
+        yield 'not compressed' => [
+            new Frame('test', false),
+        ];
     }
 
-    public function shutdown(): void
+    #[DataProvider('fixtures')]
+    public function testFrame(Frame $frame): void
     {
-        $this->http->stop();
+        self::assertEquals($frame, (new Codec())->writeFrame($frame)->readFrame());
     }
 }

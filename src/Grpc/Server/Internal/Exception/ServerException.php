@@ -25,43 +25,21 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server;
+namespace Prototype\Grpc\Server\Internal\Exception;
 
-use Amp\Http\Server\HttpServer;
-use Prototype\Grpc\Server\Internal\Adapter;
-use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Prototype\Grpc\StatusCode;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
-final class Server
+final class ServerException extends \Exception
 {
-    /**
-     * @internal
-     * @psalm-internal Prototype\Grpc
-     * @param array<non-empty-string, non-empty-string> $headers
-     */
     public function __construct(
-        private readonly HttpServer $http,
-        private readonly Adapter\GrpcRequestHandler $grpcRequestHandler,
-        private readonly CancellationFactory $cancellations,
-        private readonly array $headers = [],
-    ) {}
-
-    public function serve(): void
-    {
-        $this->http->start(
-            new Adapter\ServerRequestHandler(
-                $this->grpcRequestHandler,
-                $this->cancellations,
-                $this->headers,
-            ),
-            new Adapter\GrpcErrorHandler(),
-        );
-    }
-
-    public function shutdown(): void
-    {
-        $this->http->stop();
+        public readonly StatusCode $status = StatusCode::INTERNAL,
+        public readonly ?string $errorMessage = null,
+        ?\Throwable $previous = null,
+    ) {
+        parent::__construct(\sprintf('Unexpected error "%s" occurred.', $this->errorMessage ?: $this->status->name), previous: $previous);
     }
 }

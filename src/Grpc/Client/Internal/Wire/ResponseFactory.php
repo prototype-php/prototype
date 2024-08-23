@@ -80,7 +80,7 @@ final class ResponseFactory
 
         /** @var T $message */
         $message = $this->serializer->deserialize(
-            Byte\Buffer::fromString($messageBuffer), // @phpstan-ignore-line
+            Byte\Buffer::fromString($messageBuffer),
             $messageType,
         );
 
