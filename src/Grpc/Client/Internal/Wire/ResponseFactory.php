@@ -27,7 +27,9 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc\Client\Internal\Wire;
 
+use Amp\Cancellation;
 use Amp\Http\Client\Response;
+use Amp\NullCancellation;
 use Kafkiansky\Binary;
 use Prototype\Byte;
 use Prototype\Grpc\Client\GrpcResponse;
@@ -55,17 +57,29 @@ final class ResponseFactory
      * @param class-string<T> $messageType
      * @return GrpcResponse<T>
      */
-    public function fromHTTPResponse(Response $response, string $messageType): GrpcResponse
+    public function fromHTTPResponse(Response $response, string $messageType, Cancellation $cancellation = new NullCancellation()): GrpcResponse
     {
         /** @var ?numeric-string $grpcStatus */
         $grpcStatus = $response->getHeader('grpc-status');
-        $statusCode = null !== $grpcStatus ? (StatusCode::tryFrom((int)$grpcStatus) ?: StatusCode::UNKNOWN) : StatusCode::OK;
+        $grpcMessage = $response->getHeader('grpc-message');
+        $headers = $response->getHeaders();
+
+        if (null === $grpcStatus) {
+            $trailers = $response->getTrailers()->await($cancellation);
+            $headers += $trailers->getHeaders();
+
+            /** @var ?numeric-string $grpcStatus */
+            $grpcStatus = $trailers->getHeader('grpc-status');
+            $grpcMessage = $trailers->getHeader('grpc-message');
+        }
+
+        $statusCode = null !== $grpcStatus ? (StatusCode::tryFrom((int)$grpcStatus) ?: StatusCode::UNKNOWN) : StatusCode::UNKNOWN;
 
         if ($statusCode !== StatusCode::OK) {
             return GrpcResponse::error(
                 $statusCode,
-                $response->getHeaders(),
-                $response->getHeader('grpc-message'),
+                $headers,
+                $grpcMessage,
             );
         }
 

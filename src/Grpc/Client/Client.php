@@ -68,6 +68,7 @@ final class Client
         return $this->responseFactory->fromHTTPResponse(
             $response,
             $grpcRequest->responseType,
+            $cancellation,
         );
     }
 }
