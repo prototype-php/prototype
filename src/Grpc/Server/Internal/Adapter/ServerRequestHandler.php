@@ -34,6 +34,8 @@ use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
 use Prototype\Grpc\Server\Internal\Exception\ServerException;
 use Prototype\Grpc\Server\Internal\Io\GrpcRequest;
 use Prototype\Grpc\Server\Internal\Io\GrpcResponse;
+use Prototype\Grpc\Server\MethodNotImplemented;
+use Prototype\Grpc\StatusCode;
 
 /**
  * @internal
@@ -60,6 +62,8 @@ final class ServerRequestHandler implements RequestHandler
                 );
         } catch (ServerException $e) {
             $response = GrpcResponse::error($e->status, $e->errorMessage);
+        } catch (MethodNotImplemented $e) {
+            $response = GrpcResponse::error(StatusCode::UNIMPLEMENTED, $e->getMessage());
         } catch (\Throwable) {
             $response = GrpcResponse::error();
         }

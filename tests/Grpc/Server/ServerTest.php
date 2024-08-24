@@ -32,6 +32,7 @@ use Amp\NullCancellation;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Prototype\Grpc\Client\ClientBuilder;
 use Prototype\Grpc\Client\ClientOptions;
+use Prototype\Grpc\Client\RequestException;
 use Prototype\Grpc\Compression\GZIPCompressor;
 use Prototype\Grpc\Server\Internal\Adapter\ServerRequestHandler;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
@@ -133,6 +134,33 @@ final class ServerTest extends GrpcTestCase
         self::assertCount(1, $requests);
         self::assertEquals([$request], $requests);
         self::assertEquals(new AddTaskResponse(errorType: AddTaskResponseErrorType::BAD_REQUEST), $response);
+
+        $server->shutdown();
+    }
+
+    public function testGeneratedServerNotImplemented(): void
+    {
+        $server = (new ServerBuilder())
+            ->withAddress('0.0.0.0:3000')
+            ->registerFromService(new TestControllerServerRegistrar(new class extends TestControllerServer {}))
+            ->build()
+        ;
+
+        $server->serve();
+
+        $grpcClient = (new ClientBuilder())
+            ->build(new ClientOptions('http://localhost:3000'))
+        ;
+
+        $client = new TestControllerClient($grpcClient);
+
+        try {
+            $client->addTask(new AddTaskRequest(14, 'test', ['recurrent']));
+            self::assertTrue(false);
+        } catch (\Throwable $e) {
+            self::assertInstanceOf(RequestException::class, $e);
+            self::assertSame('Request terminated with error: Rpc "/test.api.v1.TestController/AddTask" is not implemented yet. (12).', $e->getMessage());
+        }
 
         $server->shutdown();
     }

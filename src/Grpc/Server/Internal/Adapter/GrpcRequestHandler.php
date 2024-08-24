@@ -31,6 +31,7 @@ use Amp\Cancellation;
 use Amp\NullCancellation;
 use Prototype\Grpc\Server\Internal\Exception\ServerException;
 use Prototype\Grpc\Server\Internal\Io;
+use Prototype\Grpc\Server\MethodNotImplemented;
 
 /**
  * @internal
@@ -40,6 +41,7 @@ interface GrpcRequestHandler
 {
     /**
      * @throws ServerException
+     * @throws MethodNotImplemented
      */
     public function handle(Io\GrpcRequest $request, Cancellation $cancellation = new NullCancellation()): Io\GrpcResponse;
 }
