@@ -34,6 +34,7 @@ use Prototype\Grpc\Client\ClientBuilder;
 use Prototype\Grpc\Client\ClientOptions;
 use Prototype\Grpc\Client\RequestException;
 use Prototype\Grpc\Compression\GZIPCompressor;
+use Prototype\Grpc\Interceptor\AddGrpcTimeout;
 use Prototype\Grpc\Server\Internal\Adapter\ServerRequestHandler;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
 use Prototype\Grpc\Server\Internal\Handler\InterceptedGrpcRequestHandler;
@@ -42,6 +43,7 @@ use Prototype\Grpc\Server\RpcMethod;
 use Prototype\Grpc\Server\Server;
 use Prototype\Grpc\Server\ServerBuilder;
 use Prototype\Grpc\Server\ServiceDescriptor;
+use Prototype\Grpc\Timeout;
 use Prototype\Tests\Grpc\GrpcTestCase;
 use Test\Api\V1\AddTaskRequest;
 use Test\Api\V1\AddTaskResponse;
@@ -49,6 +51,7 @@ use Test\Api\V1\AddTaskResponseErrorType;
 use Test\Api\V1\TestControllerClient;
 use Test\Api\V1\TestControllerServer;
 use Test\Api\V1\TestControllerServerRegistrar;
+use function Amp\delay;
 
 #[CoversClass(Server::class)]
 #[CoversClass(ServerBuilder::class)]
@@ -160,6 +163,77 @@ final class ServerTest extends GrpcTestCase
         } catch (\Throwable $e) {
             self::assertInstanceOf(RequestException::class, $e);
             self::assertSame('Request terminated with error: Rpc "/test.api.v1.TestController/AddTask" is not implemented yet. (12).', $e->getMessage());
+        }
+
+        $server->shutdown();
+    }
+
+    public function testClientTimeout(): void
+    {
+        $server = (new ServerBuilder())
+            ->withAddress('0.0.0.0:3000')
+            ->withRequestTimeout(Timeout::seconds(1))
+            ->registerFromService(new TestControllerServerRegistrar(new class extends TestControllerServer {
+                public function addTask(AddTaskRequest $request, Cancellation $cancellation = new NullCancellation(),): AddTaskResponse
+                {
+                    delay(0.500, cancellation: $cancellation);
+
+                    return new AddTaskResponse();
+                }
+            }))
+            ->build()
+        ;
+
+        $server->serve();
+
+        $grpcClient = (new ClientBuilder())
+            ->withInterceptor(new AddGrpcTimeout(Timeout::milliseconds(100)))
+            ->build(new ClientOptions('http://localhost:3000'))
+        ;
+
+        $client = new TestControllerClient($grpcClient);
+
+        try {
+            $client->addTask(new AddTaskRequest(14, 'test', ['recurrent']));
+            self::assertTrue(false);
+        } catch (\Throwable $e) {
+            self::assertInstanceOf(RequestException::class, $e);
+            self::assertSame('Request terminated with error: DEADLINE_EXCEEDED (4).', $e->getMessage());
+        }
+
+        $server->shutdown();
+    }
+
+    public function testServerTimeout(): void
+    {
+        $server = (new ServerBuilder())
+            ->withAddress('0.0.0.0:3000')
+            ->withRequestTimeout(Timeout::milliseconds(100))
+            ->registerFromService(new TestControllerServerRegistrar(new class extends TestControllerServer {
+                public function addTask(AddTaskRequest $request, Cancellation $cancellation = new NullCancellation(),): AddTaskResponse
+                {
+                    delay(0.500, cancellation: $cancellation);
+
+                    return new AddTaskResponse();
+                }
+            }))
+            ->build()
+        ;
+
+        $server->serve();
+
+        $grpcClient = (new ClientBuilder())
+            ->build(new ClientOptions('http://localhost:3000'))
+        ;
+
+        $client = new TestControllerClient($grpcClient);
+
+        try {
+            $client->addTask(new AddTaskRequest(14, 'test', ['recurrent']));
+            self::assertTrue(false);
+        } catch (\Throwable $e) {
+            self::assertInstanceOf(RequestException::class, $e);
+            self::assertSame('Request terminated with error: DEADLINE_EXCEEDED (4).', $e->getMessage());
         }
 
         $server->shutdown();

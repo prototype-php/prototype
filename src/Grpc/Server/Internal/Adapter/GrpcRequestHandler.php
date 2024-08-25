@@ -28,7 +28,9 @@ declare(strict_types=1);
 namespace Prototype\Grpc\Server\Internal\Adapter;
 
 use Amp\Cancellation;
+use Amp\CancelledException;
 use Amp\NullCancellation;
+use Amp\TimeoutException;
 use Prototype\Grpc\Server\Internal\Exception\ServerException;
 use Prototype\Grpc\Server\Internal\Io;
 use Prototype\Grpc\Server\MethodNotImplemented;
@@ -42,6 +44,8 @@ interface GrpcRequestHandler
     /**
      * @throws ServerException
      * @throws MethodNotImplemented
+     * @throws TimeoutException
+     * @throws CancelledException
      */
     public function handle(Io\GrpcRequest $request, Cancellation $cancellation = new NullCancellation()): Io\GrpcResponse;
 }

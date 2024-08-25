@@ -27,9 +27,6 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc;
 
-use Amp\Cancellation;
-use Amp\TimeoutCancellation;
-
 /**
  * @api
  */
@@ -166,11 +163,6 @@ final class Timeout
     public function toHeaderValue(): string
     {
         return \sprintf('%d%s', $this->value, $this->unit);
-    }
-
-    public function toCancellation(): Cancellation
-    {
-        return new TimeoutCancellation($this->toSeconds());
     }
 
     public function toSeconds(): float

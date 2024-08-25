@@ -37,6 +37,7 @@ use Prototype\Grpc\Server\Internal\Handler\InterceptedGrpcRequestHandler;
 use Prototype\Grpc\Server\Internal\Handler\MessageDispatcher;
 use Prototype\Grpc\Server\Internal\Handler\MessageCompressor;
 use Prototype\Grpc\Server\Internal\Transport\OnlyHttp2DriverFactory;
+use Prototype\Grpc\Timeout;
 use Prototype\Serializer\Serializer;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -163,6 +164,14 @@ final class ServerBuilder implements ServiceRegistry
     {
         $builder = clone $this;
         $builder->compressors[] = $compressor;
+
+        return $builder;
+    }
+
+    public function withRequestTimeout(Timeout $timeout): self
+    {
+        $builder = clone $this;
+        $builder->requestTimeout = $timeout->toSeconds();
 
         return $builder;
     }

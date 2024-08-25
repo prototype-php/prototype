@@ -27,9 +27,11 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc\Server\Internal\Adapter;
 
+use Amp\CancelledException;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestHandler;
 use Amp\Http\Server\Response;
+use Amp\TimeoutException;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
 use Prototype\Grpc\Server\Internal\Exception\ServerException;
 use Prototype\Grpc\Server\Internal\Io\GrpcRequest;
@@ -55,15 +57,19 @@ final class ServerRequestHandler implements RequestHandler
     public function handleRequest(Request $request): Response
     {
         try {
+            $grpcRequest = GrpcRequest::fromServerRequest($request);
+
             $response = $this->requestHandler
                 ->handle(
-                    GrpcRequest::fromServerRequest($request),
-                    $this->cancellations->createCancellation(),
+                    $grpcRequest,
+                    $this->cancellations->createCancellation($grpcRequest->timeout),
                 );
         } catch (ServerException $e) {
             $response = GrpcResponse::error($e->status, $e->errorMessage);
         } catch (MethodNotImplemented $e) {
             $response = GrpcResponse::error(StatusCode::UNIMPLEMENTED, $e->getMessage());
+        } catch (CancelledException | TimeoutException) {
+            $response = GrpcResponse::error(StatusCode::DEADLINE_EXCEEDED);
         } catch (\Throwable) {
             $response = GrpcResponse::error();
         }

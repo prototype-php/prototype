@@ -30,6 +30,7 @@ namespace Prototype\Grpc\Server\Internal\Io;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestBody;
 use Prototype\Grpc\Internal\Net\Endpoint;
+use Prototype\Grpc\Timeout;
 
 /**
  * @internal
@@ -41,14 +42,18 @@ final class GrpcRequest
         public readonly Endpoint $endpoint,
         public readonly RequestBody $body,
         public readonly ?string $encoding = null,
+        public readonly ?Timeout $timeout = null,
     ) {}
 
     public static function fromServerRequest(Request $request): self
     {
+        $grpcTimeout = $request->getHeader('grpc-timeout');
+
         return new self(
             Endpoint::parse($request->getUri()->getPath()),
             $request->getBody(),
             $request->getHeader('grpc-encoding'),
+            null !== $grpcTimeout && '' !== $grpcTimeout ? Timeout::fromString($grpcTimeout) : null,
         );
     }
 }
