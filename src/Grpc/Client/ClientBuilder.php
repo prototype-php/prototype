@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc\Client;
 
+use Amp\Http\Client\ApplicationInterceptor;
 use Amp\Http\Client\DelegateHttpClient;
 use Amp\Http\Client\HttpClientBuilder;
 use Prototype\Grpc\Client\Internal\Wire\RequestFactory;
@@ -45,6 +46,9 @@ final class ClientBuilder
     private ?DelegateHttpClient $httpClient = null;
 
     private ?Compressor $compressor = null;
+
+    /** @var list<ApplicationInterceptor> */
+    private array $interceptors = [];
 
     public function withSerializer(Serializer $serializer): self
     {
@@ -70,6 +74,14 @@ final class ClientBuilder
         return $builder;
     }
 
+    public function withInterceptor(ApplicationInterceptor $interceptor): self
+    {
+        $builder = clone $this;
+        $builder->interceptors[] = $interceptor;
+
+        return $builder;
+    }
+
     public static function buildDefault(ClientOptions $options): Client
     {
         return (new self())->build($options);
@@ -80,9 +92,15 @@ final class ClientBuilder
         $serializer = $this->serializer ?: new Serializer();
         $compressor = $this->compressor ?: new IdentityCompressor();
 
+        $httpClientBuilder = new HttpClientBuilder();
+
+        foreach ($this->interceptors as $interceptor) {
+            $httpClientBuilder = $httpClientBuilder->intercept($interceptor);
+        }
+
         return new Client(
             $options,
-            $this->httpClient ?: HttpClientBuilder::buildDefault(),
+            $this->httpClient ?: $httpClientBuilder->build(),
             new RequestFactory(
                 $serializer,
                 $compressor,
