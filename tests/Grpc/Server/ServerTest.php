@@ -38,6 +38,7 @@ use Prototype\Grpc\Interceptor\AddGrpcTimeout;
 use Prototype\Grpc\Server\Internal\Adapter\ServerRequestHandler;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
 use Prototype\Grpc\Server\Internal\Handler\InterceptedGrpcRequestHandler;
+use Prototype\Grpc\Server\Internal\Io\GrpcRequest;
 use Prototype\Grpc\Server\Internal\Transport\OnlyHttp2DriverFactory;
 use Prototype\Grpc\Server\RpcMethod;
 use Prototype\Grpc\Server\Server;
@@ -61,6 +62,7 @@ use function Amp\delay;
 #[CoversClass(CancellationFactory::class)]
 #[CoversClass(RpcMethod::class)]
 #[CoversClass(ServiceDescriptor::class)]
+#[CoversClass(GrpcRequest::class)]
 final class ServerTest extends GrpcTestCase
 {
     public function testGeneratedServer(): void
