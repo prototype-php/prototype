@@ -25,27 +25,25 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Adapter;
+namespace Prototype\Tests\Grpc\Interceptor;
 
-use Amp\Cancellation;
-use Amp\CancelledException;
-use Amp\NullCancellation;
-use Amp\TimeoutException;
-use Prototype\Grpc\Server\Internal\Exception\ServerException;
-use Prototype\Grpc\Server\Internal\Io;
-use Prototype\Grpc\Server\MethodNotImplemented;
+use Amp\Http\Client\Interceptor\ModifyRequest;
+use Amp\Http\Client\Request;
 
 /**
  * @internal
- * @psalm-internal Prototype\Grpc
+ * @psalm-internal Prototype\Tests
  */
-interface GrpcRequestHandler
+final class RememberRequestInterceptor extends ModifyRequest
 {
-    /**
-     * @throws ServerException
-     * @throws MethodNotImplemented
-     * @throws TimeoutException
-     * @throws CancelledException
-     */
-    public function handle(Io\GrpcRequest $request, Cancellation $cancellation = new NullCancellation()): Io\GrpcResponse;
+    public ?Request $request = null;
+
+    public function __construct()
+    {
+        parent::__construct(function (Request $request): Request {
+            $this->request = $request;
+
+            return $request;
+        });
+    }
 }

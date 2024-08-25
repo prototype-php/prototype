@@ -25,27 +25,32 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Adapter;
+namespace Prototype\Grpc\Interceptor;
 
-use Amp\Cancellation;
-use Amp\CancelledException;
-use Amp\NullCancellation;
-use Amp\TimeoutException;
-use Prototype\Grpc\Server\Internal\Exception\ServerException;
-use Prototype\Grpc\Server\Internal\Io;
-use Prototype\Grpc\Server\MethodNotImplemented;
+use Amp\Http\Client\Interceptor\ModifyRequest;
+use Amp\Http\Client\Request;
+use Prototype\Grpc\Timeout;
 
 /**
- * @internal
- * @psalm-internal Prototype\Grpc
+ * @api
  */
-interface GrpcRequestHandler
+final class AddGrpcTimeout extends ModifyRequest
 {
     /**
-     * @throws ServerException
-     * @throws MethodNotImplemented
-     * @throws TimeoutException
-     * @throws CancelledException
+     * @param Timeout|callable(): Timeout $timeout
      */
-    public function handle(Io\GrpcRequest $request, Cancellation $cancellation = new NullCancellation()): Io\GrpcResponse;
+    public function __construct(Timeout|callable $timeout)
+    {
+        parent::__construct(static function (Request $request) use ($timeout): Request {
+            if (!\is_callable($timeout)) {
+                $timeout = static fn (): Timeout => $timeout;
+            }
+
+            if (!$request->hasHeader('grpc-timeout')) {
+                $request->addHeader('grpc-timeout', $timeout()->toHeaderValue());
+            }
+
+            return $request;
+        });
+    }
 }

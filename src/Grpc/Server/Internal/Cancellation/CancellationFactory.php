@@ -30,6 +30,7 @@ namespace Prototype\Grpc\Server\Internal\Cancellation;
 use Amp\Cancellation;
 use Amp\NullCancellation;
 use Amp\TimeoutCancellation;
+use Prototype\Grpc\Timeout;
 
 /**
  * @api
@@ -43,11 +44,12 @@ final class CancellationFactory
         private readonly ?float $requestTimeout = null,
     ) {}
 
-    public function createCancellation(): Cancellation
+    public function createCancellation(?Timeout $timeout = null): Cancellation
     {
-        return null !== $this->requestTimeout
-            ? new TimeoutCancellation($this->requestTimeout)
-            : new NullCancellation()
-            ;
+        if (null !== ($requestTimeout = $timeout?->toSeconds() ?? $this->requestTimeout)) {
+            return new TimeoutCancellation($requestTimeout);
+        }
+
+        return new NullCancellation();
     }
 }
