@@ -58,7 +58,7 @@ final class WellKnown
 
         yield 'google.protobuf.Empty' => PhpType::class(
             'Empty_',
-            'Prototype\WellKnown\Empty_'
+            'Prototype\WellKnown\Empty_',
         );
 
         yield 'google.type.Color' => PhpType::class(
