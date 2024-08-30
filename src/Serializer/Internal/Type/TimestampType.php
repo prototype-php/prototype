@@ -40,8 +40,8 @@ final class TimestampType
      * @param int32 $nanos
      */
     private function __construct(
-        public readonly int $seconds,
-        public readonly int $nanos,
+        public readonly int $seconds = 0,
+        public readonly int $nanos = 0,
     ) {}
 
     public static function fromDateTime(\DateTimeInterface $dateTime): self

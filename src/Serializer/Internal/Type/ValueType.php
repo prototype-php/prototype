@@ -161,9 +161,7 @@ final class ValueType implements TypeSerializer
 
     public function labels(): TypedMap
     {
-        return Labels::new(Type::BYTES)
-            ->with(Labels::default, [])
-            ;
+        return Labels::new(Type::BYTES);
     }
 
     /**

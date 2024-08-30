@@ -139,7 +139,7 @@ final class ProtobufMarshaller implements
         // so that we can distinguish between a real value and no value.
         foreach ($properties as $propertyDeserializer) {
             if (!$propertyDeserializer->isInitialized($object)) {
-                $propertyDeserializer->setDefault($object, $propertyDeserializer->default());
+                $propertyDeserializer->setDefault($object);
             }
         }
 

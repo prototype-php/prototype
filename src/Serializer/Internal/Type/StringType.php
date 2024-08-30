@@ -59,7 +59,6 @@ final class StringType implements TypeSerializer
     public function labels(): TypedMap
     {
         return Labels::new(Wire\Type::BYTES)
-            ->with(Labels::default, '')
             ->with(Labels::schemaType, ProtobufType::string)
             ;
     }

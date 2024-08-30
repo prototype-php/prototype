@@ -29,7 +29,6 @@ namespace Prototype\Serializer\Internal\Reflection;
 
 use Prototype\Byte;
 use Prototype\Serializer\Exception\EnumDoesNotContainVariant;
-use Prototype\Serializer\Exception\EnumDoesNotContainZeroVariant;
 use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Type\TypeSerializer;
 use Prototype\Serializer\Internal\Type\VarintType;
@@ -89,7 +88,6 @@ final class EnumPropertyMarshaller implements PropertyMarshaller
     public function labels(): TypedMap
     {
         return $this->type->labels()
-            ->with(Labels::default, $this->enumName::tryFrom(0) ?: throw new EnumDoesNotContainZeroVariant($this->enumName))
             ->with(Labels::isEmpty, static fn (\BackedEnum $enum): bool => 0 === $enum->value)
             ;
     }

@@ -59,7 +59,6 @@ final class BoolType implements TypeSerializer
     public function labels(): TypedMap
     {
         return Labels::new(Wire\Type::VARINT)
-            ->with(Labels::default, false)
             ->with(Labels::packed, true)
             ->with(Labels::schemaType, ProtobufType::bool)
             ;

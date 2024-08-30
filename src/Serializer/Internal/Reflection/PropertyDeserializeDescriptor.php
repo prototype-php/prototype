@@ -28,7 +28,6 @@ declare(strict_types=1);
 namespace Prototype\Serializer\Internal\Reflection;
 
 use Prototype\Byte;
-use Prototype\Serializer\Internal\Label\Labels;
 use Prototype\Serializer\Internal\Wire\Tag;
 use Prototype\Serializer\PrototypeException;
 
@@ -41,21 +40,13 @@ final class PropertyDeserializeDescriptor
 {
     /**
      * @param PropertyMarshaller<T> $marshaller
+     * @param T $default
      */
     public function __construct(
         private readonly \ReflectionProperty $property,
         private readonly PropertyMarshaller $marshaller,
+        private readonly mixed $default = null,
     ) {}
-
-    /**
-     * @return T
-     * @throws PrototypeException
-     */
-    public function default(): mixed
-    {
-        /** @var T */
-        return $this->marshaller->labels()[Labels::default];
-    }
 
     /**
      * @return T
@@ -80,9 +71,9 @@ final class PropertyDeserializeDescriptor
      * @template TClass of object
      * @param TClass $object
      */
-    public function setDefault(object $object, mixed $value): void
+    public function setDefault(object $object): void
     {
-        $this->setValue($object, $this->property->getType()?->allowsNull() ? null : $value);
+        $this->setValue($object, $this->property->getType()?->allowsNull() && null === $this->default ? null : $this->default);
     }
 
     /**

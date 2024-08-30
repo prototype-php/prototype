@@ -41,7 +41,6 @@ use Prototype\Serializer\Exception\TypeIsUnknown;
 use Prototype\Serializer\Exception\TypeWasNotExpected;
 use Prototype\Serializer\Exception\ValueIsNotSerializable;
 use Prototype\Serializer\Field;
-use Prototype\Serializer\Internal\Label\LabelDefault;
 use Prototype\Serializer\Internal\Label\LabelIsEmpty;
 use Prototype\Serializer\Internal\Label\LabelPacked;
 use Prototype\Serializer\Internal\Label\Labels;
@@ -140,7 +139,6 @@ use Prototype\Tests\Serializer\Fixtures\MessageWithTypeAliasEnum;
 #[CoversClass(ValueType::class)]
 #[CoversClass(DurationType::class)]
 #[CoversClass(TimestampType::class)]
-#[CoversClass(LabelDefault::class)]
 #[CoversClass(LabelIsEmpty::class)]
 #[CoversClass(LabelPacked::class)]
 #[CoversClass(LabelSerializeTag::class)]
@@ -209,15 +207,6 @@ final class SerializerTest extends TestCase
         self::expectException(TypeIsUnknown::class);
         self::expectExceptionMessage('The field\'s "37" type "4" is unknown.');
         $serializer->deserialize($buffer, EmptyMessage::class);
-    }
-
-    public function testDeserializeEnumWithoutZeroVariant(): void
-    {
-        $serializer = new Serializer();
-
-        self::expectException(EnumDoesNotContainZeroVariant::class);
-        self::expectExceptionMessage('Enum "Prototype\Tests\Serializer\Fixtures\InvalidEnum" must contain zero variant.');
-        $serializer->deserialize(Buffer::default(), InvalidMessage::class);
     }
 
     public function testDeserializeConstantEnumWithoutZeroVariant(): void

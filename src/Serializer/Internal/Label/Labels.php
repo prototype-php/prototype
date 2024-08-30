@@ -36,7 +36,6 @@ use Typhoon\TypedMap\TypedMap;
  */
 enum Labels
 {
-    public const default = LabelDefault::key;
     public const wireType = LabelWireType::key;
     public const schemaType = LabelSchemaType::key;
     public const packed = LabelPacked::key;

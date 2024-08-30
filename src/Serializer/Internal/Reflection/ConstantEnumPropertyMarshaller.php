@@ -101,7 +101,6 @@ final class ConstantEnumPropertyMarshaller implements PropertyMarshaller
     public function labels(): TypedMap
     {
         return $this->type->labels()
-            ->with(Labels::default, 0)
             ->with(Labels::isEmpty, static fn (int $variant): bool => 0 === $variant)
             ;
     }
