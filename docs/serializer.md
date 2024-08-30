@@ -79,6 +79,7 @@ echo $serializer->deserialize($byteBuffer, Message::class)->name; // kafkiansky
 - [array shape](#array-shape)
 - [type alias](#type-alias)
 - [value object](#value-object)
+- [defaults](#defaults)
 
 ### Scalars
 
@@ -432,6 +433,80 @@ However, only `strings`, `booleans`, numbers (`int` and `float`), `nulls`, `list
 ### Value Object
 
 ⚠️ The feature is not yet stabilized and therefore has no documentation to keep you from using it if it does fail to be implemented.
+
+## Defaults
+
+Each property must have a default value or be nullable, since all protobuf fields are optional.
+
+In this case there will be a default value:
+```php
+<?php
+
+declare(strict_types=1);
+
+use Prototype\Serializer\Serializer;
+use Prototype\Byte\Buffer;
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$serializer = new Serializer();
+
+enum Type: int
+{
+    case UNSPECIFIED = 0;
+    case A = 1;
+}
+
+final class Request
+{
+    public function __construct(
+        public readonly Type $type = Type::A,
+    ) {}
+}
+
+var_dump($serializer->deserialize(Buffer::default(), Request::class));
+
+// Request {
+//  +type: Type {
+//    +name: "A"
+//    +value: 1
+//  }
+// }
+```
+
+In this case it will be null:
+```php
+<?php
+
+declare(strict_types=1);
+
+use Prototype\Byte\Buffer;
+use Prototype\Serializer\Serializer;
+
+require_once __DIR__.'/../vendor/autoload.php';
+
+$serializer = new Serializer();
+
+enum Type: int
+{
+    case UNSPECIFIED = 0;
+    case A = 1;
+}
+
+final class Request
+{
+    public function __construct(
+        public readonly ?Type $type = null,
+    ) {}
+}
+
+var_dump($serializer->deserialize(Buffer::default(), Request::class));
+
+// Request {
+//  +type: null
+// }
+
+```
 
 ## Types mapping
 

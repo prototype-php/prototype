@@ -59,7 +59,6 @@ final class SInt64Type implements TypeSerializer
     public function labels(): TypedMap
     {
         return Labels::new(Wire\Type::VARINT)
-            ->with(Labels::default, 0)
             ->with(Labels::packed, true)
             ->with(Labels::schemaType, ProtobufType::sint64)
             ;

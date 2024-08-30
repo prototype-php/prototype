@@ -59,7 +59,6 @@ final class FloatType implements TypeSerializer
     public function labels(): TypedMap
     {
         return Labels::new(Wire\Type::FIXED32)
-            ->with(Labels::default, 0.0)
             ->with(Labels::packed, true)
             ->with(Labels::schemaType, ProtobufType::float)
             ;

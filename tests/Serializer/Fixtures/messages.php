@@ -57,7 +57,7 @@ enum CompressionType: int
 final class MessageWithEnum
 {
     public function __construct(
-        public readonly CompressionType $type,
+        public readonly CompressionType $type = CompressionType::DEFAULT,
     ) {}
 
     public static function withGzipCompression(): self
@@ -208,8 +208,8 @@ final class PhoneNumber
 {
     public function __construct(
         #[Field(num: 2)]
-        public readonly PhoneType $type,
-        public readonly string $number,
+        public readonly PhoneType $type = PhoneType::MOBILE,
+        public readonly string $number = '',
     ) {}
 }
 
@@ -1247,8 +1247,8 @@ final class RecursiveMessage
      * @param int32 $value
      */
     public function __construct(
-        public readonly int $value,
-        public readonly ?self $nested,
+        public readonly int $value = 0,
+        public readonly ?self $nested = null,
     ) {}
 
     public static function default(): self
@@ -1581,5 +1581,45 @@ final class EnumFromTypeAliases
     public static function negative(): self
     {
         return new self(-1, 12);
+    }
+}
+
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'defaults')]
+final class MessageWithDefaults
+{
+    /**
+     * @param sint32 $id
+     */
+    public function __construct(
+        public readonly Status $status = Status::ACTIVE,
+        public readonly RecursiveMessage $payload = new RecursiveMessage(
+            value: 2,
+        ),
+        public readonly string $name = 'default',
+        public readonly int $id = -1,
+    ) {}
+
+    public static function defaults(): self
+    {
+        return new self();
+    }
+}
+
+#[ProtobufMessage(path: 'resources/empty.bin', constructorFunction: 'nulls')]
+final class MessageWithNulls
+{
+    /**
+     * @param sint32 $id
+     */
+    public function __construct(
+        public readonly ?Status $status = null,
+        public readonly ?RecursiveMessage $payload = null,
+        public readonly ?string $name = null,
+        public readonly ?int $id = null,
+    ) {}
+
+    public static function nulls(): self
+    {
+        return new self();
     }
 }

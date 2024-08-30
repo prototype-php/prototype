@@ -35,6 +35,7 @@ use Typhoon\DeclarationId\AnonymousClassId;
 use Typhoon\DeclarationId\NamedClassId;
 use Typhoon\Reflection\AttributeReflection;
 use Typhoon\Reflection\ClassReflection;
+use Typhoon\Reflection\MethodReflection;
 use Typhoon\Reflection\PropertyReflection;
 use Typhoon\Reflection\TyphoonReflector;
 
@@ -66,9 +67,10 @@ final class ProtobufReflector
      */
     public function propertyDeserializers(ClassReflection $class, TyphoonReflector $reflector): array
     {
-        return self::properties($class, $reflector, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller): PropertyDeserializeDescriptor => new PropertyDeserializeDescriptor(
+        return self::properties($class, $reflector, static fn (\ReflectionProperty $property, PropertyMarshaller $marshaller, mixed $default = null): PropertyDeserializeDescriptor => new PropertyDeserializeDescriptor(
             $property,
             $marshaller,
+            $default,
         ));
     }
 
@@ -76,7 +78,7 @@ final class ProtobufReflector
      * @template T of object
      * @template E
      * @param ClassReflection<T, NamedClassId<class-string<T>>|AnonymousClassId<class-string<T>>> $class
-     * @param callable(\ReflectionProperty, PropertyMarshaller): E $toPropertyDescriptor
+     * @param callable(\ReflectionProperty, PropertyMarshaller, mixed=): E $toPropertyDescriptor
      * @psalm-return array<positive-int, E>
      * @throws PrototypeException
      */
@@ -89,6 +91,15 @@ final class ProtobufReflector
             ->filter(static fn (PropertyReflection $property): bool => $property->isPublic() && !$property->isStatic())
         ;
 
+        $constructorProperties = $class
+            ->methods()
+            ->filter(static fn (MethodReflection $reflection): bool => $reflection->id->name === '__construct')
+            ->first()
+            ?->parameters()
+            ->toArray() ?? []
+        ;
+
+        /** @var PropertyReflection $property */
         foreach ($classProperties as $property) {
             /** @var ?Field $field */
             $field = $property
@@ -138,6 +149,7 @@ final class ProtobufReflector
                 $properties[$n] = $toPropertyDescriptor(
                     $property->toNativeReflection(),
                     $propertyMarshaller,
+                    ($constructorProperties[$property->id->name] ?? null)?->defaultValue() ?? null,
                 );
             }
         }
