@@ -282,6 +282,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/field_mask.proto";
+import "google/protobuf/empty.proto";
 import "google/type/color.proto";
 import "google/type/latlng.proto";
 import "google/type/postal_address.proto";
@@ -298,16 +299,17 @@ message RequestWithWellKnownTypes {
     google.protobuf.Duration duration_field = 2;
     google.protobuf.Struct struct_field = 3;
     google.protobuf.FieldMask field_mask_field = 4;
-    google.type.Color color_field = 5;
-    google.type.LatLng latlng_field = 6;
-    google.type.PostalAddress postal_address_field = 7;
-    google.type.PhoneNumber phone_number_field = 8;
-    google.type.Money money_field = 9;
-    google.type.CalendarPeriod calendar_period_field = 10;
-    google.type.Date date_field = 11;
-    google.type.TimeOfDay timeofday_field = 12;
-    google.type.LocalizedText localized_text_field = 13;
-    google.type.Expr expr_field = 14;
+    google.protobuf.Empty empty_field = 5;
+    google.type.Color color_field = 6;
+    google.type.LatLng latlng_field = 7;
+    google.type.PostalAddress postal_address_field = 8;
+    google.type.PhoneNumber phone_number_field = 9;
+    google.type.Money money_field = 10;
+    google.type.CalendarPeriod calendar_period_field = 11;
+    google.type.Date date_field = 12;
+    google.type.TimeOfDay timeofday_field = 13;
+    google.type.LocalizedText localized_text_field = 14;
+    google.type.Expr expr_field = 15;
 }
 PROTO,
             [
@@ -329,6 +331,7 @@ namespace App\V1\Test;
 use Prototype\WellKnown\CalendarPeriod;
 use Prototype\WellKnown\Color;
 use Prototype\WellKnown\Date;
+use Prototype\WellKnown\Empty_;
 use Prototype\WellKnown\Expr;
 use Prototype\WellKnown\FieldMask;
 use Prototype\WellKnown\LatLng;
@@ -351,6 +354,7 @@ final class RequestWithWellKnownTypes
         public readonly ?\DateInterval $durationField = null,
         public readonly array $structField = [],
         public readonly ?FieldMask $fieldMaskField = null,
+        public readonly ?Empty_ $emptyField = null,
         public readonly ?Color $colorField = null,
         public readonly ?LatLng $latlngField = null,
         public readonly ?PostalAddress $postalAddressField = null,
