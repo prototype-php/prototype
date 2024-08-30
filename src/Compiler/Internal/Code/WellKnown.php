@@ -56,6 +56,11 @@ final class WellKnown
             'Prototype\WellKnown\FieldMask',
         );
 
+        yield 'google.protobuf.Empty' => PhpType::class(
+            'Empty_',
+            'Prototype\WellKnown\Empty_'
+        );
+
         yield 'google.type.Color' => PhpType::class(
             'Color',
             'Prototype\WellKnown\Color',
@@ -131,6 +136,7 @@ final class WellKnown
         yield 'google/protobuf/duration.proto'    => 'google.protobuf.Duration';
         yield 'google/protobuf/struct.proto'      => 'google.protobuf.Struct';
         yield 'google/protobuf/field_mask.proto'  => 'google.protobuf.FieldMask';
+        yield 'google/protobuf/empty.proto'       => 'google.protobuf.Empty';
         yield 'google/type/color.proto'           => 'google.type.Color';
         yield 'google/type/calendar_period.proto' => 'google.type.CalendarPeriod';
         yield 'google/type/dayofweek.proto'       => 'google.type.DayOfWeek';
