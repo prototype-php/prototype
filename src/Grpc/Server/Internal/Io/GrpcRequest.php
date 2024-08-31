@@ -27,9 +27,12 @@ declare(strict_types=1);
 
 namespace Prototype\Grpc\Server\Internal\Io;
 
+use Amp\Http\HttpStatus;
 use Amp\Http\Server\Request;
 use Amp\Http\Server\RequestBody;
 use Prototype\Grpc\Internal\Net\Endpoint;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\StatusCode;
 use Prototype\Grpc\Timeout;
 
 /**
@@ -38,15 +41,26 @@ use Prototype\Grpc\Timeout;
  */
 final class GrpcRequest
 {
-    public function __construct(
+    private function __construct(
         public readonly Endpoint $endpoint,
         public readonly RequestBody $body,
         public readonly ?string $encoding = null,
         public readonly ?Timeout $timeout = null,
     ) {}
 
+    /**
+     * @throws ServerException
+     */
     public static function fromServerRequest(Request $request): self
     {
+        if (!str_starts_with(($contentType = $request->getHeader('content-type')) ?: '', 'application/grpc')) {
+            throw new ServerException(
+                StatusCode::INVALID_ARGUMENT,
+                \sprintf('Invalid gRPC request content-type "%s".', $contentType),
+                HttpStatus::UNSUPPORTED_MEDIA_TYPE,
+            );
+        }
+
         $grpcTimeout = $request->getHeader('grpc-timeout');
 
         return new self(
