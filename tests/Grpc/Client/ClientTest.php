@@ -79,6 +79,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', 'identity'],
                     ],
@@ -132,6 +133,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', $compressor->name()],
                     ],
@@ -184,6 +186,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', 'identity'],
                     ],
