@@ -32,6 +32,7 @@ use Amp\Http\Client\Request;
 use Kafkiansky\Binary\Buffer;
 use Kafkiansky\Binary\Endianness;
 use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Internal\Version;
 use Prototype\Serializer\Serializer;
 
 /**
@@ -77,6 +78,7 @@ final class RequestFactory
         $request->setProtocolVersions(['2']);
         $request->setHeaders([
             'Content-Type' => 'application/grpc',
+            'User-Agent' => 'grpc-php-prototype/'.Version::pretty(),
             'TE' => 'trailers',
             'grpc-encoding' => $this->compressor->name(),
         ]);

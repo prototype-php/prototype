@@ -43,6 +43,7 @@ use Prototype\Grpc\Client\Internal\Wire\RequestFactory;
 use Prototype\Grpc\Client\Internal\Wire\ResponseFactory;
 use Prototype\Grpc\Client\RequestException;
 use Prototype\Grpc\Compression\GZIPCompressor;
+use Prototype\Grpc\Internal\Version;
 use Prototype\Grpc\StatusCode;
 use Prototype\Serializer\Serializer;
 use Prototype\Tests\Grpc\GrpcTestCase;
@@ -58,6 +59,7 @@ use Test\Api\V1\TestControllerClient;
 #[CoversClass(ClientOptions::class)]
 #[CoversClass(RequestFactory::class)]
 #[CoversClass(ResponseFactory::class)]
+#[CoversClass(Version::class)]
 final class ClientTest extends GrpcTestCase
 {
     private Serializer $serializer;
@@ -79,6 +81,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', 'identity'],
                     ],
@@ -132,6 +135,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', $compressor->name()],
                     ],
@@ -184,6 +188,7 @@ final class ClientTest extends GrpcTestCase
                 self::assertSame(
                     [
                         ['Content-Type', 'application/grpc'],
+                        ['User-Agent', 'grpc-php-prototype/dev'],
                         ['TE', 'trailers'],
                         ['grpc-encoding', 'identity'],
                     ],
