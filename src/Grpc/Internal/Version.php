@@ -30,7 +30,8 @@ namespace Prototype\Grpc\Internal;
 use Composer\InstalledVersions;
 
 /**
- * @api
+ * @internal
+ * @psalm-internal Prototype\Grpc
  */
 final class Version
 {
