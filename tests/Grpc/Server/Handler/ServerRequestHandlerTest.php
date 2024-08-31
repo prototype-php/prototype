@@ -35,10 +35,12 @@ use PHPUnit\Framework\TestCase;
 use Prototype\Grpc\Server\Internal\Adapter\GrpcRequestHandler;
 use Prototype\Grpc\Server\Internal\Adapter\ServerRequestHandler;
 use Prototype\Grpc\Server\Internal\Cancellation\CancellationFactory;
+use Prototype\Grpc\Server\Internal\Io\GrpcResponse;
 use Prototype\Grpc\StatusCode;
 use Psr\Http\Message\UriInterface;
 
 #[CoversClass(ServerRequestHandler::class)]
+#[CoversClass(GrpcResponse::class)]
 final class ServerRequestHandlerTest extends TestCase
 {
     public function testRequestNotHandledDueToBadContentType(): void
