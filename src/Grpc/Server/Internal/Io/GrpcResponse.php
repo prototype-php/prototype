@@ -37,6 +37,7 @@ use Prototype\Grpc\StatusCode;
 /**
  * @internal
  * @psalm-internal Prototype\Grpc
+ * @psalm-type HTTPCode = int<100, 511>
  */
 final class GrpcResponse
 {
@@ -48,6 +49,7 @@ final class GrpcResponse
 
     /**
      * @param array<non-empty-string, non-empty-string> $headers
+     * @param HTTPCode $httpStatus
      */
     private function __construct(
         private readonly array $headers,
@@ -55,6 +57,7 @@ final class GrpcResponse
         private readonly ReadableStream|string $body = '',
         private readonly ?Trailers $trailers = null,
         private readonly ?string $message = null,
+        private readonly int $httpStatus = HttpStatus::OK,
     ) {}
 
     public static function error(StatusCode $status = StatusCode::INTERNAL, ?string $message = null): self
@@ -94,13 +97,29 @@ final class GrpcResponse
             $this->body,
             $this->trailers,
             $this->message,
+            $this->httpStatus,
+        );
+    }
+
+    /**
+     * @param HTTPCode $status
+     */
+    public function withHttpStatus(int $status): self
+    {
+        return new self(
+            $this->headers,
+            $this->code,
+            $this->body,
+            $this->trailers,
+            $this->message,
+            $status,
         );
     }
 
     public function toServerResponse(): Response
     {
         return new Response(
-            HttpStatus::OK,
+            $this->httpStatus,
             $this->headers,
             $this->body,
             $this->trailers ?: new Trailers(

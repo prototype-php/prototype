@@ -65,7 +65,9 @@ final class ServerRequestHandler implements RequestHandler
                     $this->cancellations->createCancellation($grpcRequest->timeout),
                 );
         } catch (ServerException $e) {
-            $response = GrpcResponse::error($e->status, $e->errorMessage);
+            $response = GrpcResponse::error($e->status, $e->errorMessage)
+                ->withHttpStatus($e->httpStatus)
+            ;
         } catch (MethodNotImplemented $e) {
             $response = GrpcResponse::error(StatusCode::UNIMPLEMENTED, $e->getMessage());
         } catch (CancelledException | TimeoutException) {

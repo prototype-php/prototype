@@ -25,26 +25,31 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Server\Internal\Exception;
+namespace Prototype\Tests\Grpc\Server\Io;
 
-use Amp\Http\HttpStatus;
-use Prototype\Grpc\StatusCode;
+use Amp\Http\Server\Driver\Client;
+use Amp\Http\Server\Request;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
+use Prototype\Grpc\Server\Internal\Exception\ServerException;
+use Prototype\Grpc\Server\Internal\Io\GrpcRequest;
+use Psr\Http\Message\UriInterface;
 
-/**
- * @internal
- * @psalm-internal Prototype\Grpc
- */
-final class ServerException extends \Exception
+#[CoversClass(GrpcRequest::class)]
+final class GrpcRequestTest extends TestCase
 {
-    /**
-     * @param int<100, 511> $httpStatus
-     */
-    public function __construct(
-        public readonly StatusCode $status = StatusCode::INTERNAL,
-        public readonly ?string $errorMessage = null,
-        public readonly int $httpStatus = HttpStatus::OK,
-        ?\Throwable $previous = null,
-    ) {
-        parent::__construct(\sprintf('Unexpected error "%s" occurred.', $this->errorMessage ?: $this->status->name), previous: $previous);
+    public function testBadContentType(): void
+    {
+        self::expectException(ServerException::class);
+        self::expectExceptionMessage('Invalid gRPC request content-type "application/json".');
+
+        GrpcRequest::fromServerRequest(new Request(
+            $this->createStub(Client::class),
+            'POST',
+            $this->createStub(UriInterface::class),
+            [
+                'content-type' => 'application/json',
+            ],
+        ));
     }
 }
