@@ -25,13 +25,11 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Client\Internal\Wire;
+namespace Prototype\Grpc\Client\Internal\Io;
 
-use Amp\Http\Client\BufferedContent;
 use Amp\Http\Client\Request;
-use Kafkiansky\Binary\Buffer;
-use Kafkiansky\Binary\Endianness;
 use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Internal\Protocol;
 use Prototype\Grpc\Internal\Version;
 use Prototype\Serializer\Serializer;
 
@@ -41,14 +39,11 @@ use Prototype\Serializer\Serializer;
  */
 final class RequestFactory
 {
-    private readonly Buffer $buffer;
-
     public function __construct(
         private readonly Serializer $serializer,
         private readonly Compressor $compressor,
-    ) {
-        $this->buffer = Buffer::empty(Endianness::network());
-    }
+        private readonly Protocol\Codec $codec = new Protocol\Codec(),
+    ) {}
 
     /**
      * @throws \Kafkiansky\Binary\BinaryException
@@ -67,11 +62,12 @@ final class RequestFactory
             $compressed = $this->compressor->compress($bytes);
         }
 
-        $requestBuffer = $this->buffer
-            ->clone()
-            ->writeInt8((int)($bytes !== $compressed))
-            ->writeUint32(\strlen($compressed))
-            ->write($compressed)
+        $body = $this->codec
+            ->writeFrame(new Protocol\Frame(
+                $compressed,
+                $bytes !== $compressed,
+            ))
+            ->buffer()
         ;
 
         $request = new Request($uri, 'POST');
@@ -82,7 +78,7 @@ final class RequestFactory
             'TE' => 'trailers',
             'grpc-encoding' => $this->compressor->name(),
         ]);
-        $request->setBody(BufferedContent::fromString($requestBuffer->reset()));
+        $request->setBody($body);
 
         return $request;
     }
