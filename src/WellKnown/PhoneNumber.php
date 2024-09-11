@@ -48,6 +48,6 @@ final class PhoneNumber
 {
     public function __construct(
         public readonly null|string|ShortCode $kind = null,
-        public readonly string $extension = '',
+        public readonly ?string $extension = null,
     ) {}
 }

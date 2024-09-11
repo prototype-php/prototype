@@ -43,7 +43,7 @@ namespace Prototype\WellKnown;
 final class ShortCode
 {
     public function __construct(
-        public readonly string $regionCode,
-        public readonly string $number,
+        public readonly ?string $regionCode = null,
+        public readonly ?string $number = null,
     ) {}
 }

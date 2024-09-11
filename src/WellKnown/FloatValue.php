@@ -33,6 +33,6 @@ namespace Prototype\WellKnown;
 final class FloatValue
 {
     public function __construct(
-        public readonly float $value,
+        public readonly ?float $value = null,
     ) {}
 }

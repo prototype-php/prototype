@@ -36,11 +36,11 @@ namespace Prototype\WellKnown;
 final class LatLng
 {
     /**
-     * @param double $latitude
-     * @param double $longitude
+     * @param ?double $latitude
+     * @param ?double $longitude
      */
     public function __construct(
-        public readonly float $latitude,
-        public readonly float $longitude,
+        public readonly ?float $latitude = null,
+        public readonly ?float $longitude = null,
     ) {}
 }

@@ -38,15 +38,15 @@ namespace Prototype\WellKnown;
 final class TimeOfDay
 {
     /**
-     * @param int32 $hours
-     * @param int32 $minutes
-     * @param int32 $seconds
-     * @param int32 $nanos
+     * @param ?int32 $hours
+     * @param ?int32 $minutes
+     * @param ?int32 $seconds
+     * @param ?int32 $nanos
      */
     public function __construct(
-        public readonly int $hours,
-        public readonly int $minutes,
-        public readonly int $seconds,
-        public readonly int $nanos,
+        public readonly ?int $hours = null,
+        public readonly ?int $minutes = null,
+        public readonly ?int $seconds = null,
+        public readonly ?int $nanos = null,
     ) {}
 }

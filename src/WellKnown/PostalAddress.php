@@ -40,13 +40,13 @@ namespace Prototype\WellKnown;
 final class PostalAddress
 {
     /**
-     * @param int32 $revision
+     * @param ?int32 $revision
      * @param list<string> $addressLines
      * @param list<string> $recipients
      */
     public function __construct(
-        public readonly int $revision,
-        public readonly string $regionCode,
+        public readonly ?int $revision = null,
+        public readonly ?string $regionCode = null,
         public readonly ?string $languageCode = null,
         public readonly ?string $postalCode = null,
         public readonly ?string $sortingCode = null,

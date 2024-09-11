@@ -46,22 +46,22 @@ namespace Prototype\WellKnown;
 final class Date
 {
     /**
-     * @param int32 $year
-     * @param int32 $month
-     * @param int32 $day
+     * @param ?int32 $year
+     * @param ?int32 $month
+     * @param ?int32 $day
      */
     public function __construct(
-        public readonly int $year,
-        public readonly int $month,
-        public readonly int $day,
+        public readonly ?int $year = null,
+        public readonly ?int $month = null,
+        public readonly ?int $day = null,
     ) {}
 
     /**
-     * @throws \LogicException
+     * @throws \InvalidArgumentException
      */
     public function asDateTime(): \DateTimeInterface
     {
-        return \DateTimeImmutable::createFromFormat('Y-m-d', $date = \sprintf('%d-%d-%d', $this->year, $this->month, $this->day)) ?: throw new \LogicException(
+        return \DateTimeImmutable::createFromFormat('Y-m-d', $date = \sprintf('%d-%d-%d', $this->year ?: 0, $this->month ?: 0, $this->day ?: 0)) ?: throw new \InvalidArgumentException(
             \sprintf('Unable to parse date "%s".', $date),
         );
     }

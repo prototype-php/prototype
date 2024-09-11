@@ -41,7 +41,7 @@ final class FieldMask implements \IteratorAggregate, \Countable
      * @param list<string> $paths
      */
     public function __construct(
-        public readonly array $paths,
+        public readonly array $paths = [],
     ) {}
 
     /**

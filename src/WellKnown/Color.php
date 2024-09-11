@@ -41,9 +41,9 @@ namespace Prototype\WellKnown;
 final class Color
 {
     public function __construct(
-        public readonly float $red,
-        public readonly float $green,
-        public readonly float $blue,
-        public readonly FloatValue $alpha,
+        public readonly ?float $red = null,
+        public readonly ?float $green = null,
+        public readonly ?float $blue = null,
+        public readonly ?FloatValue $alpha = null,
     ) {}
 }
