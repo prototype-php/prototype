@@ -25,15 +25,15 @@
 
 declare(strict_types=1);
 
-namespace Prototype\Grpc\Client\Internal\Wire;
+namespace Prototype\Grpc\Client\Internal\Io;
 
 use Amp\Cancellation;
 use Amp\Http\Client\Response;
 use Amp\NullCancellation;
-use Kafkiansky\Binary;
 use Prototype\Byte;
 use Prototype\Grpc\Client\GrpcResponse;
 use Prototype\Grpc\Compression\Compressor;
+use Prototype\Grpc\Internal\Protocol;
 use Prototype\Grpc\StatusCode;
 use Prototype\Serializer\Serializer;
 
@@ -43,14 +43,11 @@ use Prototype\Serializer\Serializer;
  */
 final class ResponseFactory
 {
-    private readonly Binary\Buffer $buffer;
-
     public function __construct(
         private readonly Serializer $serializer,
         private readonly Compressor $compressor,
-    ) {
-        $this->buffer = Binary\Buffer::empty(Binary\Endianness::network());
-    }
+        private readonly Protocol\Codec $codec = new Protocol\Codec(),
+    ) {}
 
     /**
      * @template T of object
@@ -83,18 +80,20 @@ final class ResponseFactory
             );
         }
 
-        $buffer = $this->buffer->write($response->getBody()->buffer());
+        $frame = $this->codec
+            ->extend($response->getBody()->buffer($cancellation))
+            ->readFrame()
+        ;
 
-        $compressed = $buffer->consumeInt8();
-        $messageBuffer = $buffer->consume($buffer->consumeUint32());
+        $body = $frame->payload;
 
-        if (1 === $compressed && '' !== $messageBuffer) {
-            $messageBuffer = $this->compressor->decompress($messageBuffer);
+        if ($frame->compressed && '' !== $body) {
+            $body = $this->compressor->decompress($body);
         }
 
         /** @var T $message */
         $message = $this->serializer->deserialize(
-            Byte\Buffer::fromString($messageBuffer),
+            Byte\Buffer::fromString($body),
             $messageType,
         );
 
