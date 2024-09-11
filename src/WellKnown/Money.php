@@ -35,12 +35,12 @@ namespace Prototype\WellKnown;
 final class Money
 {
     /**
-     * @param int64 $units
-     * @param int32 $nanos
+     * @param ?int64 $units
+     * @param ?int32 $nanos
      */
     public function __construct(
-        public readonly string $currencyCode,
-        public readonly int $units,
-        public readonly int $nanos,
+        public readonly ?string $currencyCode = null,
+        public readonly ?int $units = null,
+        public readonly ?int $nanos = null,
     ) {}
 }

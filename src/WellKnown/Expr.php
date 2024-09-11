@@ -37,9 +37,9 @@ namespace Prototype\WellKnown;
 final class Expr
 {
     public function __construct(
-        public readonly string $expression,
-        public readonly string $title,
-        public readonly string $description,
-        public readonly string $location,
+        public readonly ?string $expression = null,
+        public readonly ?string $title = null,
+        public readonly ?string $description = null,
+        public readonly ?string $location = null,
     ) {}
 }

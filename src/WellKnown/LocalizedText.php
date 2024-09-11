@@ -35,7 +35,7 @@ namespace Prototype\WellKnown;
 final class LocalizedText
 {
     public function __construct(
-        public readonly string $text,
-        public readonly string $languageCode,
+        public readonly ?string $text = null,
+        public readonly ?string $languageCode = null,
     ) {}
 }
