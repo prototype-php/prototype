@@ -157,4 +157,19 @@ final class TypeTest extends TestCase
         self::assertEquals($message, $serializer->deserialize($buffer, $message::class));
         self::assertSame(0, $buffer->size());
     }
+
+    public function testDate(): void
+    {
+        $serializer = new Serializer();
+
+        $date = new WellKnown\Date(
+            2024,
+            9,
+            10,
+        );
+
+        $buffer = $serializer->serialize($date);
+        self::assertEquals($date, $serializer->deserialize($buffer, WellKnown\Date::class));
+        self::assertEquals('2024-09-10', $date->asDateTime()->format('Y-m-d'));
+    }
 }
