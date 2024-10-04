@@ -74,6 +74,7 @@ final class Serializer
      * @return T
      * @throws \ReflectionException
      * @throws PrototypeException
+     * @throws Byte\ByteException
      */
     public function deserialize(Byte\Reader $reader, string $messageType): object
     {

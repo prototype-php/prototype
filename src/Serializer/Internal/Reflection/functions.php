@@ -54,3 +54,12 @@ function instanceOfDateTime(string $class): bool
 {
     return isClassOf($class, \DateTimeInterface::class, \DateTimeImmutable::class, \DateTime::class);
 }
+
+/**
+ * @param string|class-string $class
+ * @psalm-assert-if-true class-string<\DateInterval> $class
+ */
+function instanceOfDateInterval(string $class): bool
+{
+    return isClassOf($class, \DateInterval::class);
+}

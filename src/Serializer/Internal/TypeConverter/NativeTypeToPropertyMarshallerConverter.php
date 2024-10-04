@@ -50,8 +50,8 @@ use Typhoon\Type\ShapeElement;
 use Typhoon\Type\Type;
 use Typhoon\Type\types;
 use Typhoon\Type\Visitor\DefaultTypeVisitor;
+use function Prototype\Serializer\Internal\Reflection\instanceOfDateInterval;
 use function Prototype\Serializer\Internal\Reflection\instanceOfDateTime;
-use function Prototype\Serializer\Internal\Reflection\isClassOf;
 use function Typhoon\Type\stringify;
 
 /**
@@ -136,7 +136,7 @@ final class NativeTypeToPropertyMarshallerConverter extends DefaultTypeVisitor
                 return match (true) {
                     enum_exists($className) => new EnumPropertyMarshaller($className),
                     instanceOfDateTime($className) => new DateTimePropertyMarshaller($className),
-                    isClassOf($className, \DateInterval::class) => new DateIntervalPropertyMarshaller(),
+                    instanceOfDateInterval($className) => new DateIntervalPropertyMarshaller(),
                     class_exists($className) => new ObjectPropertyMarshaller($className),
                     default => throw new TypeIsNotSupported($className),
                 };
